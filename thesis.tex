@@ -1,0 +1,80 @@
+\documentclass{scrbook} % <= Druckversion: "scrbook" / Bildschirmversion: "scrreprt"
+\usepackage[english,bibtex]{osm-thesis} % <= Sprache der Arbeit ("ngerman"/"english"), Biblatex-Backend ("bibtex"/"biber")
+
+% ABOUT
+\newcommand{\thesistype}{Arbeit zur Erlangung des Grades \enquote{Master~of~Science} der Digital-Engineering-Fakultät der Universität~Potsdam}
+\newcommand{\thesisauthor}{Vincent Opitz}
+
+% Title-Ideen: Managing Complexity in Carbon-Aware Scheduling: less emissions via an emission aware scheduling model. 
+
+% Modelling carbon-aware scheduling
+
+\newcommand{\thesistitle}{Managing Complexity in Carbon-Aware Scheduling: saving emissions via an emission aware scheduling model}
+\newcommand{\thesistitleother}{TODO: Titel in Deutsch} % <= das Studienreferat verlangt einen deutschen UND englischen Titel
+
+% LICENSE
+\usepackage[type={CC},modifier={by-sa},version={4.0},lang=English]{doclicense}
+
+% ADVISOR & REVIEWERS
+\newcommand{\thesisadvisorlabel}{Betreuer:in}%
+\newcommand{\thesisadvisor}{%
+	Prof.\,Dr.\,rer.\,nat.\,habil.\,Andreas Polze\\
+	Universität Potsdam,\\
+	Digital Engineering-Fakultät, \\
+	Fachgebiet für Betriebssysteme und Middleware}
+\newcommand{\thesisreviewerlabel}{Gutachter:in}%
+\newcommand{\thesisreviewers}{%
+	Prof.\,Dr.\,Jack Alsohere\\
+	University of San Serife\\
+	Facultiy of Computer Doings%
+	\and
+	Amelia van der Beenherelong\\
+	ACME Cooperation}
+
+% IMPORTANT DATES
+\newcommand{\thesishandindate}{\today}%
+%\newcommand{\thesisdefensedate}{\formatdate{27}{9}{2004}}%
+
+% PUBLICATION SERVER
+%\newcommand{\thesisdoi}{https://doi.org/10.25932/publishup-49913}
+%\newcommand{\thesisurn}{https://nbn-resolving.org/urn:nbn:de:kobv:517-opus4-499134}
+
+% DOCUMENT
+\bibliography{bibliography}
+
+\begin{document}
+
+	% Einband
+	\pagenumbering{alph}
+	\ifisbook\include{content/coverpage}\fi
+	\ifisbook\cleardoubleemptypage\fi
+
+	% (Haupt-)Titelseite, Abstract, ggf. Danksagung & Inhaltsverzeichnis
+	\pagenumbering{roman}
+	\include{content/titlepage}
+	\ifisbook\cleardoubleemptypage\fi\include{content/abstract}
+	%\ifisbook\cleardoubleemptypage\fi\include{content/dedication}
+	\tableofcontents
+	\cleardoublepage
+
+	% Textteil
+	\pagenumbering{arabic}
+	\include{content/chapter1} % example
+	\include{content/chapter2} % example
+	\include{content/chapter3} % example
+
+	% Bibliographie
+	\ifisbook\cleardoubleemptypage\fi
+	\phantomsection\addcontentsline{toc}{chapter}{\refname}
+	\printbibliography[category=cited]
+
+	% ggf. Anhang
+	\appendix\include{content/appendix} % example
+
+	% ggf. bei englischen Arbeiten den deutschen Abstract nach hinten verschieben
+	% \ifisbook\pagestyle{plain}\cleardoubleemptypage\include{content/abstract_deu}\fi
+
+	% Eigenständigkeitserklärung
+	\ifisbook\pagestyle{plain}\cleardoubleemptypage\include{content/disclaimer}\fi
+
+\end{document}

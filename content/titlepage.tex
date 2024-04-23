@@ -1,0 +1,97 @@
+\begin{titlepage}
+	\setcounter{page}{1}
+	\centering
+
+	% TITLE PAGE
+
+	\raisebox{-0.5\height}{\includegraphics[width=5.5cm]{images/hpi_logo_srgb.pdf}}
+	\hspace*{.2\textwidth}
+	\raisebox{-0.5\height}{\includegraphics[width=4cm]{images/uni_logo_srgb.pdf}}
+
+	\vfill
+	{\usekomafont{title}\thesistitle\par}\par
+	\vspace*{\baselineskip}
+	{\usekomafont{subtitle}\thesistitleother\par}\par
+	\vspace*{\baselineskip}
+	{\smallskip\usekomafont{author}\thesisauthor\par}\par
+
+	\vfill\vfill
+	{\usekomafont{date}\thesistype\par}\par
+
+	\clearpage
+	% BACK TITLE PAGE
+
+	\begingroup
+	\ifcsvoid{doclicenseThis}{\phantom{}}{%
+		\begin{minipage}[t]{\textwidth}
+			\noindent%
+			\begin{flushleft}
+				\small
+				Unless otherwise indicated, this work is licensed under a \doclicenseLongType license:\\
+				\doclicenseIcon\doclicenseLongNameRef.\\
+				This does not apply to quoted content from other authors and works based on other permissions.\\
+				To view a copy of this license, visit \url{\doclicenseURL}
+			\end{flushleft}
+		\end{minipage}}%
+	\par\vfill
+	\noindent
+	\begin{otherlanguage}{ngerman}
+	\begin{minipage}[b]{\textwidth}
+		{\raggedright\small
+
+		% author & title
+		{\textbf{\sffamily{\thesistitle \\ (\thesistitleother)}}}\\
+		von {\thesisauthor}
+		\medbreak
+		{\thesistype}
+		\medbreak
+
+		\ifcsvoid{thesisreviewers}%
+		% advisor only
+		{\def\\{ \tabularnewline & }%
+		\edef\tempa{\thesisadvisor}%
+		\begin{tabular}{@{}l@{\hspace*{1ex}}l@{}}
+			{\textbf{\sffamily{\thesisadvisorlabel:}}} & \tempa
+		\end{tabular}}
+		% advisor + reviewers
+		{\def\\{ \tabularnewline & }%
+		\def\smalllinespace{\addlinespace[\smallskipamount]}%
+		\def\and{ \tabularnewline \noexpand\smalllinespace & }%
+		\edef\tempa{\thesisadvisor}%
+		\edef\tempr{\thesisreviewers}%
+		\begin{tabular}{@{}l@{\hspace*{1ex}}l@{}}
+			{\textbf{\sffamily{\thesisadvisorlabel:}}}  & \tempa \\\smalllinespace
+			{\textbf{\sffamily{\thesisreviewerlabel:}}} & \tempr
+		\end{tabular}}
+		\medbreak
+
+		\ifcsvoid{thesishandindate}%
+		{} % no hand in, no defense
+		{\ifcsvoid{thesisdefensedate}%
+			% hand in only
+			{\begin{tabular}{@{}l@{\hspace*{1ex}}l@{}}
+					{\textbf{\sffamily{Datum der Einreichung:}}} & {\thesishandindate}
+				\end{tabular}}%
+			% hand in + defense
+			{\begin{tabular}{@{}l@{\hspace*{1ex}}l@{}}
+					{\textbf{\sffamily{Datum der Einreichung:}}} & {\thesishandindate}  \\
+					{\textbf{\sffamily{Datum der Disputation:}}} & {\thesisdefensedate}
+				\end{tabular}}}
+		\medbreak
+		}%
+		{\ifcsvoid{thesisdoi}%
+		{}% not published
+		{
+			\vspace*{4\baselineskip}%
+			\raggedright\small\noindent
+			\iflanguage{ngerman}{Online veröffentlicht auf dem Publikationsserver der Universität Potsdam}{Published online on the Publication Server of the University of Potsdam}:\\
+			\url{\thesisdoi}\\
+			\url{\thesisurn}%
+		}
+		}%
+
+	\end{minipage}
+	\end{otherlanguage}
+	\endgroup
+
+\end{titlepage}

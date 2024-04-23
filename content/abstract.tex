@@ -1,0 +1,45 @@
+% => Wenn die Arbeit auf Deutsch verfasst wurde, verlangt das Studienreferat KEINEN englischen Abstract
+
+% % englischer Abstract
+%\null\vfil
+%\begin{otherlanguage}{english}
+%\begin{center}\textsf{\textbf{\abstractname}}\end{center}
+%
+%\noindent Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+%
+%\end{otherlanguage}
+%\vfil\null
+
+
+% => Wenn die Arbeit auf Englisch verfasst wurde, verlangt das Studienreferat einen englischen UND deutschen Abstract (der dt. Abstract kann dann ggf. auch ans Ende der Arbeit)
+
+% deutsche Zusammenfassung
+\null\vfil
+\begin{otherlanguage}{ngerman}
+\begin{center}\textsf{\textbf{\abstractname}}\end{center}
+
+\noindent 
+
+This thesis delves into optimizing job scheduling in a High-Performance Computing (HPC) environment with a focus on reducing CO2 emissions. Given the time-dependent nature of CO2 emissions, various strategies such as temporal shifting, frequency scaling, and node management have been explored in existing literature. Moreover, job scheduling may involve considerations like priorities, deadlines, and time constraints.
+
+To address these complexities, this work introduces a novel parameterized model that allows integration of multiple scheduling approaches. This model serves as the foundation for developing a scheduler aimed at minimizing carbon emissions while upholding quality of service standards. Validation of the model is conducted using real-world academic data center scenarios.
+
+Through simulation experiments with diverse parameters, our proposed scheduler demonstrates significant reductions in carbon emissions compared to conventional approaches. Specifically, it achieves a 10\% reduction for round-robin-scheduled workloads and an impressive 20\% reduction for backfill-scheduled workloads.
+
+%- temporal shifting
+%- include the costs of pausing a job (saving work and resuming it)
+%- include costs of shutting down or starting additional compute nodes
+%- include frequency scaling 
+%- provide a model for simulating scheduling of jobs, and also model what information need to provide to increase CO2 efficiency. 
+
+%C The study aims to [state the objectives or goals of the research]. Through [methodology/approach], %data was collected from [source or population]. The findings reveal [main results or discoveries].
+
+%The analysis highlights [key insights or implications], shedding light on [broader significance or relevance]. This research contributes to the understanding of [specific field or subject area], offering [potential applications or recommendations].
+
+%Overall, this thesis provides valuable insights into [topic] and offers avenues for further exploration in [related areas].
+
+\end{otherlanguage}
+\vfil\null
+
+
+
