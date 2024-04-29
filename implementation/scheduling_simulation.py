@@ -3,13 +3,14 @@ import random
 from datetime import datetime, date
 import csv
 import time
+import yaml
 import pandas
 import numpy as np
 from dataclasses import dataclass
 from typing import List, Iterator, Type
 
 class Job:
-    def __init__(self, env: simpy.Environment, id, priority: int, deadline: simpy.core.SimTime, runtime: simpy.core.SimTime):
+    def __init__(self, env: simpy.Environment, id, deadline: simpy.core.SimTime, runtime: simpy.core.SimTime):
         all_jobs.append(self)
         self.id = id
         self.deadline = deadline
@@ -55,11 +56,13 @@ class ComputeNode:
     def execute_job(self, job: Job):
         with self.ressource.request() as request:
             self.set_state('WORKING')
+            start_time = self.env.now
             yield request
             yield self.env.process(job.do_something())
             end_time = self.env.now
-            # omitted: logging etc
+            log.get('compute_node_events').append({'type': 'execute_job', 'id': 'Node' + str(self.id), 'start': start_time, 'end': end_time, 'time': end_time - start_time, 'job': job})
             self.set_state('READY')
+            self.scheduler.schedule_jobs()
     
     def get_current_power(self) -> int:
         match self.state:
@@ -224,15 +227,13 @@ class SimpleGreenScheduler(BaseScheduler):
 class SimulationConfig:
     scheduler: Type[BaseScheduler] = None
 
-    simulation_start: int = None
+    simulation_start: int = time.mktime(date.fromisocalendar(year=2023, week=1, day=1).timetuple())
     simulation_length: int = 24 * 60 * 60
 
     number_of_compute_nodes: int = 10
     submit_interval_generator_scale: int = 600
     job_length_generator_mean: int = 3600
     job_length_generator_scale: int = 1800
-
-    job_submitter: Type[BaseSubmitter] = None
 
     idle_power_hour: float = 5
     working_power_per_hour: float = 10
@@ -281,12 +282,61 @@ class Scheduler:
             first_available_compute_node.state = 'STARTING'
             self.env.process(first_available_compute_node.execute_job(job))
 
-def job_generator(env, scheduler):
-    while True:
-        # omitted: create job
-        scheduler.submit_job(job)
-        wait_time_until_next_job = rng.exponential(scale=config.submit_interval_generator_scale)
-        yield env.timeout(wait_time_until_next_job)
+
+class JobSubmitter:
+    def __init__(self, env: simpy.Environment, scheduler: BaseScheduler):
+        self.env = env
+        self.scheduler = scheduler
+
+    def generate_jobs(self):
+        pass
+
+class RandomJobSubmitter(JobSubmitter):
+
+    def generate_jobs(env, scheduler):
+        job_id = 0
+        rng = np.random.default_rng(seed=0)
+
+        while True:
+            job_id += 1
+            runtime = round(rng.normal(loc=config.job_length_generator_mean, scale=config.job_length_generator_scale))
+            if runtime < 5:
+                    runtime = 5
+                # Assume, the job is atleast runnable
+            deadline = runtime + rng.integers(0, 100)
+            job = Job(env, id, 1, deadline, runtime)
+            scheduler.submit_job(job)
+            wait_time_until_next_job = rng.exponential(scale=config.submit_interval_generator_scale)
+            yield env.timeout(wait_time_until_next_job)  # Generate new job every 60 seconds
+            # random.expovariate(1.0 / 5)
+
+class YamlJobSubmitter(JobSubmitter):
+    def __init__(self, env: simpy.Environment, scheduler: BaseScheduler, workload_path: str):
+        self.env = env
+        self.scheduler = scheduler
+        self.workload_path = workload_path
+
+    def generate_jobs(self):
+        jobs = []
+        with open('workloads/two_jobs.yml', 'r') as file:
+            parsed = yaml.safe_load(file)
+            for job in parsed:
+                jobs.append({'start': int(job['start']), 'length': int(job['length']), 'deadline': int(job['deadline'])})
+        jobs_sorted_by_start = sorted(jobs, key=lambda x: x['start'])
+
+        yield self.env.timeout(jobs_sorted_by_start[0]['start'])
+        for i in range(0, len(jobs_sorted_by_start)):
+            job_config = jobs_sorted_by_start[i]
+            runtime = job_config['length']
+            deadline = runtime + job_config['deadline']
+            job = Job(self.env, id, deadline, runtime)
+            self.scheduler.submit_job(job)
+
+            if (i + 1 == len(jobs_sorted_by_start)):
+                continue
+
+            wait_time_until_next_job = config.simulation_start + jobs_sorted_by_start[i+1]['start'] - self.env.now
+            yield self.env.timeout(wait_time_until_next_job)
 
 all_jobs = []
 
@@ -314,7 +364,8 @@ def run_simulation(simulation_config: SimulationConfig):
     scheduler = config.scheduler(env)
 
     # Start job generator process
-    env.process(job_generator(env, scheduler))
+    job_submitter = YamlJobSubmitter(env, scheduler, 'workloads/two_jobs.yml')
+    env.process(job_submitter.generate_jobs())
 
     # Run simulation
     env.run(until=simulation_end_time_timestamp)
