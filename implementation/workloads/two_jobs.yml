@@ -1,15 +1,10 @@
-- job 1:
+- long job:
   start: 0
   length: 3600
   deadline: 5000
-  overhead: 60
-- job 2:
+  overhead: "lambda x: 50"
+- short job:
   start: 360
   length: 1800
   deadline: 5000
-  overhead: 60
-- job 2:
-  start: 360
-  length: 1800
-  deadline: 5000
-  overhead: 60
+  overhead: "lambda x: x / 10"

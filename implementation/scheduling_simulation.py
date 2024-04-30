@@ -7,10 +7,10 @@ import yaml
 import pandas
 import numpy as np
 from dataclasses import dataclass
-from typing import List, Iterator, Type
+from typing import List, Iterator, Type, Callable
 
 class Job:
-    def __init__(self, env: simpy.Environment, id, deadline: simpy.core.SimTime, runtime: simpy.core.SimTime, overhead: int):
+    def __init__(self, env: simpy.Environment, id, deadline: simpy.core.SimTime, runtime: simpy.core.SimTime, overhead: Callable[int, int]):
         all_jobs.append(self)
         self.id = id
         self.deadline = deadline
@@ -87,8 +87,9 @@ class ComputeNode:
 
             remaining_work = Job(self.env, job.id, job.deadline, job.runtime - duration, job.overhead)
             if (remaining_work.runtime >= 0):
-                log.get('compute_node_events').append({'type': 'overhead', 'id': 'Node' + str(self.id), 'start': self.env.now, 'end': self.env.now + job.overhead, 'time': job.overhead, 'job': job})
-                yield self.env.timeout(job.overhead)
+                current_overhead = job.overhead(remaining_work.runtime)
+                log.get('compute_node_events').append({'type': 'overhead', 'id': 'Node' + str(self.id), 'start': self.env.now, 'end': self.env.now + current_overhead, 'time': current_overhead, 'job': job})
+                yield self.env.timeout(current_overhead)
                 self.set_state('READY')
                 self.scheduler.submit_job(remaining_work)
 
@@ -101,12 +102,12 @@ class ComputeNode:
         match self.state:
             case 'READY':
                 return self.idle_power_hour
-            case 'SHUTDOWN':
-                return self.shutdown_power_per_hour
-            case 'STARTING':
-                return self.starting_power_per_hour
-            case 'OFFLINE':
-                return self.offline_power_per_hour
+            # case 'SHUTDOWN':
+            #     return self.shutdown_power_per_hour
+            # case 'STARTING':
+            #     return self.starting_power_per_hour
+            # case 'OFFLINE':
+            #     return self.offline_power_per_hour
             case 'WORKING':
                 return self.working_power_per_hour
             case _:
@@ -165,7 +166,7 @@ class PreemptiveRoundRobinScheduler(BaseScheduler):
 
     def schedule_jobs(self):
         while len(self.queue) > 0:
-            job = self.queue.pop()
+            job = self.queue.pop(0) # take from beginning of queue!
             log.get('job_queue').append({'type': 'pop', 'time': self.env.now, 'length': len(self.queue)})
             first_available_compute_node: ComputeNode = next((node for node in self.nodes if node.state == 'READY'), None)
             if (first_available_compute_node is None):
@@ -248,7 +249,7 @@ class YamlJobSubmitter(JobSubmitter):
         with open('workloads/two_jobs.yml', 'r') as file:
             parsed = yaml.safe_load(file)
             for job in parsed:
-                jobs.append({'start': int(job['start']), 'length': int(job['length']), 'deadline': int(job['deadline']), 'overhead': int(job['overhead'])})
+                jobs.append({'start': int(job['start']), 'length': int(job['length']), 'deadline': int(job['deadline']), 'overhead': eval(job['overhead'])})
         jobs_sorted_by_start = sorted(jobs, key=lambda x: x['start'])
 
         yield self.env.timeout(jobs_sorted_by_start[0]['start'])
