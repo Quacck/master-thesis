@@ -16,7 +16,10 @@ import time
 import os
 from PIL import Image
 from tempfile import TemporaryDirectory
+import logging
 
+logging.basicConfig(filename='fmnist_log.csv', level=logging.INFO, format='%(created)f %(message)s')
+logging.info('start program')
 
 # Data augmentation and normalization for training
 # Just normalization for validation
@@ -72,7 +75,9 @@ def imshow(inp, title=None):
 
 
 # Get a batch of training data
+logging.info('load data')
 inputs, classes = next(iter(dataloaders["train"]))
+logging.info('finish loading data')
 
 # Make a grid from batch
 out = torchvision.utils.make_grid(inputs)
@@ -86,15 +91,19 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     with TemporaryDirectory() as tempdir:
         best_model_params_path = os.path.join(tempdir, "best_model_params.pt")
 
+        logging.info('save model')
         torch.save(model.state_dict(), best_model_params_path)
+        logging.info('done save model')
         best_acc = 0.0
 
         for epoch in range(num_epochs):
+            logging.info(f'start epoch {epoch}')
             print(f"Epoch {epoch}/{num_epochs - 1}")
             print("-" * 10)
 
             # Each epoch has a training and validation phase
             for phase in ["train", "val"]:
+                logging.info(f'start phase {phase}')
                 if phase == "train":
                     model.train()  # Set model to training mode
                 else:
@@ -142,6 +151,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             print()
 
         time_elapsed = time.time() - since
+        logging.info('end')
         print(
             f"Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s"
         )

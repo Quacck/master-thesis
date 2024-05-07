@@ -730,5 +730,7 @@ LP:
       Max CPU utilization during the 5 minutes
       Avg CPU utilization during the 5 minutes
 
-  + 
-  + 
+## 07.05.24
+
++ pinpoint kann python3 via dem venv ausführen und die libraries darüber benutzen: sudo ./pinpoint/build/pinpoint -- .venv/bin/python3.12 fmnist.py
++ script schreiben, welches via dem -c continuierlich die Leistung misst.
