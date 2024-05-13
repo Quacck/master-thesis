@@ -734,3 +734,15 @@ LP:
 
 + pinpoint kann python3 via dem venv ausführen und die libraries darüber benutzen: sudo ./pinpoint/build/pinpoint -- .venv/bin/python3.12 fmnist.py
 + script schreiben, welches via dem -c continuierlich die Leistung misst.
+
+## 13.05.24
+
++ Evaluation der Ausmessung: scheinbar gibt es nur eine load-phase und dann train + eval phasen, welche recht ähnlich im powerdraw sind.
++ ![alt text](fmnist.png)
++ ![alt text](roberta.png) 
+  + sieht da schon etwas spannender aus
++ Anfangen die Luis Traces zu untersuchen, ideally gibt es batch jobs mit submission dates
+  + ![alt text](image-8.png)
+  + Es gibt delay-insensitive VMs, perhaps könnte man da argumentieren, dass die delaybar sind?
+
+
