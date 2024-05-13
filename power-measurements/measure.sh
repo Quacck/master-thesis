@@ -32,20 +32,18 @@ else
 fi
 
 
-for (( index=0; index<=10; index++ )); do
-        output_file="measurements_sleep_${index}.csv"
-        start=$(date +%s.%N)
-        $PINPOINT -c -e MCP2 -o $output_file -- sleep 60
-        end=$(date +%s.%N)
+# for (( index=0; index<=10; index++ )); do
+#         output_file="measurements_sleep_${index}.csv"
+#         start=$(date +%s.%N)
+#         $PINPOINT -c -e MCP2 -o $output_file -- sleep 60
+#         end=$(date +%s.%N)
+# 
+#         echo "$start" >> $output_file
+#         echo "$end" >> $output_file
+# done
 
-        echo "$start" >> $output_file
-        echo "$end" >> $output_file
-done
-
-sleep 60
-
-for (( index=0; index<=10; index++ )); do
-        output_file="measurements_fmnist_${index}.csv"
+for (( index=0; index<=3; index++ )); do
+        output_file="measurements_fmnist_${index}_new.csv"
         rm -r data-new # make the job download the data before, otherwise the experiment would be less repeatable
 
         start=$(date +%s.%N)
@@ -54,6 +52,8 @@ for (( index=0; index<=10; index++ )); do
 
         echo "$start" >> $output_file
         echo "$end" >> $output_file
+
+        sleep 30
 done
 
 #print_header
