@@ -11,16 +11,15 @@ print_measurements() {
 }
 
 measure_over_time() {
-    rm -r data-new # make the job download the data before, otherwise the experiment would be less repeatable
-    $PINPOINT -c -e MCP2 -- $@ 2>&1 | while IFS= read -r line; do
+    $PINPOINT -c -e MCP2 -o $O -- $@ | while IFS= read -r line; do
         timestamp=$(date +%s.%N)
-        echo "$timestamp $line" >> $OUTPUT
+        echo "$timestamp, $line, $@" >> $OUTPUT
     done
 }
 
 print_header() {
     # do not care about aliases
-    ($PINPOINT_PATH -l | grep -v "\->" | awk '/rapl:|mcp:/{print $1,",σ("$1")"}'; echo "time"; echo "σ(time)"; echo "program") | tr '\n' ',' > $OUTPUT
+    (echo "time"; echo "power"; echo "program") | tr '\n' ',' > $OUTPUT
     echo "" >> $OUTPUT
 }
 
@@ -33,12 +32,33 @@ else
 fi
 
 
-measure_over_time sleep 10
-# measure_over_time .venv/bin/python3.12 fmnist.py
-# print_measurements python3 ./python/simulation.py ./input/readinput.txt ./input/writeinput.txt --dry-run
-# print_measurements python3 ./python/simulation.py ./input/readinput.txt ./input/writeinput.txt
-# print_measurements sleep 1
-# print_measurements ./C/Main ./input/readinput.txt ./input/writeinput.txt
-# print_measurements ./C/Main ./input/readinput.txt ./input/writeinput.txt --dry-run
+for (( index=0; index<=10; index++ )); do
+        output_file="measurements_sleep_${index}.csv"
+        start=$(date +%s.%N)
+        $PINPOINT -c -e MCP2 -o $output_file -- sleep 60
+        end=$(date +%s.%N)
+
+        echo "$start" >> $output_file
+        echo "$end" >> $output_file
+done
+
+sleep 60
+
+for (( index=0; index<=10; index++ )); do
+        output_file="measurements_fmnist_${index}.csv"
+        rm -r data-new # make the job download the data before, otherwise the experiment would be less repeatable
+
+        start=$(date +%s.%N)
+        $PINPOINT -c -e MCP2 -o $output_file -- .venv/bin/python3.12 fmnist.py
+        end=$(date +%s.%N)
+
+        echo "$start" >> $output_file
+        echo "$end" >> $output_file
+done
+
+#print_header
+# measure_over_time sleep 10
+#measure_over_time .venv/bin/python3.12 fmnist.py
+# measure_over_time sleep 10
 
 echo "Done!"
