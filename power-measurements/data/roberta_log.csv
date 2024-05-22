@@ -1,0 +1,61 @@
+1716379717.971672, start program
+1716379726.661832, after load data
+1716379731.263149, Start training
+1716379739.974960, Epoch 1.0 ended. Steps: 12
+1716379743.174868, Epoch 1.0. Saved. Steps: 12
+1716379853.630956, start program
+1716379862.511736, after load data
+1716379866.192905, Start training
+1716379874.076675, Epoch 1.0 ended. Steps: 12
+1716379877.592619, Epoch 1.0. Saved. Steps: 12
+1716379884.988436, Epoch 2.0 ended. Steps: 24
+1716379888.136581, Epoch 2.0. Saved. Steps: 24
+1716379895.577850, Epoch 3.0 ended. Steps: 36
+1716379898.756265, Epoch 3.0. Saved. Steps: 36
+1716379906.184231, Epoch 4.0 ended. Steps: 48
+1716379909.604963, Epoch 4.0. Saved. Steps: 48
+1716379917.043154, Epoch 5.0 ended. Steps: 60
+1716379920.252413, Epoch 5.0. Saved. Steps: 60
+1716379920.253355, End training
+1716379957.219718, start program
+1716379966.278674, after load data
+1716379970.075589, Start training
+1716379977.959983, Epoch 1.0 ended. Steps: 12
+1716379981.180831, Epoch 1.0. Saved. Steps: 12
+1716379988.578442, Epoch 2.0 ended. Steps: 24
+1716379991.581846, Epoch 2.0. Saved. Steps: 24
+1716379999.012981, Epoch 3.0 ended. Steps: 36
+1716380002.245777, Epoch 3.0. Saved. Steps: 36
+1716380009.661562, Epoch 4.0 ended. Steps: 48
+1716380013.084332, Epoch 4.0. Saved. Steps: 48
+1716380020.523878, Epoch 5.0 ended. Steps: 60
+1716380023.717023, Epoch 5.0. Saved. Steps: 60
+1716380023.717856, End training
+1716380060.617013, start program
+1716380069.481086, after load data
+1716380073.202346, Start training
+1716380081.077449, Epoch 1.0 ended. Steps: 12
+1716380084.084882, Epoch 1.0. Saved. Steps: 12
+1716380091.506905, Epoch 2.0 ended. Steps: 24
+1716380094.519904, Epoch 2.0. Saved. Steps: 24
+1716380101.967041, Epoch 3.0 ended. Steps: 36
+1716380105.106499, Epoch 3.0. Saved. Steps: 36
+1716380112.574712, Epoch 4.0 ended. Steps: 48
+1716380115.575227, Epoch 4.0. Saved. Steps: 48
+1716380123.038749, Epoch 5.0 ended. Steps: 60
+1716380126.187778, Epoch 5.0. Saved. Steps: 60
+1716380126.188674, End training
+1716380163.054123, start program
+1716380172.559792, after load data
+1716380176.225589, Start training
+1716380184.588487, Epoch 1.0 ended. Steps: 12
+1716380188.138821, Epoch 1.0. Saved. Steps: 12
+1716380195.692707, Epoch 2.0 ended. Steps: 24
+1716380198.713204, Epoch 2.0. Saved. Steps: 24
+1716380206.104519, Epoch 3.0 ended. Steps: 36
+1716380209.235540, Epoch 3.0. Saved. Steps: 36
+1716380216.657151, Epoch 4.0 ended. Steps: 48
+1716380219.558525, Epoch 4.0. Saved. Steps: 48
+1716380226.957002, Epoch 5.0 ended. Steps: 60
+1716380230.428212, Epoch 5.0. Saved. Steps: 60
+1716380230.429060, End training

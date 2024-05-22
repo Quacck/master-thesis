@@ -44,7 +44,8 @@ fi
 
 for (( index=0; index<=3; index++ )); do
         output_file="measurements_roberta_${index}_new.csv"
-        rm -r data-new # make the job download the data before, otherwise the experiment would be less repeatable
+        rm -r data # make the job download the data before, otherwise the experiment would be less repeatable
+        rm -r checkpoints # make the job download the data before, otherwise the experiment would be less repeatable
 
         start=$(date +%s.%N)
         # $PINPOINT -c -e MCP2 -o $output_file -- .venv/bin/python3.12 fmnist.py
