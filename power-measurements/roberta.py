@@ -25,6 +25,9 @@ class LogEpochCallback(TrainerCallback):
     def on_train_end(self, args, state: TrainerState, control: TrainerControl, **kwargs):
         logging.info('End training')
 
+    def on_evaluate(self, args, state: TrainerState, control: TrainerControl, **kwargs):
+        logging.info('Evaluate')
+
 
 SEED = 42
 
