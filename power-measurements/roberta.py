@@ -7,13 +7,34 @@ from datasets import Dataset
 import evaluate
 import numpy as np
 from transformers import EvalPrediction
-from transformers import AutoModelForSequenceClassification, AutoConfig
+from transformers import AutoModelForSequenceClassification, AutoConfig, TrainerCallback, TrainerState, TrainerControl
 from transformers import TrainingArguments, Trainer
+import logging
+
+
+class LogEpochCallback(TrainerCallback):
+    def on_epoch_end(self, args, state: TrainerState, control: TrainerControl, **kwargs):
+        logging.info(f"Epoch {state.epoch} ended. Steps: {state.global_step}")
+
+    def on_save(self, args, state: TrainerState, control: TrainerControl, **kwargs):
+        logging.info(f"Epoch {state.epoch}. Saved. Steps: {state.global_step}")
+
+    def on_train_begin(self, args, state: TrainerState, control: TrainerControl, **kwargs):
+        logging.info('Start training')
+    
+    def on_train_end(self, args, state: TrainerState, control: TrainerControl, **kwargs):
+        logging.info('End training')
 
 
 SEED = 42
 
-dataset = load_dataset("ag_news", cache_dir="./data")
+logging.basicConfig(filename='roberta_log.csv', level=logging.INFO, format='%(created)f, %(message)s')
+logging.info('start program')
+
+dataset = load_dataset("ag_news", cache_dir="./roberta-data")
+
+logging.info('after load data')
+
 dataset = dataset.shuffle(SEED)
 
 dataset["train"] = dataset["train"].select(range(400))
@@ -45,7 +66,7 @@ LR = 2e-5
 EPOCHS = 5
 
 args = TrainingArguments(
-    output_dir="nlp_course_from_pretrained",
+    output_dir="checkpoints",
     evaluation_strategy="epoch",
     save_strategy="epoch",
     learning_rate=LR,
@@ -77,7 +98,8 @@ trainer = Trainer(
     train_dataset=encoded_ds["train"],
     eval_dataset=encoded_ds["val"],
     tokenizer=tokenizer,
-    compute_metrics=compute_metrics
+    compute_metrics=compute_metrics,
+    callbacks=[LogEpochCallback()]
 )
 trainer.train()
 trainer.evaluate()
