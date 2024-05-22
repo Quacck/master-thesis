@@ -739,10 +739,30 @@ LP:
 
 + Evaluation der Ausmessung: scheinbar gibt es nur eine load-phase und dann train + eval phasen, welche recht ähnlich im powerdraw sind.
 + ![alt text](fmnist.png)
-+ ![alt text](roberta.png) 
++ ![alt text](roberta.png)
   + sieht da schon etwas spannender aus
 + Anfangen die Luis Traces zu untersuchen, ideally gibt es batch jobs mit submission dates
   + ![alt text](image-8.png)
   + Es gibt delay-insensitive VMs, perhaps könnte man da argumentieren, dass die delaybar sind?
-
-
+  + "While studying this data, we realized that some users are not using the concept of deployment in the way it was intended, i.e. to cleanly group"
+  + Ich hab mal die vms creation times aus dem azure dataset geplotted:
+    + ![alt text](azure_delay_insensitive_over_time.png)
+    + ![alt text](azures_vms_over_time.png)
+  + ersteres suggested, das be  Azure schon scheduling zu den Wochenenden betrieben wird. Macht sich also wahrscheinlich nicht perfekt als leading example, kann man aber bestimmt trotzdem aufnehmen.
+  + Die interactive VMs sind an den Wochentagen mehr benutzt
+  + ![alt text](image-9.png)
+  + "dynamic time walking"
+  + Kann man ne schlaue Metrik finden, wie gut etwas carbon gescheduled ist? e.g. Correlation zu der carbon curve
+  + Gibst da schon was in der Literatur? perhaps something aus dem carbon'24 paper auch.
+  + welche stellschrauben zum shiften in https://arxiv.org/pdf/2403.14792
+  + "simulated annealing"? gradient descend, something in hindsight
+  + https://github.com/Azure/AzurePublicDataset/blob/master/AzurePublicDatasetV1.md cool, was davon ins modell mitnehmen und das begründen
+  + daten imports für die verschiedenen Quellen?
+  + perfect-hindsight-schedule ist das "Orakel" vs FIFO vs round robin vs something smart?
++ NIX KUBERNETES, was kostet das an / aus von den sample ML workloads
++ python profiling
++ wie teuer ist neustarten (+ wenn daten sind noch da) ausmessen an den examples
++ wie groß sind die daten?
++ daten aus nem profling als grundlagen für perhaps ne händische annotation + logging
++ statistical profiling
++ sven hat nen schraubenzieher für die fenster, falls es mal nich so gut läuft

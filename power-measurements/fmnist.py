@@ -71,7 +71,7 @@ def imshow(inp, title=None):
     plt.imshow(inp)
     if title is not None:
         plt.title(title)
-    plt.pause(0.001)  # pause a bit so that plots are updated
+    plt.pause(0.001) # pause a bit so that plots are updated
 
 
 # Get a batch of training data
