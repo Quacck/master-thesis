@@ -18,7 +18,7 @@ from PIL import Image
 from tempfile import TemporaryDirectory
 import logging
 
-logging.basicConfig(filename='fmnist_log.csv', level=logging.INFO, format='%(created)f, %(message)s')
+logging.basicConfig(filename='events.csv', level=logging.INFO, format='%(created)f, %(message)s')
 logging.info('start program')
 
 # Data augmentation and normalization for training
