@@ -42,7 +42,7 @@ fi
 #         echo "$end" >> $output_file
 # done
 
-for (( index=0; index<=3; index++ )); do
+for (( index=7; index<=9; index++ )); do
         output_file="measurements_roberta_${index}_new.csv"
         rm -r data # make the job download the data before, otherwise the experiment would be less repeatable
         rm -r checkpoints # make the job download the data before, otherwise the experiment would be less repeatable

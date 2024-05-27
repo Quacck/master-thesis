@@ -10,6 +10,7 @@ from transformers import EvalPrediction
 from transformers import AutoModelForSequenceClassification, AutoConfig, TrainerCallback, TrainerState, TrainerControl
 from transformers import TrainingArguments, Trainer
 import logging
+import argparse
 
 
 class LogEpochCallback(TrainerCallback):
@@ -29,9 +30,14 @@ class LogEpochCallback(TrainerCallback):
         logging.info('Evaluate')
 
 
+parser = argparse.ArgumentParser(description="Sample ML Program")
+parser.add_argument('--resume_from_checkpoint', action=argparse.BooleanOptionalAction, help='Resume from checkpoints')
+
+parser_args = parser.parse_args()
+
 SEED = 42
 
-logging.basicConfig(filename='roberta_log.csv', level=logging.INFO, format='%(created)f, %(message)s')
+logging.basicConfig(filename='events.csv', level=logging.INFO, format='%(created)f, %(message)s')
 logging.info('start program')
 
 dataset = load_dataset("ag_news", cache_dir="./roberta-data")
@@ -104,5 +110,5 @@ trainer = Trainer(
     compute_metrics=compute_metrics,
     callbacks=[LogEpochCallback()]
 )
-trainer.train()
+trainer.train(resume_from_checkpoint=parser_args.resume_from_checkpoint)
 trainer.evaluate()
