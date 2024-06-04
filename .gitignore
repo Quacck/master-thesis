@@ -2,6 +2,7 @@ power-measurements/roberta-data
 power-measurements/data-new
 power-measurements/checkpoints
 power-measurements/checkpoints-saved
+traces
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
