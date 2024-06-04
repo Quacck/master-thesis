@@ -600,7 +600,7 @@ LP:
   + <https://en.wikipedia.org/wiki/Embedded_emissions>
   + generell, some formulae um carbon efficiency zu berechnen
 + <https://www.electricitymaps.com/blog/marginal-vs-average-real-time-decision-making>
-  + Marginal Signal; welche carbon emissions würde ein Hinzufügen von power draw (also das Ausführen von Arbeit) and extra emissions erzeugen, da (nicht-erneuerbare) Kraftwerke hinzugeschaltet werden? Nach der Quelle beschreibt das den short term impact von scheduling decisions. 
+  + Marginal Signal; welche carbon emissions würde ein Hinzufügen von power draw (also das Ausführen von Arbeit) and extra emissions erzeugen, da (nicht-erneuerbare) Kraftwerke hinzugeschaltet werden? Nach der Quelle beschreibt das den short term impact von scheduling decisions.
   + Average Signal; welche Emissionen erzeugen das Grid gerade? Sind intuitiv, allerdings eher realitätsfern, da erneuerbare Energien schlecht dazugeschaltet werden können.
 + <https://en.wikipedia.org/wiki/Curtailment_(electricity)>
   + Erneuerbare Energien können abschaltet oder abgedrosselt werden, da es nicht genug abnehmer gibt. Wenn wir carbon aware scheduling betreiben könnten wir da also den demand hin anpassen.
@@ -641,7 +641,7 @@ LP:
 + typische scheduling algorithmen, a la bachelor vorlesung
 + nvidia workloads untersuchen, daran evtl. ein modell ableiten so grob.
 + welche Datensätze gibt es; da ne kleine Liste kompilieren
-  + ansonsten erstelle eine wunschliste 
+  + ansonsten erstelle eine wunschliste
 + KISZ könnte ein "nvidia base command", ansonsten via ssh tracken.
 + Ralf Herbrich, Till Wenke
 
@@ -672,7 +672,7 @@ LP:
   + welchen Effekt hätte das in einem Modell?
   + io bound processes brauchen weniger power?
 + Bzgl. welche Daten braucht man:
-  + Welches Nutzungsmodell läuft? E.g. batchjobs / interactive sessions / ... 
+  + Welches Nutzungsmodell läuft? E.g. batchjobs / interactive sessions / ...
   + Wie lange laufen einzelne Jobs? Kann man da eine Distribution ableiten?
   + Wann werden Jobs submitted?
     + perhaps auch gekoppelt mit den submission times oben
@@ -706,9 +706,9 @@ LP:
 + Versuch einen ML Job auszumessen, um ein power profile daran abzuleiten
 + fmnist.py und roberta.py; laufen auf meinem Desktop, nachdem die treiber aktualisiert wurden
 + die Aktualisierung hat aber auch meine internet connectivity genuked, also installier ich ubuntu neu :)
-+ währendessen: https://dl.acm.org/doi/10.1145/3620678.3624644, https://github.com/Azure/AzurePublicDataset, https://www.microsoft.com/en-us/research/wp-content/uploads/2017/10/Resource-Central-SOSP17.pdf
++ währendessen: <https://dl.acm.org/doi/10.1145/3620678.3624644>, <https://github.com/Azure/AzurePublicDataset>, <https://www.microsoft.com/en-us/research/wp-content/uploads/2017/10/Resource-Central-SOSP17.pdf>
   + "Carbon Containers: A System-level Facility for Managing Application-level Carbon Emissions"
-  + https://github.com/Azure/AzurePublicDataset/blob/master/AzurePublicDatasetV1.md 
+  + <https://github.com/Azure/AzurePublicDataset/blob/master/AzurePublicDatasetV1.md>
     + VM Traces:
     + Schema:
       Encrypted subscription id
@@ -717,14 +717,14 @@ LP:
       Count VMs created
       Deployment size (we define a “deployment” differently than Azure in our paper)
       Encrypted VM id
-      **Timestamp VM created**
-      **Timestamp VM deleted**
+      __Timestamp VM created__
+      __Timestamp VM deleted__
       Max CPU utilization
       Avg CPU utilization
       P95 of Max CPU utilization
-      **VM category**
-      **VM virtual core count**
-      **VM memory (GBs)**
+      __VM category__
+      __VM virtual core count__
+      __VM memory (GBs)__
       Timestamp in seconds (every 5 minutes)
       Min CPU utilization during the 5 minutes
       Max CPU utilization during the 5 minutes
@@ -754,9 +754,9 @@ LP:
   + "dynamic time walking"
   + Kann man ne schlaue Metrik finden, wie gut etwas carbon gescheduled ist? e.g. Correlation zu der carbon curve
   + Gibst da schon was in der Literatur? perhaps something aus dem carbon'24 paper auch.
-  + welche stellschrauben zum shiften in https://arxiv.org/pdf/2403.14792
+  + welche stellschrauben zum shiften in <https://arxiv.org/pdf/2403.14792>
   + "simulated annealing"? gradient descend, something in hindsight
-  + https://github.com/Azure/AzurePublicDataset/blob/master/AzurePublicDatasetV1.md cool, was davon ins modell mitnehmen und das begründen
+  + <https://github.com/Azure/AzurePublicDataset/blob/master/AzurePublicDatasetV1.md> cool, was davon ins modell mitnehmen und das begründen
   + daten imports für die verschiedenen Quellen?
   + perfect-hindsight-schedule ist das "Orakel" vs FIFO vs round robin vs something smart?
 + NIX KUBERNETES, was kostet das an / aus von den sample ML workloads
@@ -766,3 +766,44 @@ LP:
 + daten aus nem profling als grundlagen für perhaps ne händische annotation + logging
 + statistical profiling
 + sven hat nen schraubenzieher für die fenster, falls es mal nich so gut läuft
+
+## 28.05
+
++ sheesh, ganzschön viel Zeit vergangen
++ power measurements wirken jetzt fertig, und auch in einer reasonablen Form:
+  + partial ausführen von roberta.py zeigt das die startup phase recht lang ist (~ wie eine ganze epoche tatsächlichen Progress)
+  + komisch ist, dass der startup unabh. von dem vorhandensein der Daten wirkt, der ist immer ~10s lang egal
+  + vllt. müsste man hier nochmal untersuchen, ob da kein Fehler gemacht wurde
+    + perhaps habe ich zuviel vom pinpoint startup mitgemessen?
+  + "Going Green for Less"
+    + Outlined dass problem, dass carbon scheduling die (operativen) Kosten eines datacenters erhöht und Jobs auch länger dauern
+    + so ein task modell benutzt <https://github.com/umassos/GAIA/blob/main/src/task.py> (arrival, cpus, )
+    + Cloud anbieten haben spot, reserver und on demand instancen die man kaufen kann
+      + spot instanzen sind am günstigsten, könnnen aber auch abgeschossen werden vom anbieter
+      + ondemand ist am teuersten, hat aber auch das höchste carbon saving
+      + reserved sind früh gekaufte instanzen, welche dann mittel teuer sind aber weniger savings erlauben#
+    + bottom line ist, dass solch ein scheduling sinnvoll sein kann und auch cost/carbon savings erlaubt. Man muss abwiegen wv. reserved instanzen usw. man hat sowie wie lange die jobs sind welche man auf spot instanzen ausführt. Kurze jobs sind auch spot besser.
+    + Maschinen, die aus sind, werden als 0 power assumed!
+    + keine Hardwarelimitierung, da es um VMs in der cloud geht wird hier #hyperscale angenommen. Die CPU angaben in den traces beziehen sich also nur auf die Kosten zum schluss
+
+
++ Introduction (motivation, fragestellung, forschungsfragen!!!,), Background, related work (welche datasets mit was), methodik (=> ) / vincent sein cooler scheduler / sein coole simulation, ergebnisse / beschreibung experimente, ergebnisse (oder auch zusammen mit davor) viele bildchen, (optionally ein extra kapitel), future work
+
++ TODO bis nächstes mal: 
+  + Gliederung anlegen, 
+  + mini notes was jeweils reinkommt
+  
+## 03.06
+
++ "When Less is more, simplifiying metrics for carbon aware scheduling of computing workloads"
+  + es gibt verschiedene Metriken für carbon scheduling; die nehmen dann wahlweise active carbon from running servers | carbon from idling servers | carbon from hardware lifetime
+  + JOI-A ist eine gute metrik meist. Es gibt auch zwei metriken die sich eher für lokale data centers bzw. public clouds eignen.
+  + die Study-verfasser haben auch ein academic dataset rausgebracht
+
+## 04.06
+
++ ausprobieren von https://github.com/umassos/GAIA
+  + erste findings: in simulation_cluster.py werden die cli argumente in konkrete Klassen übersetzt
+  + run.run_experiment ist so der entry
+  + create_scheduler ist auch wichtig
+  + hat generell die gleichen shortcomings wie das wait a while paper
