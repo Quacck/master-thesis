@@ -807,3 +807,9 @@ LP:
   + run.run_experiment ist so der entry
   + create_scheduler ist auch wichtig
   + hat generell die gleichen shortcomings wie das wait a while paper
+  + schedulingeinheiten!
+  + carbs
+  + azure traces auswerten und das in das phases modell drücken?
+  + carbs rendering in gaia ausprobieren, so block mäßig,
+  + das mit nem kleinem (synthetischen) workload ausprobieren und das zwischen verschiedenen regionen oder jahreszeiten laufen lassen
+  + kekse mitbringen und damit traces bestechen und bekommen
