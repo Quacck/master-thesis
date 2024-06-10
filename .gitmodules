@@ -1,3 +1,7 @@
 [submodule "power-measurements/pinpoint"]
 	path = power-measurements/pinpoint
 	url = https://github.com/osmhpi/pinpoint.git
+[submodule "GAIA"]
+	path = GAIA
+	url = https://github.com/umassos/GAIA
+	branch = main
