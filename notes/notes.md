@@ -813,3 +813,44 @@ LP:
   + carbs rendering in gaia ausprobieren, so block mäßig,
   + das mit nem kleinem (synthetischen) workload ausprobieren und das zwischen verschiedenen regionen oder jahreszeiten laufen lassen
   + kekse mitbringen und damit traces bestechen und bekommen
+
+## 10.06
+
++ erweitern von GAIA
++ mini trace anlegen
+
+## 11.06
+
++ Bernhard nach score lab traces fragen:
+  + Schema:
+    +   JobId?
+    +   SubmitDate
+    +   Some kind of UserId (pseudonym? / hash)
+    +   (ExecutionDate)
+    +   JobLength
+    +   (Hardware Requirements)
+    +   (SubmissionTypes?)
+    +   Completion?
+  
+## 16.06
+
++ Reinstöbern in die Scorelab traces
+  + Fragen, ob start-times zu den einzelnen executions hinzugefügt werden können
+  + was ist TRES?
+  + es wirkt so, als ob zu jedem größerem task mehrere untertasks erstellt werden:
+    + ![alt text](image-11.png)
+    + das Timeout ist auf dem task
+    + completion statuses? slurm doku?
+    + TRES = trackable ressources, GRES
+    + die sachen darunter haben dann einen anderen Status
+    + einheten usw sind in der slurm doku
+
+## 17.06
+
++ Auswertungen von dem SlurmLog:
++ ![alt text](image-12.png)
+  + Es gibt Stundenabh. submision dates, welche bereits kind of der carbon curve folgen
++ ![alt text](image-13.png)
+  + Die meisten Jobs sind sehr kurz, es gibt aber auch einige Jobs welche sehr lange dauern
+  + Der großteil der Jobs wartet nur sehr kurz bis zur Execution, perhaps könnte man hier noch etwas mehr investigaten, was da los war?
+  + e.g. ob davor something interactive gemacht wurde, ob ob zu der Zeit einfach viel los war.
