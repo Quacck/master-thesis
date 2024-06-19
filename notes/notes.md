@@ -854,3 +854,9 @@ LP:
   + Die meisten Jobs sind sehr kurz, es gibt aber auch einige Jobs welche sehr lange dauern
   + Der großteil der Jobs wartet nur sehr kurz bis zur Execution, perhaps könnte man hier noch etwas mehr investigaten, was da los war?
   + e.g. ob davor something interactive gemacht wurde, ob ob zu der Zeit einfach viel los war.
++ ![alt text](image-14.png)
++ in der MA, wie ist der slurm log zu lesen, welche komischenwerte und felder sind da drinne, wie sind die zu verstehen, quellen
++ in dem slurmlog sind auch noch die ressourcenrequests drin, dazu könnte related work in  http://fengzhao.com/pubs/srikantaiah_hotpower08.pdf sein
++ Wissenschaftler hassen piecharts, lieber flame oder bar
++ logscale für basically alles / job lengths der buckets und so
++ -2 VPS programm phasen sheesh what a deal
