@@ -4,7 +4,7 @@ I head this could be a cool strategy to keep being productive when doing a maste
 
 + [x] fmnist.py ausmessen
 + [x] Roberta Annotated und auswerten
-+ [ ] Batch-Job Daten aus dem score-lab anfragen oder ähnliches
++ [x] Batch-Job Daten aus dem score-lab anfragen oder ähnliches
 + [ ] Implementierung von stages in der Simulation
 + [ ] Reading up on: https://dl.acm.org/doi/10.1145/3620666.3651374
 + [ ] Reading up on neuen hot carbon paper

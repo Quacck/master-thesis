@@ -860,3 +860,29 @@ LP:
 + Wissenschaftler hassen piecharts, lieber flame oder bar
 + logscale für basically alles / job lengths der buckets und so
 + -2 VPS programm phasen sheesh what a deal
+
+## 23.06
+
++ Systems Benchmarking Crimes: https://gernot-heiser.org/benchmarking-crimes.html
+  + paper sollte in good faith geschrieben werden, vermeide deceptions um Ergebnisse besser aussehen zu lassen
+  + das Benutzen von Subsets von daten sollte gut begründet werden, um nicht als bad-faith / lazyness ausgelegt zu werden
+    + der scorelab-log sollte deshalb gut erklärt werden (sacct, siehe den command den Berhard geschrieben hat)
+    + warum sind die ausgewählten jobs sinnvoll?
+  + absolute und relative numbers sind beide sinnvoll, idealerweise sollte man hier punkt 1 beachten, und die argumentation aus sicht des lesers sehen
+  + reference point muss sinnvoll sein. In meinem case wäre eine baseline entweder das tatsächlich geschedulde oder ein asap-fifo scheduling
+    + die prior work der related work ist ein unfairer vergleich
+    + ein anderer reference point könnte auch ein hindsight-oracle scheduling sein (z.B. mit )
+  + sollte ich noch einen smarten scheduler bauen, welche some kind of predictions macht, sollte man training set und evaluations set **disjunkt** halten
+  + nicht nur gegen meine eigene implementation vergleichen (punkt D2)
+  + *competitors* fair vergleichen, d.h. deren beste ergebnisse benutzen, die ausführung dokumentieren
+  + gegen state of the art vergleichen, nicht gegen outdated-prior work (= improper baseline)
+  + evaluation platform dokumentieren
++ https://gernot-heiser.org/style-guide.html könnte vllt. auch noch interessant sein
++ TODOs aus dem Meeting:
+  + [x] gg. Trace gantt und carbon verbrauch (energie und carbon können noch fix ein)
+    + carbon ist schon implementiert
+  + [x] gernot heiser gelsen haben und zsf. können
+  + [x] !BONUSPOINTS! fix werte zu funktion umschreiben, e.g. linear steigend, stepfunktion usw, 
+  + [ ] extra bonuspunkte: job hat phasen mit eig. funktionen
+  + [ ] noch mehr bonuspunnkte: jobs haben versch. ausführungen+phashen; perhaps job hat programmnamen + lookup zu programname->phasen
++ compute_carbon_consumption
