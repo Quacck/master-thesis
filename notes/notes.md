@@ -883,6 +883,19 @@ LP:
     + carbon ist schon implementiert
   + [x] gernot heiser gelsen haben und zsf. können
   + [x] !BONUSPOINTS! fix werte zu funktion umschreiben, e.g. linear steigend, stepfunktion usw, 
-  + [ ] extra bonuspunkte: job hat phasen mit eig. funktionen
-  + [ ] noch mehr bonuspunnkte: jobs haben versch. ausführungen+phashen; perhaps job hat programmnamen + lookup zu programname->phasen
-+ compute_carbon_consumption
+  + [?] extra bonuspunkte: job hat phasen mit eig. funktionen
+  + [?] noch mehr bonuspunkte: jobs haben versch. ausführungen+phashen; perhaps job hat programmnamen + lookup zu programname->phasen
++ Jobs sind jetzt in GAIA ausführbar und werden geplotted, carbon_costs waren schon implementiert
++ Es gibt jetzt versch. energy profiles die mit namen in dem task-traces hinzugefügt werden können
+  + die sind jeweils eine funktion mit sekunden_in_job als parameter
+  + ist grade als python funktion implementiert, weil easy to implement and reasonably fast
+  + so richtig verschiedene phasen gibt es noch nicht.
+  + my fricking god, I just spent 30 minutes debugging because there was an empty space in my csv 🤡 *honk honk* 🤡
+  + Ideas / Fragen:
+    + energy-draw der jobs plotten, das mit der carbon curve zusammenrechnen und ein cummulative plotten
+    + zZ ist zwar die energy consumption in der berechnung drin, wird aber noch nicht gelogged
+    + Perhaps könnte es cool sein, some kind of UI für das testbed zu haben
+    + man müsste wahrscheinlich einen energy-demand-aware-scheduler noch zum vergleich hinzufügen
+    + hardware limitationen als parameter im testbed könnten perhaps schwer sein, zum einen, da die daten das praktisch kaum / nicht hergeben und zum anderen, weil dann alle bisherigen algorithmen in dem scheduling dann von den anderen gescheduleden tasks abh. wären
+    + (wie immer) man müsste sich gedanken machen, wie ein realistisches task-modell aussehen könnte. In dem scorelab-trace werden viele jobs abgebrochen oder failen. zZ ist der scheduler für start+stop zuständig. perhaps wäre ein sinnvolleres modell, dass tasks sich selber suspenden können oder sagen können, wenn sie gleich weniger power oder mehr power benutzen werden. Dann könnte man perhaps some kind of current-state vs. carbon-utopia vergleich ziehen, in dem alle programme sich um ihr carbon kümmern werden. Wie würden sich die programme um ihr carbon scheduling kümmern? Was passiert da mit zB concurrency zwischen jobs... ?
+    + github repo public oder eher private + collab
