@@ -3,5 +3,5 @@
 	url = https://github.com/osmhpi/pinpoint.git
 [submodule "GAIA"]
 	path = GAIA
-	url = https://github.com/umassos/GAIA
+	url = https://github.com/Quacck/GAIA
 	branch = main
