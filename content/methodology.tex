@@ -4,3 +4,16 @@ Modellbeschreibung, welches Modell verfolgen meine Workloads?
 Workloads haben stages, begründung via der power measurements an den sample ML workloads
 Softwarearchitekturbeschreibung
 wie die experiment ausführen / format usw usw
+
+\section{Annahmen}
+
+\begin{itemize}
+    \item Joblängen sind bekannt
+    \item Jobs können zeitlich verschoben werden (begründet daraus, dass sie als Batch Jobs submitted werden, andere Jobs werden hierbei nicht betrachtet)
+    \item User geben dabei an, wie lange der Job verschoben werden darf
+    \item Die carbon curve auf dem electrical grid ist für kurze Zeiträume in der Zukunft bekannt
+    \item Die Hardware ist zZ nicht begrenzt. Das war in der related work auch nicht so. Eigentlich wäre es spannend sich das anzuschauen, allerdings sind die bisherigen Scheduler halt darauf garnicht gemünzt, da werden alle Jobs unabh. voneinander gescheduled. Man könnte das via publicCloud argumentieren, allerdings wäre das questionable, in wie fern der scorelab trace benutzt werden kann (da das ja auf in einem lokalem datacenter läuft)
+    \item TODO: Joblängen sollten dem Scheduler nicht bekannt sein. Die Workloads aus GAIA werden allerdings so gescheduled als ob man perfekte Knowledge hat. Das reicht zwar für ein upper bound an carbon savings, ist aber nicht sehr realistisch.  
+    \item Jobs haben auch einen dynamischen Energieverbrauch, der sich über die Zeit hin ändert. Diese Funktion ist nur von de Zeit abh. und wird vom Nutzer definiert.
+    \item Jobs werden immer completen, Fehler / Nutzercancellations werden ausgeklammert.
+\end{itemize}
