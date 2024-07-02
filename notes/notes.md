@@ -919,3 +919,9 @@ LP:
   + meine Annahmen mal in meine MA schreiben
   + einen neuen Scheduler bauen, welcher somehow den energy demand benutzen kann
   + scorelab traces zu GAIA traces übersetzen
+# 02.07.24
++ Scorelab traces sind jetzt zwar benutzbar, allerdings crasht die simulation bei sehr langen jobs (zB.: 2449207.0,289740.0,16,FAILED), der job geht 80h lang und:
+  + ![alt text](image-17.png)
+  + ![alt text](image-18.png)
+  + Nagut, da hätte man auch dran denken können: Der Scorelab trace geht nen Monat während bei default das carbon Model in GAIA auch ein Monat lang ist
+  + stupid fix for now war, das carbonmodel nen monat länger aus dem .csv zu nehmen
