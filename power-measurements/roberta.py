@@ -11,14 +11,24 @@ from transformers import AutoModelForSequenceClassification, AutoConfig, Trainer
 from transformers import TrainingArguments, Trainer
 import logging
 import argparse
-
+import os
 
 class LogEpochCallback(TrainerCallback):
     def on_epoch_end(self, args, state: TrainerState, control: TrainerControl, **kwargs):
         logging.info(f"Epoch {state.epoch} ended. Steps: {state.global_step}")
+        print(state.epoch)
+        print(parser_args.stop_after_epoch)
+        if (state.epoch == parser_args.stop_after_epoch):
+            logging.info(f"Exit")
+            os._exit(0)
+            
 
     def on_save(self, args, state: TrainerState, control: TrainerControl, **kwargs):
         logging.info(f"Epoch {state.epoch}. Saved. Steps: {state.global_step}")
+        if (state.epoch == parser_args.stop_after_epochs_save):
+            logging.info(f"Exit")
+            os._exit(0)
+
 
     def on_train_begin(self, args, state: TrainerState, control: TrainerControl, **kwargs):
         logging.info('Start training')
@@ -32,6 +42,8 @@ class LogEpochCallback(TrainerCallback):
 
 parser = argparse.ArgumentParser(description="Sample ML Program")
 parser.add_argument('--resume_from_checkpoint', action=argparse.BooleanOptionalAction, help='Resume from checkpoints')
+parser.add_argument('--stop_after_epoch', help='Number of epochs to stop after. Set to (default) of -1 to not stop', type=int, default=-1)
+parser.add_argument('--stop_after_epochs_save', help='Stop after some epoch was saved. Set to (default) of -1 to not stop', type=int, default=-1)
 
 parser_args = parser.parse_args()
 

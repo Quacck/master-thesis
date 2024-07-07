@@ -1,0 +1,9 @@
+1720358679.216835, start program
+1720358691.147484, after load data
+1720358694.907796, Start training
+1720358702.843258, Epoch 1.0 ended. Steps: 12
+1720358704.552555, Evaluate
+1720358706.212519, Epoch 1.0. Saved. Steps: 12
+1720358713.583285, Epoch 2.0 ended. Steps: 24
+1720358715.094709, Evaluate
+1720358716.762876, Epoch 2.0. Saved. Steps: 24
