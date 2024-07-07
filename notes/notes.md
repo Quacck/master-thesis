@@ -925,3 +925,15 @@ LP:
   + ![alt text](image-18.png)
   + Nagut, da hätte man auch dran denken können: Der Scorelab trace geht nen Monat während bei default das carbon Model in GAIA auch ein Monat lang ist
   + stupid fix for now war, das carbonmodel nen monat länger aus dem .csv zu nehmen
+  + ![alt text](image-18.png) ist mal komplett useless weil das eben 40k einträge sind
+  + lieber power consumption somehow in das csv :>
+  + energy-demand oracle-scheduler 
+  + energy-demand threshold-scheduler
+  + zum messen vom overhead: program killen vor safe, und einmal messen mit safe
+  + messen bis daten geladen sind || 
+  + fft frequenzbandanalyse perhaps mal kurz machen 
+  + maybe die power measurements einmal mit em filter bearbeiten sodass das nicht so noisy wirkt
+  + dynamic time warping
+  + power measurements mal übereinanden oder aufaddieren und durchschnitt bilden
+  + power grid fluktutiert eher weniger, man könnte auch argumentieren, dass das #cloud-mäßig örtlich lokaler 
+  
