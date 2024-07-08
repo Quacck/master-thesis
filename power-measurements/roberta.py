@@ -1,3 +1,4 @@
+import logging.handlers
 from transformers import AutoModel
 from datasets import load_dataset
 import torch
@@ -13,22 +14,21 @@ import logging
 import argparse
 import os
 
+def exit_elegantly():
+    logging.info(f"Exit")
+    logging.shutdown()
+    os._exit(0)
+
 class LogEpochCallback(TrainerCallback):
     def on_epoch_end(self, args, state: TrainerState, control: TrainerControl, **kwargs):
         logging.info(f"Epoch {state.epoch} ended. Steps: {state.global_step}")
-        print(state.epoch)
-        print(parser_args.stop_after_epoch)
         if (state.epoch == parser_args.stop_after_epoch):
-            logging.info(f"Exit")
-            os._exit(0)
-            
+            exit_elegantly()
 
     def on_save(self, args, state: TrainerState, control: TrainerControl, **kwargs):
         logging.info(f"Epoch {state.epoch}. Saved. Steps: {state.global_step}")
         if (state.epoch == parser_args.stop_after_epochs_save):
-            logging.info(f"Exit")
-            os._exit(0)
-
+            exit_elegantly()
 
     def on_train_begin(self, args, state: TrainerState, control: TrainerControl, **kwargs):
         logging.info('Start training')
@@ -50,6 +50,7 @@ parser_args = parser.parse_args()
 SEED = 42
 
 logging.basicConfig(filename='events.csv', level=logging.INFO, format='%(created)f, %(message)s')
+
 logging.info('start program')
 
 dataset = load_dataset("ag_news", cache_dir="./roberta-data")
@@ -124,3 +125,5 @@ trainer = Trainer(
 )
 trainer.train(resume_from_checkpoint=parser_args.resume_from_checkpoint)
 trainer.evaluate()
+
+logging.info(f"Exit")
