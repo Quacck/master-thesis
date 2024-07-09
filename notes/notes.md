@@ -937,3 +937,12 @@ LP:
   + power measurements mal übereinanden oder aufaddieren und durchschnitt bilden
   + power grid fluktutiert eher weniger, man könnte auch argumentieren, dass das #cloud-mäßig örtlich lokaler 
   
+# bis 08.07
++ neue roberta.py measurements wenn nach epoche 2 training und stop  
++ Die bisherigen Measurements waren nur so semi gut, die baseline war nicht wirklich gut erkennbar wenn man vor und nach dem experiment noch weitermisst:
++ ![alt text](image-19.png) (das ist power-measurements/measurements_roberta_full_0708182943/plot.png)
++ Problem war, dass ich als baseline ~55k gemessen hab, scheinbar gab es zu dem Zeitpunkt allerdings schon ~90k als 
++ Einheit: https://marcelgarus.dev/jupyter-energy; 10mW  
+  
+  
+
