@@ -42,15 +42,14 @@ cpupower frequency-set --max ${MAXFREQ} &>/dev/null
 
 touch ${OUTPUT}
 
-# 
-# for (( index=0; index<${REPETITIONS}; index++ )); do
-#     run_experiment ".venv/bin/python3.12 roberta_only_imports.py" "imports_only"
-# done
-
 for (( index=0; index<${REPETITIONS}; index++ )); do
-    run_experiment "./fancy_sleep.sh" 'sleep' # well this is crazy, if we use single quotes, its always taken as a literal string
+    run_experiment ".venv/bin/python3.12 roberta_only_imports.py" "imports_only"
 done
 
+# for (( index=0; index<${REPETITIONS}; index++ )); do
+#     run_experiment "./fancy_sleep.sh" 'sleep' # well this is crazy, if we use single quotes, its always taken as a literal string
+# done
+# 
 # for (( index=0; index<${REPETITIONS}; index++ )); do
 #     rm -r roberta-data
 #     rm -r checkpoints
