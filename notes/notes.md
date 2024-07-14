@@ -937,3 +937,26 @@ LP:
   + power measurements mal übereinanden oder aufaddieren und durchschnitt bilden
   + power grid fluktutiert eher weniger, man könnte auch argumentieren, dass das #cloud-mäßig örtlich lokaler 
   
+# bis 08.07
++ neue roberta.py measurements wenn nach epoche 2 training und stop  
++ Die bisherigen Measurements waren nur so semi gut, die baseline war nicht wirklich gut erkennbar
++ ![alt text](image-19.png) (das ist power-measurements/measurements_roberta_full_0708182943/plot.png)
++ Problem war, dass ich als baseline ~55k gemessen hab, scheinbar gab es zu dem Zeitpunkt allerdings schon ~90k als 
++ Einheiten aus dem Messgerät: https://marcelgarus.dev/jupyter-energy; 10mW. Das hätte man bestimmt auch ohne rausbekommen können
++ ![alt text](image-20.png)
++ ![alt text](image-21.png) Sone rolling window trendline ist nicht super pretty, kann man aber erstmal benutzen
++ Der höhere Power draw nach den experimenten könnten an Powerstate liegen?
+  + TODO: das Messscript um https://developer.nvidia.com/blog/advanced-api-performance-setstablepowerstate/#recommended erweitern 
++ das stop / save+stop und resume experiment müsste man nochmal verknüpfen und dann den overhead ausrechnen 
++ mit konstanten funktionen pro phase approximieren, implementation weitermachen 
+  
++ hausaufgaben neu: overhead ausrechnen
++ "k-fold-cross validation" zw. messdaten und dem modell
+  + idee: beweisen dass das modell zu den messwerten passt
+
+# 13.07
++ wieviel overhead haben wir durch das abbrechen und speichern + resumen?
++ Experiment: der overhead vs. es nicht zu unterbrechen wäre 
+  + kompletter durchlauf einmal
+  + bis epoch X, speicher, resumen
+  + bix epoch X, nicht speichern, resumen 
