@@ -3,6 +3,8 @@ power-measurements/data-new
 power-measurements/checkpoints
 power-measurements/checkpoints-saved
 traces
+mypy.ini
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

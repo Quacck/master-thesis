@@ -960,3 +960,22 @@ LP:
   + kompletter durchlauf einmal
   + bis epoch X, speicher, resumen
   + bix epoch X, nicht speichern, resumen 
+
+> Running unstopped costs 13.0 kJ on Average with an std of 0.46 \
+> Running with save+resume costs 12.81 kJ on Average with an std of 0.4 \
+> Running with dontsave+resume costs 12.81 kJ on Average with an std of 0.4 
+
+  + 🤡 ? Das ist nicht gut
+  + A clown indeed, war ein copypaste fehler
+
+> Running unstopped costs 13.0 kJ on Average with an std of 0.46 \
+> Running with save+resume costs 13.31 kJ on Average with an std of 0.1 \
+> Running with dontsave+resume costs 15.18 kJ on Average with an std of 0.3
+
+> an extra start costs 0.79 on avg, resulting in 0.12361460859545215 unexplained kJ \
+> starting and doing one more epoch costs 3.06 on avg, resulting in 0.5277944079717867 unexplained kJ \
+> t_state: -3.443396146449884, p_val: 0.0073509717447174435, with ɑ =0.05 we can  reject the Null-Hypothesis that their means don't differ significantly \
+> t_state: -5.423881528661107, p_val: 0.00041970735324757606, ɑ can reject the Null-Hypothesis that their means don't differ significantly
+
+  + ❓❓ Ich hätte eig. gedacht, dass sie nicht significantly unterschiedlich sind ❓❓ 
+  + komisch, der mean der beiden is haben 1% unterschied
