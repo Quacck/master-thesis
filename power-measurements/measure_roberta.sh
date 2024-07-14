@@ -40,45 +40,67 @@ REPETITIONS=10
 cpupower frequency-set --min ${MAXFREQ} &>/dev/null
 cpupower frequency-set --max ${MAXFREQ} &>/dev/null
 
+# We would like to set the clock rates of our gpus: (because otherwise we might be stuck on
+# a higher clock rate after executing the program)
+# https://developer.nvidia.com/blog/advanced-api-performance-setstablepowerstate/#recommended
+# nvidia-smi --query-supported-clocks=timestamp,gpu_name,gpu_uuid,memory,graphics --format=csv
+# says I run run my NVIDIA GeForce GTX 1070's Memory @4104, 3902, 810 and 405 MHz
+# the compute units can be run fairly freely between 2037 MHz and 140 Mhz
+# we WOULD set the clock rates now, if it worked
+# "Setting applications clocks is not supported for GPU 00000000:0B:00.0."
+# There seems to be an issue in the drivers right now:
+# https://github.com/NVIDIA/open-gpu-kernel-modules/issues/483
+# as this isn't the focus, we'll skip this step and remember to discuss it later
+
 touch ${OUTPUT}
 
 for (( index=0; index<${REPETITIONS}; index++ )); do
-    run_experiment ".venv/bin/python3.12 roberta_only_imports.py" "imports_only"
+    run_experiment "./fancy_sleep.sh" 'sleep' # well this is crazy, if we use single quotes, its always taken as a literal string
 done
 
-# for (( index=0; index<${REPETITIONS}; index++ )); do
-#     run_experiment "./fancy_sleep.sh" 'sleep' # well this is crazy, if we use single quotes, its always taken as a literal string
-# done
-# 
-# for (( index=0; index<${REPETITIONS}; index++ )); do
-#     rm -r roberta-data
-#     rm -r checkpoints
-#     run_experiment ".venv/bin/python3.12 roberta.py --no-resume_from_checkpoint" "roberta_full"
-# done
-# 
-# # Run roberta.py partially, data is already downloaded and we have a first checkpoint to continue from
-# for (( index=0; index<${REPETITIONS}; index++ )); do
-#     rm -r "checkpoints"
-#     mkdir "checkpoints"
-#     cp -r checkpoints-saved/checkpoint-12 checkpoints
-#     run_experiment ".venv/bin/python3.12 roberta.py --resume_from_checkpoint" "roberta_partial"
-# done
-# 
-# # Overhead experiments
-# STOP=2
-# 
-# for (( index=0; index<${REPETITIONS}; index++ )); do
-#     rm -r roberta-data
-#     rm -r checkpoints
-#     run_experiment ".venv/bin/python3.12 roberta.py --stop_after_epoch ${STOP}" "roberta_stop_epoch_${STOP}"
-# done
-# 
-# 
-# for (( index=0; index<${REPETITIONS}; index++ )); do
-#     rm -r roberta-data
-#     rm -r checkpoints
-#     run_experiment ".venv/bin/python3.12 roberta.py --stop_after_epochs_save ${STOP}" "roberta_stop_saved_${STOP}"
-# done
+# This would be the baseline energy need if we do not stop+resume the ML training
+for (( index=0; index<${REPETITIONS}; index++ )); do
+    rm -r roberta-data
+    rm -r checkpoints
+    run_experiment ".venv/bin/python3.12 roberta.py --no-resume_from_checkpoint" "roberta_full"
+done
+
+STOP=2
+
+# Measure a stop + resume strategy
+for (( index=0; index<${REPETITIONS}; index++ )); do
+    rm -r roberta-data
+    rm -r checkpoints
+    run_experiment ".venv/bin/python3.12 roberta.py --stop_after_epochs_save ${STOP}" "roberta_stop_after_saving_epoch_${STOP}_${index}"
+
+    sleep 120
+
+    run_experiment ".venv/bin/python3.12 roberta.py --resume_from_checkpoint" "roberta_continue_after_saving_${STOP}_${index}"
+
+    sleep 120
+done
+
+# Lets also run an experiment where we don't save and then resume, this can probably be derive from the previous experiment, but lets double check that
+for (( index=0; index<${REPETITIONS}; index++ )); do
+    rm -r roberta-data
+    rm -r checkpoints
+    run_experiment ".venv/bin/python3.12 roberta.py --stop_after_epoch ${STOP}" "roberta_stop_without_saving_epoch_${STOP}_${index}"
+
+    sleep 120
+
+    run_experiment ".venv/bin/python3.12 roberta.py --resume_from_checkpoint" "roberta_continue_after_not_saving_${STOP}_${index}"
+
+    sleep 120
+done
+
+rm -r roberta-data
+rm -r checkpoints
+
+# This is just for interest, importing all the modules seems to take quite some time and energy too
+# we could use this to later validate the other runs 
+for (( index=0; index<${REPETITIONS}; index++ )); do
+    run_experiment ".venv/bin/python3.12 roberta_only_imports.py" "imports_only"
+done
 
 cpupower frequency-set --min ${MINFREQ} &>/dev/null
 cpupower frequency-set --max ${MAXFREQ} &>/dev/null
