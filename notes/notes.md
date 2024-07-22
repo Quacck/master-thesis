@@ -979,3 +979,16 @@ LP:
 
   + ❓❓ Ich hätte eig. gedacht, dass sie nicht significantly unterschiedlich sind ❓❓ 
   + komisch, der mean der beiden is haben 1% unterschied
+
++ modell erstmal nach einen trace machen, fehler ausrechnen, dann weitere traces
++ domain / scheduling / 
+
+# 22.07
+
++ Fehlerbestimmung zw. model und den messwerten:
+  + ![alt text](image-22.png)
+  + ist nicht so gut einordbar
++ Soooo trommelwirbel; implementierung in der Simulation
+  + generisches ML profil: 
+  + ![alt text](image-23.png)
+  

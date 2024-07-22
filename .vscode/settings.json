@@ -1,3 +1,11 @@
 {
-    "python.pythonPath": "/home/vincent/Documents/Masterarbeit/master-thesis/GAIA/.venv/bin/python"
+    "python.pythonPath": "/home/vincent/Documents/Masterarbeit/master-thesis/GAIA/.venv/bin/python",
+    "editor.quickSuggestions": {
+        "other": "on",
+        "comments": "off",
+        "strings": "off"
+    },
+    "editor.quickSuggestionsDelay": 5,
+    "mypy.runUsingActiveInterpreter": true,
+    "mypy.debugLogging": true
 }
