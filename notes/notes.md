@@ -991,4 +991,37 @@ LP:
 + Soooo trommelwirbel; implementierung in der Simulation
   + generisches ML profil: 
   + ![alt text](image-23.png)
-  
++ ganzviel typing von dem projekt. Mal gucken ob sich das gelohnt hat lol
+
+# 23.07
++ Implementierung oracle scheduler:
+  + vergleich von non-interruptable-phasen-modell vs. non-interruptable-konstantes-modell
+  + gleicher Energieverbrauch via averaging für das konstante Modell
+  + ![alt text](phases-vs-constant.png)
+
+```
+The phased-model used 12974.4 J
+The averaged-model used 12975.8 J
+```
+
++ which I guess is pretty close
++ try to schedule a phased job against a same energy-job:
+
+# 29.07
++ noch 2.5 Monate :>
++ Cross-Validate das Model:
+  + https://www.youtube.com/watch?v=fSytzGwwBVw
+  + ![alt text](image-26.png)
+  + ![alt text](image-27.png)
+  + `Cross Validation with k=10 has an RMSE of 39.32 on average.`
+  + Wirkt erstmal ok, die kW Werte sind in einer range von 50 bis 250, so that'll do for now
+
+# 30.07
++ ![alt text](image-29.png)
++ sieht einfach nicht so richtig aus
++ ![alt text](image-30.png)
++ sieht etwas besser aus, ist aber komisch da ich nicht weiss woher der 2h offset kommt
++ Das Problem waren Zeitzonen <3
++ Plots sind das power-aware-oracle-non-interrupt scheduling
++ Wie in GAIA ermöglichen mehr Wartezeiten mehr save potenzial
++ ![alt text](image-31.png), ![alt text](image-32.png), ![alt text](image-33.png)

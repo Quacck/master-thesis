@@ -4,13 +4,15 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+    
         {
-            "name": "Python Debugger: Current File",
+            "name": "Model vs. Constant from Model",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "cwd": "${fileDirname}/.."
+            "cwd": "${fileDirname}/..",
+            "args": ["--scheduling-policy", "carbon", "--task-trace", "phased", "--dynamic-power-draw", "--carbon-policy", "oracle", "--waiting-times", "48", "--repeat"]
         }
     ]
 }
