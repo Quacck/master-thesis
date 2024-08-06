@@ -7,5 +7,8 @@
     },
     "editor.quickSuggestionsDelay": 5,
     "mypy.runUsingActiveInterpreter": true,
-    "mypy.debugLogging": true
+    "mypy.debugLogging": true,
+    "python.analysis.extraPaths": [
+        "./GAIA/src"
+    ]
 }

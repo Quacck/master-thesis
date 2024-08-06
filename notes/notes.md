@@ -1025,3 +1025,100 @@ The averaged-model used 12975.8 J
 + Plots sind das power-aware-oracle-non-interrupt scheduling
 + Wie in GAIA ermöglichen mehr Wartezeiten mehr save potenzial
 + ![alt text](image-31.png), ![alt text](image-32.png), ![alt text](image-33.png)
++ Das ist ganz cool, jetzt bräuchte ich ein Phasenmodell welches den interrupt-stop-resume usecase unterstützen kann
+  + konkret: 
+    + Jobs welche starten brauchen einen startup jedes mal (der kann erstmal immer gleich sein)
+    + Dann gibt es nacheinander Phasen:
+      + Eine Phase sollte auch Unterphasen haben, erst wenn alle Unterphasen durchlaufen sind ist die obere Phase abgeschlossen
+      + Bekommt ein Job nicht genug laufzeit vor einem stop, muss die Phase nochmal durchlaufen werden
+      + Ansonsten werden phasen vollständige Phasen nacheinander durchlaufen
+      + Perhaps something in richtung https://pypi.org/project/python-statemachine/ ?
+      + Lets say the schema is very simple:
+        + jedes Dict ist eine Phase, ein Array sind eine Menge an Phasen, das kann nun Geschachtelt werden
+```
+roberta_phases: List[Phase] = [
+    {'name': 'Start', 'duration': 5.349, 'power': 59.9},
+    {'name': 'Finish Imports', 'duration': 12.36, 'power': 53.77},
+    {'name': 'after load data', 'duration': 5.7513, 'power': 63.17}, 
+    {'name': 'Start training', 'duration': 8.171, 'power': 221.93}, 
+    {'name': 'Epoch 1.0 ended', 'duration': 1.5477, 'power': 134.0}, 
+    {'name': 'Evaluate5', 'duration': 2.720, 'power': 105.1}, 
+    {'name': 'Epoch 1.0. Saved', 'duration': 7.437, 'power': 235.37}, 
+    {'name': 'Epoch 2.0 ended', 'duration': 1.5130, 'power': 139.88}, 
+    {'name': 'Evaluate', 'duration': 2.698, 'power': 114.09}, 
+    {'name': 'Epoch 2.0. Saved', 'duration': 7.430, 'power': 239.19},
+    {'name': 'Epoch 3.0 ended', 'duration': 1.4680, 'power': 143.62},
+    {'name': 'Evaluate', 'duration': 2.679, 'power': 112.46},
+    {'name': 'Epoch 3.0. Saved', 'duration': 7.453, 'power': 238.28},
+    {'name': 'Epoch 4.0 ended', 'duration': 1.5398, 'power': 141.87},
+    {'name': 'Evaluate', 'duration': 2.669, 'power': 112.87},
+    {'name': 'Epoch 4.0. Saved', 'duration': 7.455, 'power': 236.59},
+    {'name': 'Epoch 5.0 ended', 'duration': 1.514, 'power': 146.69},
+    {'name': 'Evaluate', 'duration': 2.668, 'power': 107.83},
+    {'name': 'End training', 'duration': 1.5576, 'power': 123.31}
+]
+```
+
+wird zu:
+
+```
+[
+  [
+    {'name': 'Start', 'duration': 5.349, 'power': 59.9},
+    {'name': 'Finish Imports', 'duration': 12.36, 'power': 53.77},
+    {'name': 'after load data', 'duration': 5.7513, 'power': 63.17}, 
+    {'name': 'Start training', 'duration': 8.171, 'power': 221.93}, 
+  ], 
+  [
+    [
+      {'name': 'Epoch n ended', 'duration': 1.5477, 'power': 134.0}, 
+      {'name': 'Evaluate n', 'duration': 2.720, 'power': 105.1}, 
+      {'name': 'Epoch n Saved', 'duration': 7.437, 'power': 235.37, type': 'checkpoint'}, 
+    ] * ANZAHL_EPOCHEN
+  ], 
+  {'name': 'End training', 'duration': 1.5576, 'power': 123.31}
+]
+```
+  + Maybe? 
+  + Meeting: CrossValidation und non-interrupt scheduling ist fertig
+    + "Mean Absolute Error", maybe beides angeben. 40W sehen nicht so schlimm aus wie auf dem Bild
+  + Baustellen: **suspend-resume**-scheduling (dafür zZ eine StateMachine die die Phasen als State abbildet und den power draw zurückgeben kann)
+  + Für due effort sollte man echt nocht ne 2. Powermessung machen, ggf. auf richtigen Servern,
+    + wahrscheinlich nicht ganz trivial, und brauch man auch nicht unbedingt 
+    + keine hardware zZ in der Simulation :<
+  + Große Baustelle MA Schreiben lols
+  + *sync* um etwas auf die Festplatte zu forcen
+  + nvmi tracen? wann ist meine GPU wieder ready?
+  + coldstart simulieren, something pages?
+  + proc sys vm drop_cache stackexhange
+  + Vergleich zu bishr. Literatur und dann eine Tabelle mit kreuzen und häkchen
+  + 60 bis 70 Seiten
+
+# 05.08.07
+
++ Well maybe im making it too hard with the state machine. Lets just assume full knowledge in our stop-resume-scheduler
++ => versuch, das zB mit https://github.com/coin-or/pulp zu optimieren
++ 
+```
+foo_phases_spec: PhaseSpec = {
+    'startup':   [
+        {'name': 'Start', 'duration': 5.349, 'power': 59.9},
+        {'name': 'Finish Imports', 'duration': 12.36, 'power': 53.77},
+        {'name': 'after load data', 'duration': 5.7513, 'power': 63.17}, 
+        {'name': 'Start training', 'duration': 8.171, 'power': 221.93}, 
+    ],
+    'work': [
+      {'name': 'Epoch n ended', 'duration': 1.5477, 'power': 134.0}, 
+      {'name': 'Evaluate n', 'duration': 2.720, 'power': 105.1}, 
+      {'name': 'Epoch n Saved', 'duration': 7.437, 'power': 235.37, 'is_checkpoint': True}, 
+    ] * 5, 
+    'end': [
+        {'name': 'End training', 'duration': 1.5576, 'power': 123.31}
+
+    ]
+}
+``` 
+
++ let's see if this actually works:
++ ![alt text](image-34.png)
++ good enough maybe
