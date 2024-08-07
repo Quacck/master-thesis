@@ -1094,7 +1094,7 @@ wird zu:
   + Vergleich zu bishr. Literatur und dann eine Tabelle mit kreuzen und häkchen
   + 60 bis 70 Seiten
 
-# 05.08.07
+# 05.08
 
 + Well maybe im making it too hard with the state machine. Lets just assume full knowledge in our stop-resume-scheduler
 + => versuch, das zB mit https://github.com/coin-or/pulp zu optimieren
@@ -1122,3 +1122,15 @@ foo_phases_spec: PhaseSpec = {
 + let's see if this actually works:
 + ![alt text](image-34.png)
 + good enough maybe
+
+# 07.08
+
++ ein stop-resume scheduling könnte so aussehen;
++ ![alt text](image-35.png)
++ Problem ist, das das wirklich lange dauert (~4 minuten, bei )
+```
+DEADLINE: int =  1000
+WORK_LENGTH = 200 # mockTask.task_length  # Processing time for the job
+STARTUP_LENGTH = 10 #int(mockPowerFunction.duration_startup)  # Startup time for the job
+```
++ Die Laufzeit wächst allerdings echt schlecht mit höherer deadline und größeren phasen
