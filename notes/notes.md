@@ -1134,3 +1134,5 @@ WORK_LENGTH = 200 # mockTask.task_length  # Processing time for the job
 STARTUP_LENGTH = 10 #int(mockPowerFunction.duration_startup)  # Startup time for the job
 ```
 + Die Laufzeit wächst allerdings echt schlecht mit höherer deadline und größeren phasen
++ https://www.gurobi.com/ bietet LP Optimizer, welche auch vorher abbrechen können und zwischenergebnisse ausgeben
+  + das hat auch ne academic license

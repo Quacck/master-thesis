@@ -1,5 +1,25 @@
 \chapter{Methodology}
 
+- Bisherige Arbeiten hatten die Annahme, das Jobs eine bestimmte länge haben und eine konstante Leistung benötigen.
+- Das Stoppen und Resumen von Jobs erzeugte keinen Overhead. 
+- Wir wollen zeigen, dass diese Annahmen für ausgewählte workloads nicht ausreihen, beispielsweise für ML trainings, welche QUELLE Prozent der Task in einem Compute Center ausmachen.
+- Dazu Messen wir die Leistungsaufnahme eines ML trainings (https://huggingface.co/docs/transformers/en/model_doc/roberta) und untersuchen wie sich der Workload bzgl. stop-resume verhält.
+
+\section{Leistungsmessungen}
+
+\begin{itemize}
+    \item Warum ist das interessant
+    \item Wie habe ich die Messungen ausgeführt (MCP beschreiben, sowie pinpoint als Schnittstelle)
+    \item Experimentier-parameter (?), also wodurch versuche ich sicherzustellen, dass meine Messungen auch sinn machen / reproduzierbar sind usw usw.
+    \item Wie habe ich das ausgewertet, schöne graphs zeigen
+\end
+
+Da wir nun eine Vorstellung haben, wie realistischere Jobs aussehen, könnten wir davon ein Model ableiten:
+(Das sieht so aus wie meine .csv Schemas), jetzt könnten wir zeigen, wie sich die Leistungsaufnahme zw. dem Model-Job und dem realen Job unterscheidet
+Hier kämen auch die ganzen Fehlerbetrachtungen rein (cross-validation / absoluter Fehler),
+auch zeigen, dass das mit stop resume funktioniert.
+
+
 Modellbeschreibung, welches Modell verfolgen meine Workloads?
 Workloads haben stages, begründung via der power measurements an den sample ML workloads
 Softwarearchitekturbeschreibung
