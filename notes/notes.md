@@ -1136,3 +1136,9 @@ STARTUP_LENGTH = 10 #int(mockPowerFunction.duration_startup)  # Startup time for
 + Die Laufzeit wächst allerdings echt schlecht mit höherer deadline und größeren phasen
 + https://www.gurobi.com/ bietet LP Optimizer, welche auch vorher abbrechen können und zwischenergebnisse ausgeben
   + das hat auch ne academic license
+
+ # 13.08
++ lol Abgabe in 2 monaten
++ Breite zuerst, iterativer prozess
++ zuerst stichpunkte was in alle kapitel kommen soll
++ dann langsam auf den pagecount kommen
