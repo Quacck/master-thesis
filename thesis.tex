@@ -1,5 +1,6 @@
 \documentclass{scrbook} % <= Druckversion: "scrbook" / Bildschirmversion: "scrreprt"
 \usepackage[english,bibtex]{osm-thesis} % <= Sprache der Arbeit ("ngerman"/"english"), Biblatex-Backend ("bibtex"/"biber")
+\usepackage{my-own-stuff}
 
 % ABOUT
 \newcommand{\thesistype}{Arbeit zur Erlangung des Grades \enquote{Master~of~Science} der Digital-Engineering-Fakultät der Universität~Potsdam}
@@ -38,6 +39,8 @@
 %\newcommand{\thesisurn}{https://nbn-resolving.org/urn:nbn:de:kobv:517-opus4-499134}
 
 % DOCUMENT
+% run bibtex thesis if you change the bibliography file
+% otherwise changes may not be compiled
 \bibliography{bibliography}
 
 \begin{document}
@@ -58,14 +61,14 @@
 	% Textteil
 	\pagenumbering{arabic}
 
-	\include{content/abstract} % example
-	\include{content/1_introduction} % example
-	\include{content/2_background} % example
-	\include{content/3_related_work} % example
-	\include{content/4_methodology} % example
-	\include{content/5_results} % example
-	\include{content/6_discussion} % example
-	\include{content/7_future_work} % example
+	\include{content/abstract}
+	\include{content/1_introduction}
+	\include{content/2_background}
+	\include{content/3_related_work}
+	\include{content/4_methodology}
+	\include{content/5_results}
+	\include{content/6_discussion}
+	\include{content/7_future_work}
 
 	% Bibliographie
 	\ifisbook\cleardoubleemptypage\fi

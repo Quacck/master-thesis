@@ -10,5 +10,8 @@
     "mypy.debugLogging": true,
     "python.analysis.extraPaths": [
         "./GAIA/src"
-    ]
+    ],
+    "pasteImage.defaultName": "Y-MM-DD-HH-mm-ss",
+    "pasteImage.namePrefix": "${currentFileNameWithoutExt}",
+    "pasteImage.path": "${projectRoot}/images",
 }

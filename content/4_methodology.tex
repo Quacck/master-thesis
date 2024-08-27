@@ -1,31 +1,83 @@
 \chapter{Methodology}
 
-- Bisherige Arbeiten hatten die Annahme, das Jobs eine bestimmte länge haben und eine konstante Leistung benötigen.
-- Das Stoppen und Resumen von Jobs erzeugte keinen Overhead. 
-- Wir wollen zeigen, dass diese Annahmen für ausgewählte workloads nicht ausreihen, beispielsweise für ML trainings, welche QUELLE Prozent der Task in einem Compute Center ausmachen.
-- Dazu Messen wir die Leistungsaufnahme eines ML trainings und untersuchen wie sich der Workload bzgl. stop-resume verhält.
+Based on our related work, describe (using the goals outlined in the beginning) the approach I take:
+creating a better model to be used in carbon-aware scheduling 
+using the model and evaluating it.
+\section{Improving the current Job model}
 
-\section{Leistungsmessungen}
+We should probably argue why the current job model used in literature is not sufficient (WaitAWhile assumed constant power usage and no overhead from stoppig and resuming)
+
+\subsection{Power Measurements on Machine Learning Jobs}
+
+\todo{Für die Durchführung von Messungen ist es zwingend erforderlich, die verwendete Testumgebung (Hardware wie auch Software) zu dokumentieren sowie Messparameter gewissenhaft zu wählen. Zu den wichtigsten Parametern gehren die Anzahl der Messwiederholungen, die Anwendung von Warmup-Läufen sowie die Identifikation und Vermeidung möglicher störender Einflüsse.}
+
+\paragraph{Describing the experiment setup}
+
+\begin{itemize}
+    \item I used an MCP, why is that preferrable over using another power measurement tool like rapl and such?
+    \item what hardware did I use?
+    \item describe the specifics of my measurement setup (multiple runs, system at rest, measure before and after)
+    \item also be sure to mention that we added logging to the script execution (to be used for the phases later)
+\end{itemize}
+
+\paragraph{Measurement results}
 
 \begin{itemize}
     \item Warum ist das interessant
-    \item Wie habe ich die Messungen ausgeführt (MCP beschreiben, sowie pinpoint als Schnittstelle)
-    \item Experimentier-parameter (?), also wodurch versuche ich sicherzustellen, dass meine Messungen auch sinn machen / reproduzierbar sind usw usw.
+    \item which jobs did I measure and why?
+    \item Wie habe ich die Messungen ausgeführt, MCP beschreiben, sowie pinpoint als Schnittstelle
+    \item Experimentier-parameter, also wodurch versuche ich sicherzustellen, dass meine Messungen auch sinn machen / reproduzierbar sind usw usw.
     \item Wie habe ich das ausgewertet, schöne graphs zeigen
-\end
+\end{itemize}
 
-Da wir nun eine Vorstellung haben, wie realistischere Jobs aussehen, könnten wir davon ein Model ableiten:
-(Das sieht so aus wie meine .csv Schemas), jetzt könnten wir zeigen, wie sich die Leistungsaufnahme zw. dem Model-Job und dem realen Job unterscheidet
-Hier kämen auch die ganzen Fehlerbetrachtungen rein (cross-validation / absoluter Fehler),
-auch zeigen, dass das mit stop resume funktioniert.
+\subsection{Defining a new model}
+
+Now that we know what a high-level job looks like, we can pick it apart and reduce the real-world measurements of one program to a more generic model. 
+
+\begin{itemize}
+    \item we can deduce phases
+    \item each phase has a constant power draw
+    \item give an example of how to represent the real-world measurements into a model
+    \item now we should proof that the model actually represents the reality to a certain degree (error analysis)
+    \item have a cute graph showing the measurements and the model-"measurements" next to each other
+    \item also show that the stop-resuming functionality can be represented with our model
+\end{itemize}
+
+\section{Choosing an implementation approach}
+
+We first need to explain why we chose our approach (building upon exisiting work inside GAIA). The other option that is not using a simulation would be to schedule real jobs, for example by creating a slurm plugin.
+
+We can then evaluate how well a slurm plugin would work for our given Forschungsragen. End that section by deeming the plugin idea as unfit, we can then shift to arguing for the simulation approach as that is also something that just came out in related work (perhaps we should see wether we list GAIA as related work or introduce it just then)
+
+\subsection{Carbon-aware scheduling via a slurm plugin}
+
+thank god I made notes
+
+\begin{itemize}
+    \item why do we choose slurm specifically, and not other software like kubernetes etc. => because its also being used in scorelab at the same location as I am in
+    \item was ist slurm? => "open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters"
+    \item how does the slurm plugin system work? what do we need to do to get there?
+    \item what problems occured?
+    \item ...thus I ultimatly choose not to pursue implementing a plugin
+\end{itemize}
+
+\subsection{Using a Simulation approach}
+
+Thankfully, just at that time a new paper \cite{hanafy_going_2024} was released. 
+They made a prototype testbed for simulating job scheduling on cloud providers. These Jobs could be executed on spot instances (cheap VMs that seek to increase cloud utilization), on-demand instances (short-notices VMs that are thus more expensive) or pre bought VMs (medium cost, but may be wasted), the paper then discussed balancing carbon- and dollar costs.
+
+The good part is that within that testbed, many scheduling approaches outlined in the related work section were implemented - a WaitAWhile Implementation for example \todo{improve this}. I could now extend this testbed and would ontop get something to compare against!
+
+The way to do this section would be to a) describe what was aleady there, and b) what I changed
+
+\missingfigure{This would show a class diagram similar to the one in the GAIA paper, with markings which files I edited / added / deleted}
+
+Describe the figure, explain why I am for example removing the part about the dollar-costs and the slurm-scheduler adapter. I should also describe which parts of the program I am modifiying to tackle my Forschungsfragen
 
 
-Modellbeschreibung, welches Modell verfolgen meine Workloads?
-Workloads haben stages, begründung via der power measurements an den sample ML workloads
-Softwarearchitekturbeschreibung
-wie die experiment ausführen / format usw usw.
+Stuff I should describe about the simulation before I added anything:
 
-\section{Annahmen}
+\paragraph{Assumptions of the simulation}
 
 \begin{itemize}
     \item Joblängen sind bekannt
@@ -34,21 +86,23 @@ wie die experiment ausführen / format usw usw.
     \item Die carbon curve auf dem electrical grid ist für kurze Zeiträume in der Zukunft bekannt
     \item Die Hardware ist zZ nicht begrenzt. Das war in der related work auch nicht so. Eigentlich wäre es spannend sich das anzuschauen, allerdings sind die bisherigen Scheduler halt darauf garnicht gemünzt, da werden alle Jobs unabh. voneinander gescheduled. Man könnte das via publicCloud argumentieren, allerdings wäre das questionable, in wie fern der scorelab trace benutzt werden kann (da das ja auf in einem lokalem datacenter läuft)
     \item TODO: Joblängen sollten dem Scheduler nicht bekannt sein. Die Workloads aus GAIA werden allerdings so gescheduled als ob man perfekte Knowledge hat. Das reicht zwar für ein upper bound an carbon savings, ist aber nicht sehr realistisch.  
-    \item Jobs haben auch einen dynamischen Energieverbrauch, der sich über die Zeit hin ändert. Diese Funktion ist nur von de Zeit abh. und wird vom Nutzer definiert.
-    \item Jobs werden immer completen, Fehler / Nutzercancellations werden ausgeklammert.
 \end{itemize}
 
-\section{Datengrundlagen}
+\paragraph{Data being used}
 
+here i could describe which data is already being used (the traces, aswell as the historical carbon data)
 \begin{itemize}
     \item Welche Traces gibt es, wodurch werden die characterisiert? (Länge, Anzahl, etc, etc) Vllt. kann man hier nen coolen vergleich erstellen, Auch könnte man ein paar Sätze darüber schreiben, wie die bisher in GAIA aufgenommen wurden.
     \item Wie den scorelab trace benutzen und übersetzen? Gerne auf ner halben Seite aufschlüsseln, was die einzelnen Attribute aus sacct bedeuten.
     \item Ansonsten kann man noch die dynamic ernergy sachen als Datenquelle auflisten, bzw. das mini experiment mit fmnist und roberta 
 \end{itemize}
 
-\section{Programmbeschreibung?}
 
-\begin{itemize}
-    \item Architektur, die wird sich nicht besonders von dem bisherigem GAIA unterscheiden, cool wenn ich da noch ne web UI oder ähnliches hätte
-    \item Man könnte noch zeigen, welche Auswertungen jetzt möglich sind
-\end{itemize}
+\section{building ontop of the existing gaia sim}
+
+Which parts of GAIA do I add on?
+=> this should just be the schedulers and the part where the carbon is calculated, this ensures that 
+
+\section{Evaluating carbon-aware scheduling with the new job model}
+
+Hi!
