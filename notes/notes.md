@@ -1142,3 +1142,10 @@ STARTUP_LENGTH = 10 #int(mockPowerFunction.duration_startup)  # Startup time for
 + Breite zuerst, iterativer prozess
 + zuerst stichpunkte was in alle kapitel kommen soll
 + dann langsam auf den pagecount kommen
+
+# 27.08
+
++ Architektur noch etwas mehr ausbauen, gerne eine eigenes Kapitel draus schnüren. 
+  + auch wenn nur rauskommt, das 
++ Fokus auf das Phasenmodell perhaps, das hab ich dann _auch_ noch mal benutzt in der Simulation
++ man kann auch den fokus dann eher auf die ergebnisse legen

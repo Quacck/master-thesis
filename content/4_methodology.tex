@@ -8,17 +8,85 @@ using the model and evaluating it.
 We should probably argue why the current job model used in literature is not sufficient (WaitAWhile assumed constant power usage and no overhead from stoppig and resuming)
 
 \subsection{Power Measurements on Machine Learning Jobs}
+\label{sec:power_measurements}
 
 \todo{Für die Durchführung von Messungen ist es zwingend erforderlich, die verwendete Testumgebung (Hardware wie auch Software) zu dokumentieren sowie Messparameter gewissenhaft zu wählen. Zu den wichtigsten Parametern gehren die Anzahl der Messwiederholungen, die Anwendung von Warmup-Läufen sowie die Identifikation und Vermeidung möglicher störender Einflüsse.}
 
-\paragraph{Describing the experiment setup}
+\todo{I feel like I should add a paragraph somewhere explaining what I want to measure}
+
+\paragraph{Options for measuring power}
+
+There are multiple options for measuring the power of a given computer. One way of classifying these options would be under them being either \emph{logical measurements} or \emph{physical measurements}.
+
+Logical ones would create a model on some metrics and derive the used power. One example would be using Linux' \emph{perf} tool to read hardware performance counters. \todo{this needs some more here}
+
+Advantages of choosing a logical approach would be that no external hardware is needed and that the overhead of the measurement would be low, as the hardware counters are being kept track of anyway. Disadvantages on the other hand would be that such a model would have to be created or chosen and would include some form of error as all models do.
+
+Physical measurements follow another route; measurement devices would be put between the operating hardware and the power supply. The point where a power measuring device is inserted would dictate what could and could not be measured, a wall mounted measurement device could only measure all power going into a computer and not differentiate between individual programs.
+
+Advantages of physical measurements are that they can give a more holistic measurement of a system as would be the case for a wall mounted measurement device. Portability is an issue however, unlike operating-system supported tools such as perf, a measurement device would need more effort to be used on another system (or be entirely not useable, for example when such devices are only rated for a certain power level).
+
+Due to having a power-measurement tool on-site in our university and it allowing whole-system measurements directly, I chose to follow the physical measurement option. 
+
+\paragraph{Measurement tool}
+
+The concrete tool used is the \emph{Microchip MCP39F511N Power Monitor (henceforth called MCP)}, which can be inserted between the device to test and the wall mounted power supply \todo{I should add a nice picture here of the MCP}. The MCP can report the current power consumption in 10 mW steps, each 5ms.
+I then used \emph{pinpoint}, a tool for energy profiling that can use different inputs, among them being the MCP, to read out its data. 
+
+\paragraph{The test environment}
+
+The experiments were run on my personal computer, the components of that are listed via the \emph{hwlist} tool, with unnecessary columns and rows being redacted for brevity:
+
+\begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Hardware that was measured}, basicstyle=\ttfamily]
+   $ lshw -short -C processor -C memory -C display -C bus
+Class          Description
+==========================
+bus            AB350 Gaming K4
+memory         16GiB System Memory
+processor      AMD Ryzen 5 1600X Six-Core Processor
+display        GP104 [GeForce GTX 1070]
+\end{lstlisting}
+
+Information about the operating system is given via \emph{hostnamectl}, again some parts redacted:
+
+\begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Used operating system information}, basicstyle=\ttfamily]
+    $ hostnamectl 
+   Operating System: Ubuntu 24.04 LTS                
+             Kernel: Linux 6.8.0-39-generic
+\end{lstlisting}
+
+\paragraph{Measured Program}
+
+Machine learning (ML) was used as the main motivation for checkpoint \& resume scheduling in the related works\cite {wiesner_lets_2021} and thus was also chosen by me to be measured and modeled. 
+
+The concrete model and framework is secondary for our measurement. In my case, a small model would be chosen in order to have less data for processing aswell as faster iterations on the measurement script. 
+
+There is a vast amount of machine learning frameworks. For a high-level model, the featureset of the framework only needed to support checkpointing, resuming, and some basic form of logging. 
+Glancing at the documentation of popular frameworks such as \emph{torch}, \emph{tensorflow}, and \emph{huggingface} shows that these features are commonly supported. 
+
+With not much bias towards any framework, huggingface was chosen because my supervisor Felix supplied a sample "hello-world"-esque machine learning script for python \emph{roberta.py}\footnote{\url{https://github.com/Quacck/master-thesis/blob/main/power-measurements/roberta.py}}.
+
+The huggingface trainer supports callbacks, I thus modified the code by adding timpestamped logs. These "Events" would be output into another .csv File I could later use.\todo{later use for WHAT?!}
 
 \begin{itemize}
-    \item I used an MCP, why is that preferrable over using another power measurement tool like rapl and such?
-    \item what hardware did I use?
     \item describe the specifics of my measurement setup (multiple runs, system at rest, measure before and after)
     \item also be sure to mention that we added logging to the script execution (to be used for the phases later)
 \end{itemize}
+
+\paragraph{Creating repeatable measurements}
+
+A script \footnote{\url{https://github.com/Quacck/master-thesis/blob/main/power-measurements/measure_roberta.sh}} was created to execute each experiment. 
+
+On a high-level view, the following experiments were conducted: 
+
+\begin{enumerate}
+    \item \label{experiment:full}Run the whole program start to finish
+    \item \label{experiment:partial_checkpointed}Run it partially, checkpointing after some step, sleeping, resuming from that step
+    \item \label{experiment:partial_checkpointed_aborted}Run it partially, checkpointing after some step but aborting before the next checkpoint. Then resume as above.
+    \item \label{experiment:startup_only}Run only the startup phase up until the ML would start
+\end{enumerate}
+
+\todo{further explain how the experiments were conducted}
 
 \paragraph{Measurement results}
 

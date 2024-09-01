@@ -1,13 +1,13 @@
 \chapter{Introduction}
 
-
 \begin{itemize}
-    \item Warum sollte man sich mit Scheduling von Jobs in Data Centers beschäftigen?
-    \item why is carbon aware scheduling useful? we want to emit less carbon per unit of work, reason being climate change
-    \item welche contribution mache ich konkret?
-    \item which hypothesis do I have?
-    \item for example, we could think that having more information about how our workload's power changes over time, could lead to higher carbon efficiency, as we could for example match high-power to low-carbon periods.
-
+    \item I could start with a fact stating that datacenters use X amount of energy which in turn emits carbon for its production
+    \item We can reduce the amount of carbon emitted for the same amount of work by scheduling our work in smart way
+    \item this is not a new idea; datacenters around the world are already using data provided by e.g. electricitymaps
+    \item one thing that is not represented in literature however is the heterogenity of jobs, as well as the emph{checkpoint \& resume} capabilities of some jobs, particularly machine learning jobs which are projected to make UP X amount of energy in the coming years [QUOTATION NEEDED] 
+    \item I want to create a better model for jobs in datacenters
+    \item I then want to use that new model to investigate wether we can exploit the heterogenity of jobs to further reduce carbon emissions
+    \item One hypothesis is for example that, we can match high-power phases of jobs to the lowest carbon-intensive time frames, so we do not "waste" those rare times with low-power phases
+    \item We can also investigate wether the previously proposed stop \& resume techniques still work if the assumption that stopping and resuming a job has no overhead is broken.
+    \item We hypothesis that a stop \& resume strategy can stil lead to reduced carbon emissions but only on certain jobs.
 \end{itemize}
-warum carbon aware scheduling? ? ? ?
-welche forschungsfragen
