@@ -6,14 +6,18 @@ I used the following system for finding related work to my topic;
 first, my supervisors and I would brainstorm for search engine keywords. 
 The specific words are in the attachments\todo{Literaturrecherche aufarbeiten und hier verlinken}, but can be grouped into two groups: one for all things carbon-aware and one for keywords about servers / computing / HPC and such.
 
-Using these two groups, I could then create a  google scholar queries via the cross product between them. Using the double-quotation feature would further limit the results.
-For each query, I would then read the abstracts of roughly the first 5 results, depending on if their titles sounded subjectively fit. Additionally, I would also further explored papers by finding new ones through \emph{connected papers}\footnote{\url{https://www.connectedpapers.com/}}
-These would then be entered into a spreadsheet: for each query, 5 paper titles. I then "rated" them into three categories:
+Using these two groups, I could then create a  Google Scholar queries via the cross product between them. Using the double-quotation feature would further limit the results.
+For each query, I would then read the abstracts of roughly the first 5 results, depending on if their titles sounded subjectively fit. 
+
+These would then be entered into a spreadsheet: for each query, 5 paper titles. Additionally, I would also further explore papers through \emph{connected papers}\footnote{\url{https://www.connectedpapers.com/}} or looking up individual authors on a subjective basis. 
+The papers from the 2023 and 2024 HotCarbon Workshops\footnote{\url{https://hotcarbon.org/}} also proved to be related.
+
+I then "rated" each paper into three categories:
 
 \begin{itemize}
-    \item green, meaning that they seem very connected and are good first entries into the topic
-    \item orange, which would indicate that are are somehow connected to the paper and might be read at a later date
-    \item red, the paper is either irrelevant or had some other flaw. These would not be touched again in the course of my work
+    \item Green, meaning that they seem very connected and are good first entries into the topic
+    \item Orange, which would indicate that are somehow connected to the paper and might be read at a later date
+    \item Red, the paper is either irrelevant or had some other flaw. These would not be touched again in the course of my work
 \end{itemize}
 
 \begin{figure}
@@ -22,23 +26,23 @@ These would then be entered into a spreadsheet: for each query, 5 paper titles. 
     \label{fig:literature_study}
 \end{figure}
 
-With this approach, X abstracts were read. Figure \ref{fig:literature_study} shows that X abstracts \todo{figure out results of the literature stufy} were deemed "good" for the purpose of this work. The complete list of papers analysed can be found in \todo{THE ATTACHMENTS}
+With this approach, X abstracts were read. Figure \ref{fig:literature_study} shows that X abstracts \todo{Figure out results of the literature stuff} were deemed "good" for the purpose of this work. The complete list of papers analyzed can be found in \todo{THE ATTACHMENTS}
 
 I would like to highlight some papers:
 
-\paragraph{GreenSlot: Scheduling energy consumption in green datacenters\cite{inigo_goiri_greenslot_2011}} seems to be the first paper that deals with carbon aware scheduling by implementing it as a slurm plugin.
+\paragraph{GreenSlot: Scheduling energy consumption in green datacenters\cite{inigo_goiri_greenslot_2011}} According to the analyzed papers, this seems to be the first paper that deals with carbon aware scheduling by implementing it as a \emph{Slurm} plugin (See section \ref{subsec:slurm_plugin} for further information on Slurm and such plugins)
 In contrast to our scenario, where we try to optimize carbon emissions via the public electricity grid, GreenSlot is about datacenters having their own renewable energy production (solar panels on the roof). Using weather data, \emph{GreenSlot} would then predict when solar energy production is high, scheduling jobs to those time frames.  
 
 \paragraph{The War of the Efficiencies: the Tension between Carbon and Energy Optimization} \cite{hanafy_war_2023} outline the different ways of carbon aware computing. 
-Among those is \emph{temportal shifting}, the idea that jobs can be executed later when energy is more carbon efficient, is also the main idea for my work. 
+Among those are \emph{temporal shifting}, the idea that jobs can be executed later when energy is more carbon efficient, is also the main idea for my work. 
 They also use \emph{spatial shifting}, moving jobs across the globe to areas where higher carbon efficiency is possible. 
-\emph{Ressource scaling} uses dynamic amounts of hardware according to carbon emissions.
+\emph{Resource scaling} uses dynamic amounts of hardware according to carbon emissions.
 In the end, \emph{rate shifting} is the idea to also scale hardware frequencies. During carbon-efficient times, CPU speeds would be increased, leading to faster processing speeds and more energy usage.
 
 All of these techniques are then tested under various parameters. My work will only make use of the temporal shifting, and abstract away the other methods of further saving carbon.
 
-\paragraph{Let's wait awhile: how temporal workload shifting can reduce carbon emissions in the cloud} is to be one the paper I'll be building on the most. 
+\paragraph{Let's wait awhile: how temporal workload shifting can reduce carbon emissions in the cloud} This paper will be built upon in my work the most.
 \cite{wiesner_lets_2021} uses a simulation approach, to simulate temporal shifting. Their workload model consists of known length jobs that can use \emph{checkpoint \& restore} to be executed at different time slices. 
-They would further use different traces and test these traces under the assumption of different job-deadlines, meaning that each job would have to be completed by a certain timeframe, and also different regions of the world as described in the background part\todo{think about linking this to the earlier part}. 
-Their main take-aways are that increased deadlines lead to reduced carbon emissions, but that this effect also has diminishing returns. 
-They also deduced that regions such as california, with high amounts of solar power, have higher potential for carbon-savings in comparison to nuclear-heavy regions such as france.
+They would further use different traces and test these traces under the assumption of different job-deadlines, meaning that each job would have to be completed by a certain timeframe, and also different regions of the world as described in the background part\todo{Think about linking this to the earlier part}. 
+Their main takeaways are that increased deadlines lead to reduced carbon emissions, but that this effect also has diminishing returns. 
+They also deduced that regions such as California, with high amounts of solar power, have higher potential for carbon-savings in comparison to nuclear-heavy regions such as France.

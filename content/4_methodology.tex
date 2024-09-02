@@ -5,7 +5,7 @@ creating a better model to be used in carbon-aware scheduling
 using the model and evaluating it.
 \section{Improving the current Job model}
 
-We should probably argue why the current job model used in literature is not sufficient (WaitAWhile assumed constant power usage and no overhead from stoppig and resuming)
+We should probably argue why the current job model used in literature is not sufficient (WaitAWhile\cite{wiesner_lets_2021} assumed constant power usage and no overhead from stopping and resuming)
 
 \subsection{Power Measurements on Machine Learning Jobs}
 \label{sec:power_measurements}
@@ -18,7 +18,7 @@ We should probably argue why the current job model used in literature is not suf
 
 There are multiple options for measuring the power of a given computer. One way of classifying these options would be under them being either \emph{logical measurements} or \emph{physical measurements}.
 
-Logical ones would create a model on some metrics and derive the used power. One example would be using Linux' \emph{perf} tool to read hardware performance counters. \todo{this needs some more here}
+Logical ones would create a model on some metrics and derive the used power. One example would be using Linux' \emph{perf} tool to read hardware performance counters. \todo{This needs some more here}
 
 Advantages of choosing a logical approach would be that no external hardware is needed and that the overhead of the measurement would be low, as the hardware counters are being kept track of anyway. Disadvantages on the other hand would be that such a model would have to be created or chosen and would include some form of error as all models do.
 
@@ -30,7 +30,16 @@ Due to having a power-measurement tool on-site in our university and it allowing
 
 \paragraph{Measurement tool}
 
-The concrete tool used is the \emph{Microchip MCP39F511N Power Monitor (henceforth called MCP)}, which can be inserted between the device to test and the wall mounted power supply \todo{I should add a nice picture here of the MCP}. The MCP can report the current power consumption in 10 mW steps, each 5ms.
+The concrete tool used is the \emph{Microchip MCP39F511N Power Monitor (henceforth called MCP)}, which can be inserted between the device to test and the wall mounted power supply. A picture of it can be found in figure \ref{fig:mcp}. The MCP can report the current power consumption in 10 mW steps, each 5ms.
+
+\begin{figure}
+    \missingfigure{A figure of the MCP, ask Sven about this}
+    \caption[short]{The MCP}
+    \label{fig:mcp}
+\end{figure}
+
+\todo{I could include an extra paragraph on why the MCP is cool, and what it does differently, perhaps. Was there anything cool? I vaguely remember some measurement devices having two capacitors to more accurately determine usage}
+
 I then used \emph{pinpoint}, a tool for energy profiling that can use different inputs, among them being the MCP, to read out its data. 
 
 \paragraph{The test environment}
@@ -59,21 +68,16 @@ Information about the operating system is given via \emph{hostnamectl}, again so
 
 Machine learning (ML) was used as the main motivation for checkpoint \& resume scheduling in the related works\cite {wiesner_lets_2021} and thus was also chosen by me to be measured and modeled. 
 
-The concrete model and framework is secondary for our measurement. In my case, a small model would be chosen in order to have less data for processing aswell as faster iterations on the measurement script. 
+The concrete model and framework is secondary for our measurement. In my case, a small model would be chosen in order to have fewer data points for processing as well as faster iterations on the measurement script. 
 
-There is a vast amount of machine learning frameworks. For a high-level model, the featureset of the framework only needed to support checkpointing, resuming, and some basic form of logging. 
+There is a vast amount of machine learning frameworks. For a high-level model, the feature set of the framework only needed to support checkpointing, resuming, and some basic form of logging. 
 Glancing at the documentation of popular frameworks such as \emph{torch}, \emph{tensorflow}, and \emph{huggingface} shows that these features are commonly supported. 
 
 With not much bias towards any framework, huggingface was chosen because my supervisor Felix supplied a sample "hello-world"-esque machine learning script for python \emph{roberta.py}\footnote{\url{https://github.com/Quacck/master-thesis/blob/main/power-measurements/roberta.py}}.
 
-The huggingface trainer supports callbacks, I thus modified the code by adding timpestamped logs. These "Events" would be output into another .csv File I could later use.\todo{later use for WHAT?!}
+The huggingface trainer supports callbacks, I thus modified the code by adding timestamped logs. These "Events" would be output into another .csv File I could later use.\todo{Later use for WHAT?!}
 
-\begin{itemize}
-    \item describe the specifics of my measurement setup (multiple runs, system at rest, measure before and after)
-    \item also be sure to mention that we added logging to the script execution (to be used for the phases later)
-\end{itemize}
-
-\paragraph{Creating repeatable measurements}
+\paragraph{Conducted Experiments}
 
 A script \footnote{\url{https://github.com/Quacck/master-thesis/blob/main/power-measurements/measure_roberta.sh}} was created to execute each experiment. 
 
@@ -84,11 +88,69 @@ On a high-level view, the following experiments were conducted:
     \item \label{experiment:partial_checkpointed}Run it partially, checkpointing after some step, sleeping, resuming from that step
     \item \label{experiment:partial_checkpointed_aborted}Run it partially, checkpointing after some step but aborting before the next checkpoint. Then resume as above.
     \item \label{experiment:startup_only}Run only the startup phase up until the ML would start
+    \item \label{experiment:baseline}Do nothing, measure the system at rest
 \end{enumerate}
+
+Experiment \ref{experiment:full} would give a baseline for what the job would look like without checkpoint \& resume. Number \ref{experiment:partial_checkpointed} and \ref{experiment:partial_checkpointed_aborted} would be used to determine the overhead of checkpointing the job. \ref{experiment:startup_only} would be used to validate the other ones. The last experiment is necessary to determine the baseline energy consumption of the environment.
+
+To execute these experiments inside a repeatable bash script, additional command line parameters were added to the given python script. 
+For example, there would be a boolean parameter \verb|--resume_from_checkpoint|, or an integer parameter \verb|--stop_after_epoch| would be used for experiment \ref{experiment:full} to \ref{experiment:partial_checkpointed}. 
+The way of doing experiment \ref{experiment:startup_only} was to copy the script, and delete everything after the imports.
+
+\paragraph{Creating repeatable measurements}
+
+As this is being run on standard hardware on a standard operating system, all experiment are subject to noise. 
+For example, \emph{Dynamic frequency and voltage scaling (DFVS)}, the OS technique of increasing CPU "speeds" according to work load would add power in an uncontrolled way. Also, background tasks may happen "randomly", increasing power usage. 
+
+Thus, for the testing, any foreground apps would be closed. I also used \emph{cpupower}, as shown in snippet below, to set the CPU frequency to a set value:
+
+\todo{Think about whether this is really interesting, I guess keep it if I need more content}
+\todo{What is the MAXFREQ of my ryzen 5?}
+\begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Used operating system information}, basicstyle=\ttfamily]
+    MINFREQ=$(cpupower frequency-info --hwlimits | sed -n '1d;p' \
+        | awk '{print $1}')
+    MAXFREQ=$(cpupower frequency-info --hwlimits | sed -n '1d;p' \
+        | awk '{print $1}')
+    
+    cpupower frequency-set --min ${MAXFREQ} &>/dev/null
+    cpupower frequency-set --max ${MAXFREQ} &>/dev/null
+
+    # ... conduct experiments
+
+    cpupower frequency-set --min ${MINFREQ} &>/dev/null
+    cpupower frequency-set --max ${MAXFREQ} &>/dev/null
+\end{lstlisting}
+\label{listing:setting_cpu_frequency}
+
+As machine learning makes use of available GPUs, the frequency should also be similarly set to a defined value. 
+NVIDIA provides guide on how to do so \footnote{\url{https://developer.nvidia.com/blog/advanced-api-performance-setstablepowerstate}}.
+Sadly, my used GPU, the NVIDIA GTX 1070, is not capable of fixing the frequency as of the time of conducting these experiments. 
+While it is supposed to be possible according to SOURCE\todo{Reconstruct this argument, perhaps theres still something in my PC history | grep}, but there seems to currently be drivers issue preventing this\todo{Find the forum post of people complaining}. 
+Thus, the frequency of the GPU was not fixed. 
+To reduce the effect of frequency scaling here, the time between experiments was increased generously so that any impact from such scaling would reoccur throughout each run and there would be reduced dependency between runs.
 
 \todo{further explain how the experiments were conducted}
 
+\paragraph{Conducting each experiment}
+
+Each experiment was re-run 10 times. Between each run, there would be a \verb|sleep| period of 10 seconds and one of two minutes in the partial executions. 
+Additionally, \verb|pinpoint|'s feature of measuring before and after the actual program-to-test would be used. 
+This leads to a period of 30 seconds being measured around the actual experiment. 
+Plotting these additional time frames would give a quick visual indicator whether experiments are sufficiently isolated from each other, ergo when the power draw is at the baseline as the actual program starts.
+
+As there is some data being downloaded and persisted during the execution of the ML, before each run, the data would be cleaned up.
+
+\paragraph{Collected data}
+
+For each experiment, a named and timestamped folder would be created in the \verb|/power-measurements| folder of my repository. Each folder would then hold a \verb|.csv| with pinpoint's timestamped power measurements. 
+The added timestamped-logging would be saved into another \verb|.csv|. 
+While figuring out how to conduct the experiments, I would then plot these measurements early and visually spot if there were any obvious errors or mistakes.
+
 \paragraph{Measurement results}
+
+First, I would like to show one sample full-run of the ML:
+
+
 
 \begin{itemize}
     \item Warum ist das interessant
@@ -118,6 +180,7 @@ We first need to explain why we chose our approach (building upon exisiting work
 We can then evaluate how well a slurm plugin would work for our given Forschungsragen. End that section by deeming the plugin idea as unfit, we can then shift to arguing for the simulation approach as that is also something that just came out in related work (perhaps we should see wether we list GAIA as related work or introduce it just then)
 
 \subsection{Carbon-aware scheduling via a slurm plugin}
+\label{subsec:slurm_plugin}
 
 thank god I made notes
 
