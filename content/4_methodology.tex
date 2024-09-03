@@ -163,9 +163,14 @@ Going further, these additional measurements will be redacted for brevity, unles
 
 Across all 10 runs, the average baseline power draw is calculated via the mean of all data points. This comes out as an average of 49.8 W with a standard deviation of 4.4 W.
 
-The baseline power draw will be less interesting going further, but will put perspective on the power draws of the other experiments. The standard deviation should gives a broad idea of how much noise is in the system environment.
+The baseline power draw will be less interesting going further, but will put perspective on the power draws of the other experiments. The standard deviation should give a broad idea of how much noise is in the system environment.
 
 \paragraph{The non-interrupted run}
+
+For the non-interrupted machine learning run, a figure of a sample run is provided in \ref{fig:plot_full}. 
+Figure \ref{fig:plot_full_stacked} shows the stacked trend lines of the 10 different runs.
+For simplicity's sake, I refrained from doing more elaborate statistical analysis on the different runs as the visual check of them being very similar seemed enough. 
+There was an option to discuss the measurement results after normalizing each measurement point to its phase, but that would not change the result.\todo{What?}
 
 \begin{figure}
     \includegraphics[width=\linewidth]{power-measurements/measurements_roberta_full_0714010405/plot.pdf}
@@ -173,13 +178,74 @@ The baseline power draw will be less interesting going further, but will put per
     \label{fig:plot_full}
 \end{figure}
 
-\begin{itemize}
-    \item Warum ist das interessant
-    \item which jobs did I measure and why?
-    \item Wie habe ich die Messungen ausgeführt, MCP beschreiben, sowie pinpoint als Schnittstelle
-    \item Experimentier-parameter, also wodurch versuche ich sicherzustellen, dass meine Messungen auch sinn machen / reproduzierbar sind usw usw.
-    \item Wie habe ich das ausgewertet, schöne graphs zeigen
-\end{itemize}
+\begin{figure}
+    \includegraphics[width=\linewidth]{power-measurements/stacked_plots/roberta_full_0714.pdf}
+    \caption{Stacked trend lines of the power consumption for the full runs}
+    \label{fig:plot_full_stacked}
+\end{figure}
+
+The main takeaways from these measurements are:
+
+\begin{enumerate}
+    \item There is a long (about 25\%) start-up phase, which is spent in starting python, loading libraries, and loading data to disc.
+    \item There are periodical work-phases; a high-power training phase would be followed by low-power evaluation\todo{Uhm, where did my evaluation phase markers go?? They are mushed together as they share a label} phase and a low-power checkpointing.
+\end{enumerate}
+
+This already shows, that improvements upon the constant-power model used in \cite{wiesner_lets_2021} are valid. 
+For example, in this case the start-up phase has a much lower power-draw than the work-phase.
+
+\paragraph{Results of the checkpoint and restore experiment}
+
+Similarly to before, results will be discussed using the stacked plots \ref{fig:plot_partial_saved_stacked} and \ref{fig:plot_partial_saved_continue_stacked}; each individual run is plotted in the repository, however.
+
+\begin{figure}
+    \includegraphics[width=\linewidth]{power-measurements/stacked_plots/roberta_stop_after_saving.pdf}
+    \caption{Power draws of the ML up until stopping after epoch 2}
+    \label{fig:plot_partial_saved_stacked}
+\end{figure}
+
+\begin{figure}
+    \includegraphics[width=\linewidth]{power-measurements/stacked_plots/roberta_continue_after_saving.pdf}
+    \caption{Power draws after continuing from the second checkpoint}
+    \label{fig:plot_partial_saved_continue_stacked}
+\end{figure}
+
+Here we can observe that
+
+\begin{enumerate}
+    \item The amount of work done is the same. 
+    Similarly to the full-run experiment, the ML still takes the full 5 epochs and has the same work-phases
+    \item There is no overhead from checkpointing itself, as the checkpoints are being created regardless of them being resumed from later.
+    \item Resuming the jobs results in an added start-up phase. This phase is slightly shorter by a few seconds than the ones in the full runs, likely due to not needing to download the dataset again.
+\end{enumerate}
+
+Additional considerations are that the amount of epoch that are worked off before checkpointing and resuming may matter, but it will be assumed that this is not the case.\todo{I could just run this again with another epoch parameter}
+
+\paragraph{Results from checkpoint and resume with abort}
+
+Unlike the previous experiment, where work is stopped as soon as checkpoint is created, this time the program will be stopped just before a checkpoint is created (in this case just the second checkpoint would be saved). 
+This should show the maximum created overhead from a checkpoint \& resume strategy. 
+
+While this may sound artificial, it could happen in environments where the interaction between the scheduler and the job is not well orchestrated, for example in an environment where jobs are stopped "at random" like in a cloud spot instance.\todo{Improve the wording here}.
+
+Again, the results are visualized in figure \ref{fig:plot_partial_abort_stacked} and \ref{fig:plot_partial_abort_continue_stacked}. Attention should be paid to:
+
+\begin{enumerate}
+    \item The behavior of the repeated start-up phase is kept
+    \item There is now a full additional training phase added to the overall work
+\end{enumerate}
+
+\begin{figure}
+    \includegraphics[width=\linewidth]{power-measurements/stacked_plots/roberta_stop_without_saving.pdf}
+    \caption{Power draws of the ML up until stopping after epoch 2}
+    \label{fig:plot_partial_abort_stacked}
+\end{figure}
+
+\begin{figure}
+    \includegraphics[width=\linewidth]{power-measurements/stacked_plots/roberta_continue_after_not_saving.pdf}
+    \caption{Power draws after continuing from the second checkpoint}
+    \label{fig:plot_partial_abort_continue_stacked}
+\end{figure}
 
 \subsection{Defining a new model}
 
