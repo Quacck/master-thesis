@@ -146,11 +146,32 @@ For each experiment, a named and timestamped folder would be created in the \ver
 The added timestamped-logging would be saved into another \verb|.csv|. 
 While figuring out how to conduct the experiments, I would then plot these measurements early and visually spot if there were any obvious errors or mistakes.
 
-\paragraph{Measurement results}
+\paragraph{Determining the baseline power draw}
 
-First, I would like to show one sample full-run of the ML:
+Beginning with the most exiting experiment, determining the baseline and testing the amount of the underlying environment. 
+One sample run is shown in Figure \ref{fig:plot_baseline}.
+The blue dots in figure represent each data point. The red line is a smoothed Gaussian trend line with $\sigma = 2$. 
+Dark-green vertical lines are the logged or derived "events" for each run. In this case, nothing happens, so it is only the start and end of \verb|sleep 120|. 
+Notice how the trace starts 30 seconds before the start and continues for another 30 seconds because of the aforementioned \verb|pinpoint| feature.
+Going further, these additional measurements will be redacted for brevity, unless something worth mentioning happens outside the actual experiments.\todo{Check later if something interesting happens or if I should reword this.}
 
+\begin{figure}
+    \includegraphics[width=\linewidth]{power-measurements/measurements_sleep_0714004033/plot.pdf}
+    \caption{Sample run of the baseline experiment}
+    \label{fig:plot_baseline}
+\end{figure}
 
+Across all 10 runs, the average baseline power draw is calculated via the mean of all data points. This comes out as an average of 49.8 W with a standard deviation of 4.4 W.
+
+The baseline power draw will be less interesting going further, but will put perspective on the power draws of the other experiments. The standard deviation should gives a broad idea of how much noise is in the system environment.
+
+\paragraph{The non-interrupted run}
+
+\begin{figure}
+    \includegraphics[width=\linewidth]{power-measurements/measurements_roberta_full_0714010405/plot.pdf}
+    \caption{Sample run of the full run experiment}
+    \label{fig:plot_full}
+\end{figure}
 
 \begin{itemize}
     \item Warum ist das interessant
@@ -199,7 +220,7 @@ They made a prototype testbed for simulating job scheduling on cloud providers. 
 
 The good part is that within that testbed, many scheduling approaches outlined in the related work section were implemented - a WaitAWhile Implementation for example \todo{improve this}. I could now extend this testbed and would ontop get something to compare against!
 
-The way to do this section would be to a) describe what was aleady there, and b) what I changed
+The way to do this section would be to a) describe what was already there, and b) what I changed
 
 \missingfigure{This would show a class diagram similar to the one in the GAIA paper, with markings which files I edited / added / deleted}
 
