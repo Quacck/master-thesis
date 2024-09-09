@@ -189,9 +189,10 @@ The main takeaways from these measurements are:
 \begin{enumerate}
     \item There is a long (about 25\%) start-up phase, which is spent in starting python, loading libraries, and loading data to disc.
     \item There are periodical work-phases; a high-power training phase would be followed by low-power evaluation\todo{Uhm, where did my evaluation phase markers go?? They are mushed together as they share a label} phase and a low-power checkpointing.
+    \item There also appears to be higher variance in measurements during the training phases in comparison to the others.
 \end{enumerate}
 
-This already shows, that improvements upon the constant-power model used in \cite{wiesner_lets_2021} are valid. 
+This already shows, that improvements upon the constant-power model used in \cite{wiesner_lets_2021} are possible. 
 For example, in this case the start-up phase has a much lower power-draw than the work-phase.
 
 \paragraph{Results of the checkpoint and restore experiment}
@@ -247,9 +248,72 @@ Again, the results are visualized in figure \ref{fig:plot_partial_abort_stacked}
     \label{fig:plot_partial_abort_continue_stacked}
 \end{figure}
 
+\paragraph{Calculating the energy costs of each run}
+
+To support the argument that there is indeed an overhead from checkpointing \& resuming, I calculated the energy needed via integral of each experiment:
+
+\begin{itemize}
+    \item  unstopped costs 12.97 kJ on average with an std of 0.04
+    \item  save+resume costs 13.94 kJ on average with an std of 0.1
+    \item  save+abort+resume costs 15.72 kJ on average with an std of 0.07
+\end{itemize}
+
 \subsection{Defining a new model}
 
 Now that we know what a high-level job looks like, we can pick it apart and reduce the real-world measurements of one program to a more generic model. 
+
+Summarizing the findings from the previous paragraphs; it was shown that 
+
+\begin{itemize}
+    \item The given job has phases that have different power draws
+    \item Checkpointing \& resuming carries overhead in the form of startup costs and possible wasted work.
+\end{itemize}
+
+The parameters for the improved job model are shown in form of the python implementation in \ref{listing:model_python}. \todo{Check whether this ref works}
+
+\todo{Probably need to improve the code here}
+\begin{lstlisting}[language=python, frame=single, numbers=none, caption={Python Model definition}, basicstyle=\ttfamily, label={listing:model_python}]
+class Phase(TypedDict):
+    name: str
+    duration: float
+    power: float
+    is_checkpoint: NotRequired[bool]
+
+class PhaseSpec(TypedDict):
+    startup: List[Phase]
+    work: List[Phase]    
+\end{lstlisting}
+
+Some simplifications are made: the duration of each phase is well known and the power per phase is a constant. Phases can also be named for later reference.
+Using these specifications, a simple time-to-power function can be defined, that looks up the input time and traverses the phases in order. While not very efficient, this works well enough in a simulation environment.
+
+The measurements that have been taken can now be fit into this new model. 
+As each measurement-point can be associated to a phase via the aforementioned added logging, the average of each phase-associated measurement is used to determine the model parameters. 
+The durations of the phases are calculated simularly by taking the average time the logging occured during the measurements.
+
+Using this strategy on the 10 complete runs results in figure \ref{fig:model_overlaid}, which shows the derived model on black with the previous figure \ref{fig:plot_full} in less opacity. 
+The startup phase looks well approximated, visually however there is some error during the work phases.
+The training phases each have a high variance, which is not captured by the constant power approximation. After each training  phase, the power goes down seemingly liniarly, which is also approxiimated by the constant.
+
+\todo{Should probably add the phase markers back in}
+\begin{figure}
+    \includegraphics[width=\linewidth]{power-measurements/model_overlaid.pdf}
+    \caption{Model of roberta.py (black) vs. all measurements}
+    \label{fig:model_overlaid}
+\end{figure}
+
+\paragraph{Model error analysis}
+
+To analyse the error of this model, I cross validated the power's and total energy's RMSE using \verb|scikit-learn|'s \verb|LeaveOneOut| strategy. 
+The first one would give a measure of the model's accuracy on a short-time (sub-second) scale, the latter would  tell the long-time (whole job) scale accuracy of the model.
+
+Each of the 10 runs would be taken as the ground truth while the other 9 would be used to create the model. The results are the following: t power between the prediction and remainder has an RSME of 39.3 W while the difference in total energy is calculated as -0.1 kJ. 
+
+Interpreting this, it seems that the model performs poorly as a predictor for die exact power used at some timepoint as the RMSE is rather large (think of the maximum power drawn being about 250W). 
+However, in the context of carbon aware scheduling, this should not be too big of an issue as the time frames for carbon-emissions are order of magnitude larger. 
+The high error likely comes from the high variance during the training phases which is not captured in the model.
+
+The total energy predicted by the model is very close to the actual real life experiment, this should mean that the total carbon calculated on the model should also be close to the carbon emitted by the real program.
 
 \begin{itemize}
     \item we can deduce phases
@@ -262,29 +326,128 @@ Now that we know what a high-level job looks like, we can pick it apart and redu
 
 \section{Choosing an implementation approach}
 
-We first need to explain why we chose our approach (building upon exisiting work inside GAIA). The other option that is not using a simulation would be to schedule real jobs, for example by creating a slurm plugin.
+Now that an improvement on the job model has been made, the question, on how to evaluate the implications of said model, remains. 
 
-We can then evaluate how well a slurm plugin would work for our given Forschungsragen. End that section by deeming the plugin idea as unfit, we can then shift to arguing for the simulation approach as that is also something that just came out in related work (perhaps we should see wether we list GAIA as related work or introduce it just then)
+% We first need to explain why we chose our approach (building upon exisiting work inside GAIA). The other option that is not using a simulation would be to schedule real jobs, for example by creating a slurm plugin.
+
+% We can then evaluate how well a slurm plugin would work for our given Forschungsragen. End that section by deeming the plugin idea as unfit, we can then shift to arguing for the simulation approach as that is also something that just came out in related work (perhaps we should see wether we list GAIA as related work or introduce it just then)
 
 \subsection{Carbon-aware scheduling via a slurm plugin}
 \label{subsec:slurm_plugin}
 
-thank god I made notes
+My first idea was to use a non-simulation approach. 
+The HPI's Data Lab \footnote{\url{https://hpi.de/forschung/infrastruktur/hpi-data-engineering-lab.html}} runs a \emph{slurm} cluster and also has some nodes with power measurement infrastucture included. 
+Slurm is an "open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters"\footnote{\url{https://slurm.schedmd.com/overview.html}}. 
+The job scheduling part is important here, it also supports a plugin infrastructure that includes scheduling plugins. 
+One of the highlighted papers\cite{inigo_goiri_greenslot_2011} in the related works section specifically used slurm for its carbon-aware scheduler implementation and thus seemed like a good starting point for my own work.
 
-\begin{itemize}
-    \item why do we choose slurm specifically, and not other software like kubernetes etc. => because its also being used in scorelab at the same location as I am in
-    \item was ist slurm? => "open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters"
-    \item how does the slurm plugin system work? what do we need to do to get there?
-    \item what problems occured?
-    \item ...thus I ultimatly choose not to pursue implementing a plugin
-\end{itemize}
+\paragraph{Installing Slurm locally}
+
+For my purposes, a local installation would suffice as I would not need to run heavy workloads but instead just the scheduling part of slurm. 
+While there is a slurm \verb|apt get| package for my ubuntu version, this would not work as any plugins to be included during the slurm compilation, meaning I would have to do the same.
+
+Slurm's documentation provides some guidelines on how to install slurm, which I followed. 
+I gave cloning the main branch an attempt but I would get stuck during the compilation process, using the predefined released versions however worked.
+
+Installing \verb|munge|\footnote{\url{https://github.com/dun/munge/wiki/Installation-Guide}} is also necessary, which is used for authentication in slurm.
+
+One problem arose as I tried to start the \verb|slurmd|- and \verb|slurmctld| services. The first one is the worker service that would later execute jobs submitted to slurm. The latter is the main controller that, for example, schedules jobs on workers. While the command to start them would not fail, upon node inspection via Slurm's \verb|scontrol| command, it would show that all nodes are \verb|DOWN| instantly.
+|
+Dealing with slurm's problems usually leads to inspecting its logs, in my case the logs showed the following:
+
+\begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Slurm error logs}, basicstyle=\ttfamily]
+
+$ less config.log
+
+error: Couldn't find the specified plugin name for cgroup/v2
+    looking at all files
+error: cannot find cgroup plugin for cgroup/v2
+error: cannot create cgroup context for cgroup/v2
+error: Unable to initialize cgroup plugin
+error: slurmd initialization failed
+
+\end{lstlisting}
+
+Slurm uses Linux' \verb|cgroup| feature to manage the submitted job's hardware ressources. The log hints at some problem related to slurm's usage of it.
+The solution was this was to provide slurm's \verb|cgroup.conf| file. In my use-case of getting slurm to simply start, this did not need to be very sophisticated so I just used an off-the-shelf (off-the-stackoverflow\footnote{\url{https://stackoverflow.com/a/74211989}}) configuration file.
+
+Running \verb|scontrol| again, I was finally able to see idling nodes, meaning that slurm was succesfully installed form source:
+
+\begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Slurm running}, basicstyle=\ttfamily]
+$ scontrol
+scontrol: update NodeName=vincent-Laptop STATE=RESUME
+\end{lstlisting}
+
+\paragraph{Creating a scheduler plugin}
+
+The slurm documentation provides a short guide on how to add a plugin to slurm.\footnote{\url{https://slurm.schedmd.com/add.html}}. 
+As a start, I simply copied slurm's default scheduler (which is also a plugin) to to the specified directory under a new name, and addings that new name to slurms build files. 
+It was then was time to recompile slurm. 
+Now however, during the recommended \verb|autoreconf| step, an error occured:
+
+\begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Plugin recompilation errors}, basicstyle=\ttfamily]
+$ autoreconf
+auxdir/x_ac_sview.m4:35: warning: macro 'AM_PATH_GLIB_2_0' 
+    not found in library
+configure:25140: error: possibly undefined macro: AM_PATH_GLIB_2_0
+      If this token and others are legitimate, 
+      please use m4_pattern_allow.
+      See the Autoconf documentation.
+autoreconf: error: /usr/bin/autoconf failed with exit status: 1
+\end{lstlisting}
+
+The solution, while not very obvious, was to install the \verb|libgtk2.0-dev| library. \footnote{\url{https://stackoverflow.com/questions/7805815/autoconf-error-on-ubuntu-11-04}}. 
+I then added a simple logging which then showed up in slurm's log files too.
+
+\paragraph{Adding more logic to the scheduler plugin}
+
+One very helpful step for developing inside slurm is to enable the debugging flags.
+This must be decided before compilation by using the \verb|--enable-developer| and \verb|--disable-optimizations| flags during the \verb|/configure| step. 
+With that, debug symbols are added to the outgoing binaries. 
+As I was using vscode, I could then attach its debugger to the running slurm thread with full functionality.
+
+The code of the plugin runs in its own thread and there is no sandboxing or similar around it.
+Thus there are seemingly no limitation on what can be done inside the plugin. 
+For testing, I read out information on the incoming jobs such as set constraints or the user supplied comments. Terminating the jobs was also possible inside the plugin.
+
+\paragraph{Problems of a scheduler plugin}
+
+One big problem manifested in that not all jobs "showed up" inside the plugin's job queue. 
+If I would submit 6 jobs, via slurm's \verb|squeue| command, only a part such as the last 3 could be logged inside the plugin.
+A possible explaination for this could be slurms scheduler architecture: while there is a scheduler plugin, there also is a scheduler inside slurm's main loop. 
+That main scheduler loop also uses the same job queue as the plugin.
+
+To hack around this, I tried disabling slurm's main scheduling loop by setting \verb|sched_interval=-1| inside the slurm configuration file. 
+While this had the effect of being able to access all incoming jobs inside the plugin, it also had the side-effect of disabling all logic concerning starting the jobs.
+So by choosing this route, the plugin would apparently also need to re-implement alot of extra logic, which conventionally would be not be put inside the scheduler plugin. 
+
+I also looked into whether there were any API hooks that are exposed to the plugin. 
+Up until slurm version 20.11, scheduler plugins had callbacks such as when jobs were submitted. There also was support for "passive" scheduler that would get invoked when determined by slurm.
+The version I tested however,  23.11, removed all such functionality and documentation. All plugins are implemented via threads that only have callbacks on when they are started and stopped.
+
+Thus, since there was no apparent way of getting around this scheduler race condition between the plugin and the main loop. 
+The scheduler approach as a whole was dropped. 
+While I would not say that a plugin approach is impossible, the effort to implement one from scratch subjectivly seems very high. 
+The public documentation for developing on slurm is scarce. 
+There is a mailing list that can be searched, but it looks to be mostly aimed for administrating slurm and not developing it.
+
+Other avenues that could be explored are slurm's Lua plugins. There is also a \emph{slurm simulator}\footnote{\url{https://hpckp.org/articles/how-to-use-the-slurm-simulator-as-a-development-and-testing-environment/}} which could potentially be used for carbon-aware scheduling simulation, but that I did not look into much for reasons of little documentation and seeming lack of continued support.
 
 \subsection{Using a Simulation approach}
 
-Thankfully, just at that time a new paper \cite{hanafy_going_2024} was released. 
-They made a prototype testbed for simulating job scheduling on cloud providers. These Jobs could be executed on spot instances (cheap VMs that seek to increase cloud utilization), on-demand instances (short-notices VMs that are thus more expensive) or pre bought VMs (medium cost, but may be wasted), the paper then discussed balancing carbon- and dollar costs.
+Thankfully, just at that time, a new paper \cite{hanafy_going_2024} was released. 
+They made a prototype testbed for simulating job scheduling on cloud providers. These Jobs could be executed on spot instances (cheap VMs that seek to increase cloud utilization), on-demand instances (short-notices VMs that are thus more expensive) or pre bought VMs (medium cost, but may be wasted), the paper then discussed balancing carbon- and dollar costs. 
+They included a small notion notion of hardwre requirements in the form of required CPUs per job, but that was only used to scale the cost; all hardware requirements were abstracted away in the form of the cloud always having computing ressources available.
 
-The good part is that within that testbed, many scheduling approaches outlined in the related work section were implemented - a WaitAWhile Implementation for example \todo{improve this}. I could now extend this testbed and would ontop get something to compare against!
+The important part is that they also included an implementation of some schedulers used in the highlighted related works. Among that an implementation for WaitAWhile\cite{wiesner_lets_2021}.
+This meant that I could add the improved job model to that exisiting testbed and have something to compare against aswell.
+
+\paragraph{Description of the GAIA simulator}
+
+I would first like to describe the existing testbed in detail to make it clear which part is my work and which is not.
+
+
+
 
 The way to do this section would be to a) describe what was already there, and b) what I changed
 
