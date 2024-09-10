@@ -3,7 +3,7 @@
 Based on our related work, describe (using the goals outlined in the beginning) the approach I take:
 creating a better model to be used in carbon-aware scheduling 
 using the model and evaluating it.
-\section{Improving the current Job model}
+\section{Improving the current Job model} \label{sec:improving_the_model}
 
 We should probably argue why the current job model used in literature is not sufficient (WaitAWhile\cite{wiesner_lets_2021} assumed constant power usage and no overhead from stopping and resuming)
 
@@ -295,6 +295,9 @@ Using this strategy on the 10 complete runs results in figure \ref{fig:model_ove
 The startup phase looks well approximated, visually however there is some error during the work phases.
 The training phases each have a high variance, which is not captured by the constant power approximation. After each training  phase, the power goes down seemingly liniarly, which is also approxiimated by the constant.
 
+One notable point, this model is a superset of the previous constant-no-overhead model used in the related work.
+These jobs can be modeled with just one workphase, resulting in a constant power over its execution. Leaving the startup phases empty creates no overhead on resuming.
+
 \todo{Should probably add the phase markers back in}
 \begin{figure}
     \includegraphics[width=\linewidth]{power-measurements/model_overlaid.pdf}
@@ -356,7 +359,6 @@ One problem arose as I tried to start the \verb|slurmd|- and \verb|slurmctld| se
 Dealing with slurm's problems usually leads to inspecting its logs, in my case the logs showed the following:
 
 \begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Slurm error logs}, basicstyle=\ttfamily]
-
 $ less config.log
 
 error: Couldn't find the specified plugin name for cgroup/v2
@@ -444,45 +446,103 @@ This meant that I could add the improved job model to that exisiting testbed and
 
 \paragraph{Description of the GAIA simulator}
 
-I would first like to describe the existing testbed in detail to make it clear which part is my work and which is not.
+I would first like to describe the existing testbed in detail to make it clear which part is my work and which is not. A class diagram is provided in \ref{fig:class_diagram} which is heavily inspired by the existing architecture diagram in the original paper. 
 
+\begin{figure}
+    \includegraphics[width=\linewidth]{images/MA Thesis Diagram.pdf}
+    \caption{Class Diagram of GAIA, red indicates removal or reduction, green indicates additions}
+    \label{fig:class_diagram}
+\end{figure}
 
+The main part of GAIA is the scheduler. At program start, it takes parameters\todo{I should probably give an overview of which parameters are supported so I have that terminology later} that determine the scheduling, such as wheter tasks can be interrupted, how to use the carbon information (e.g. use a perfect-information / oracle approach or to use a running average), and how to balance the dollar cost for scheduling. 
+The latter I removed for simplicity, which is marked in the figure via the red color of the reserved and spot instances. In my case of carbon-aware scheduling, I did not need that feature.
 
+In the original implementation, the scheduler had multiple queues of tasks. 
+The paper presented an approach of a short queue (tasks under 2 hours) and long tasks (all other), short tasks would get scheduled on spot instances. 
+Again, as I already removed the spot instance, feature, I did not need to multiplicity of queues and they were thus removed. 
 
-The way to do this section would be to a) describe what was already there, and b) what I changed
+The tasks queues are are based on historical traces. GAIA provided muliple traces already that are described in the paper. To those I added a trace of of the HPI's Data Lab, which will be analysed in section \todo{Link this}.
 
-\missingfigure{This would show a class diagram similar to the one in the GAIA paper, with markings which files I edited / added / deleted}
+Tasks have a predetermined length (as saved in the trace), and they also hold some data that is used for scheduling such as their arrival time in the system, and how long they should wait until execution. 
+Some properties such as required CPUs were removed.
+My contribtion of the phases-and-power model was added to the tasks.
 
-Describe the figure, explain why I am for example removing the part about the dollar-costs and the slurm-scheduler adapter. I should also describe which parts of the program I am modifiying to tackle my Forschungsfragen
+The Scheduler policies are also marked green, as I added scheduler policies that could use this new model. Specifically, I added a (non-) checkpoint \& resume scheduler that works on oracle carbon prediction, this will be further explained in the latter sections.
 
+Scheduled Tasks are submitted to a cluster.
+In my case, this is a simulated, already implemented, cluster that simply logs when each tasks is entered and when they are finished. 
+In the original paper, they also used an open source adapter that would submit the tasks to an actual Slurm cluster. 
+While this approach could have been used, I decided against it on the basis of not adding further complexity. 
+Thus I also removed the slurm adapter from my implementation.
 
-Stuff I should describe about the simulation before I added anything:
+% \paragraph{Data being used}
+% 
+% here i could describe which data is already being used (the traces, aswell as the historical carbon data)
+% \begin{itemize}
+%     \item Welche Traces gibt es, wodurch werden die characterisiert? (Länge, Anzahl, etc, etc) Vllt. kann man hier nen coolen vergleich erstellen, Auch könnte man ein paar Sätze darüber schreiben, wie die bisher in GAIA aufgenommen wurden.
+%     \item Wie den scorelab trace benutzen und übersetzen? Gerne auf ner halben Seite aufschlüsseln, was die einzelnen Attribute aus sacct bedeuten.
+%     \item Ansonsten kann man noch die dynamic ernergy sachen als Datenquelle auflisten, bzw. das mini experiment mit fmnist und roberta 
+% \end{itemize}
 
-\paragraph{Assumptions of the simulation}
+\section{Implementing simulation-schedulers using the new model}
 
-\begin{itemize}
-    \item Joblängen sind bekannt
-    \item Jobs können zeitlich verschoben werden (begründet daraus, dass sie als Batch Jobs submitted werden, andere Jobs werden hierbei nicht betrachtet)
-    \item User geben dabei an, wie lange der Job verschoben werden darf
-    \item Die carbon curve auf dem electrical grid ist für kurze Zeiträume in der Zukunft bekannt
-    \item Die Hardware ist zZ nicht begrenzt. Das war in der related work auch nicht so. Eigentlich wäre es spannend sich das anzuschauen, allerdings sind die bisherigen Scheduler halt darauf garnicht gemünzt, da werden alle Jobs unabh. voneinander gescheduled. Man könnte das via publicCloud argumentieren, allerdings wäre das questionable, in wie fern der scorelab trace benutzt werden kann (da das ja auf in einem lokalem datacenter läuft)
-    \item TODO: Joblängen sollten dem Scheduler nicht bekannt sein. Die Workloads aus GAIA werden allerdings so gescheduled als ob man perfekte Knowledge hat. Das reicht zwar für ein upper bound an carbon savings, ist aber nicht sehr realistisch.  
-\end{itemize}
+I would first like to summarize assumption that GAIA makes on the problem of carbon aware scheduling:
 
-\paragraph{Data being used}
+\begin{enumerate}
+    \item job lengths are known
+    \item all considered jobs are batch jobs and can thus be shifted temporally based on user deadlines
+    \item carbon information is provided for near future time spans, no error is considered
+    \item there are no hardware limitations or considerations, all jobs are executed in an isolated manner
+    \item jobs have a constant power draw and can be checkpointed \& resumed for free
+\end{enumerate}
 
-here i could describe which data is already being used (the traces, aswell as the historical carbon data)
-\begin{itemize}
-    \item Welche Traces gibt es, wodurch werden die characterisiert? (Länge, Anzahl, etc, etc) Vllt. kann man hier nen coolen vergleich erstellen, Auch könnte man ein paar Sätze darüber schreiben, wie die bisher in GAIA aufgenommen wurden.
-    \item Wie den scorelab trace benutzen und übersetzen? Gerne auf ner halben Seite aufschlüsseln, was die einzelnen Attribute aus sacct bedeuten.
-    \item Ansonsten kann man noch die dynamic ernergy sachen als Datenquelle auflisten, bzw. das mini experiment mit fmnist und roberta 
-\end{itemize}
+Especially the last point will be modified going further. As shown in section \ref{sec:improving_the_model}, jobs now have a predefined, variable power draw according to the defined phases. Resuming a job also carries an additional startup phase with it.
 
+\subsection{Modifying the existing jobs to use the new model}
 
-\section{building ontop of the existing gaia sim}
+The first step to be taken was to add the described model to the jobs as outlined in figure \ref{fig:class_diagram}. 
+So far, jobs were generated from \verb|csv|-formatted traces, one example being provided in listing \ref{list:trace_csv}.
 
-Which parts of GAIA do I add on?
-=> this should just be the schedulers and the part where the carbon is calculated, this ensures that 
+\begin{lstlisting}[frame=single, numbers=none, caption={Excerpt from the Alibaba-PAI trace}, label={list:trace_csv}, basicstyle=\ttfamily]
+arrival_time,   length,     cpus
+0.0,            6302.0,     1
+68.0,           1000.0,     1
+463.0,          1570.0,     3
+838.0,          23549.0,    1
+\end{lstlisting}
+
+The chosen way of supplying the model information was to add a new column to the trace files, which would entail a python readable \verb|dict|, essentially a \verb|JSON|-like definition of the model as described in listing \ref{listing:model_python}.
+As this was just a string, I would then use Python's \verb|eval()| to read it back into a python object.\todo{Check how and if I should visualize this}
+
+As an example, a simplified \verb|roberta.py|, the job that was measured in section \ref{sec:power_measurements}, could look like the code in listing \ref{list:roberta_model_definition}
+
+\begin{lstlisting}[frame=single, numbers=none, caption={Simplified definition for a job similar to the experiment}, label={list:roberta_model_definition}, basicstyle=\ttfamily]
+{
+    'startup': [
+        {'name': 'Start', 'duration': 5.349, 'power': 59.9},
+        {'name': 'Finish Imports', 'duration': 12.36, 'power': 53.77},
+        {'name': 'Data loaded', 'duration': 5.7513, 'power': 63.17}, 
+    ],
+    'work': [
+        {'name': 'Train', 'duration': 8.171, 'power': 221.93}, 
+        {'name': 'Evaluate', 'duration': 1.5477, 'power': 134.0}, 
+        {'name': 'Save', 'duration': 2.720, 'power': 105.1,
+            'is_checkpoint': True}, 
+    ] * 5
+}
+\end{lstlisting}
+
+In order to use this model definition and read out the power of a job at a given time, a function was crated that essentially traverses all phases in order, keeping track of the time, and returning the power of the phase when the requested time is reached. 
+This was als used to create figure \ref{fig:model_overlaid}.
+
+\todo{Perhaps I should add a little pseudo code to explain this.}
+
+\subsection{Uninterrupted oracle scheduling}
+
+There aleady was an existing version of this scheduling approach which assumed constant power.
+Thus, I implemented a python function that would take in the model definition 
+
+\subsection{{Checkpoint \& resume scheduling for heterogeneous jobs}}
 
 \section{Evaluating carbon-aware scheduling with the new job model}
 
