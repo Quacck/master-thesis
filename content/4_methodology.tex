@@ -273,15 +273,15 @@ The parameters for the improved job model are shown in form of the python implem
 
 \todo{Probably need to improve the code here}
 \begin{lstlisting}[language=python, frame=single, numbers=none, caption={Python Model definition}, basicstyle=\ttfamily, label={listing:model_python}]
+class ModelParameters(TypedDict):
+    startup: List[Phase]
+    work: List[Phase]
+    
 class Phase(TypedDict):
     name: str
     duration: float
     power: float
-    is_checkpoint: NotRequired[bool]
-
-class PhaseSpec(TypedDict):
-    startup: List[Phase]
-    work: List[Phase]    
+    is_checkpoint: NotRequired[bool]   
 \end{lstlisting}
 
 Some simplifications are made: the duration of each phase is well known and the power per phase is a constant. Phases can also be named for later reference.
@@ -317,15 +317,6 @@ However, in the context of carbon aware scheduling, this should not be too big o
 The high error likely comes from the high variance during the training phases which is not captured in the model.
 
 The total energy predicted by the model is very close to the actual real life experiment, this should mean that the total carbon calculated on the model should also be close to the carbon emitted by the real program.
-
-\begin{itemize}
-    \item we can deduce phases
-    \item each phase has a constant power draw
-    \item give an example of how to represent the real-world measurements into a model
-    \item now we should proof that the model actually represents the reality to a certain degree (error analysis)
-    \item have a cute graph showing the measurements and the model-"measurements" next to each other
-    \item also show that the stop-resuming functionality can be represented with our model
-\end{itemize}
 
 \section{Choosing an implementation approach}
 
@@ -511,22 +502,28 @@ arrival_time,   length,     cpus
 838.0,          23549.0,    1
 \end{lstlisting}
 
-The chosen way of supplying the model information was to add a new column to the trace files, which would entail a python readable \verb|dict|, essentially a \verb|JSON|-like definition of the model as described in listing \ref{listing:model_python}.
-As this was just a string, I would then use Python's \verb|eval()| to read it back into a python object.\todo{Check how and if I should visualize this}
+In the original GAIA implementation, jobs have an \verb|arrival_time|, which signify when the job should be added to the simulation in seconds. 
+The \verb|length| of a job similarly encodes the seconds a job needs to fully execute. The \verb|cpu| column was not interesting for my work, as previously discussed.
 
+The chosen way of supplying the model information was to add two new columns to the trace files, which would entail the type of job and a column for arguments. 
+As of now, the following types are supported: \verb|constant|, \verb|mocked-constant-from-phases|, \verb|phases|, and \verb|ml|. 
+The first two \verb|constant| types are for backward-compatibility with GAIA, and would be used in the evaluation later. 
+
+Type \verb|phases| is the main way of creating a job with phases such as the one used in the experiment. The supplied argument in that case would entail a python readable \verb|dict|, essentially a \verb|JSON|-like definition of the model as described in listing \ref{listing:model_python}.
+As this was just a string, I would then use Python's \verb|eval()| to read it back into a python object.\todo{Check how and if I should visualize this}
 As an example, a simplified \verb|roberta.py|, the job that was measured in section \ref{sec:power_measurements}, could look like the code in listing \ref{list:roberta_model_definition}
 
 \begin{lstlisting}[frame=single, numbers=none, caption={Simplified definition for a job similar to the experiment}, label={list:roberta_model_definition}, basicstyle=\ttfamily]
 {
     'startup': [
-        {'name': 'Start', 'duration': 5.349, 'power': 59.9},
+        {'name': 'Start', 'duration': 5.34, 'power': 59.9},
         {'name': 'Finish Imports', 'duration': 12.36, 'power': 53.77},
-        {'name': 'Data loaded', 'duration': 5.7513, 'power': 63.17}, 
+        {'name': 'Data loaded', 'duration': 5.75, 'power': 63.17}, 
     ],
     'work': [
-        {'name': 'Train', 'duration': 8.171, 'power': 221.93}, 
-        {'name': 'Evaluate', 'duration': 1.5477, 'power': 134.0}, 
-        {'name': 'Save', 'duration': 2.720, 'power': 105.1,
+        {'name': 'Train', 'duration': 8.17, 'power': 221.93}, 
+        {'name': 'Evaluate', 'duration': 1.54, 'power': 134.0}, 
+        {'name': 'Save', 'duration': 2.72, 'power': 105.1,
             'is_checkpoint': True}, 
     ] * 5
 }
@@ -535,15 +532,115 @@ As an example, a simplified \verb|roberta.py|, the job that was measured in sect
 In order to use this model definition and read out the power of a job at a given time, a function was crated that essentially traverses all phases in order, keeping track of the time, and returning the power of the phase when the requested time is reached. 
 This was als used to create figure \ref{fig:model_overlaid}.
 
-\todo{Perhaps I should add a little pseudo code to explain this.}
+A generalising helper type is \verb|ml|, which takes a dictionary of paramerters and converts that to model paramerters for the \verb|phases| type. A similar job as to the one above would be created with the following:
+
+\begin{lstlisting}[frame=single, numbers=none, caption={Generic model definition for machine learning jobs}, label={list:roberta_model_definition_generic}, basicstyle=\ttfamily]
+{
+    'start_duration': 23.45
+    'start_power': 60
+    'training_duration': 8.17
+    'training_power': 221.93
+    'evaluate_duration': 1.54
+    'evaluate_power': 63.17
+    'save_duration': 2.72
+    'save_power': 105.1
+    'epochs': 5
+}
+\end{lstlisting}
 
 \subsection{Uninterrupted oracle scheduling}
 
-There aleady was an existing version of this scheduling approach which assumed constant power.
-Thus, I implemented a python function that would take in the model definition 
+There aleady was an existing version of this scheduling approach which assumed constant power and that the carbon trace would be fully known ("oracle"). 
+Jobs would not be able to checkpoint \& resume in this version.
+The algorithm for which is pseudocoded in listing \ref{list:pseudocode_oracle}.
+
+\begin{lstlisting}[frame=single, numbers=left, caption={Pseudocode for non-interrupt oracle scheduling}, label={list:pseudocode_oracle}, basicstyle=\ttfamily]
+function schedule_job_no_checkpointing_resuming(job):
+    possible_starts = []
+    for every possible starttime until deadline:
+        calculate carbon_emissions_of_job at starttime
+        add carbon_emission to possible_starts
+    
+    return starttime with least carbon emissions
+
+function carbon_emissions_of_job(job, carbon_trace):
+    sum_of_emissions = 0
+
+    for each second of job:
+        sum_of_emissions += carbon_trace at timepoint * constant_watt
+    
+    return sum_of_emissions
+\end{lstlisting}
+
+In order to adjust this to the new model where power is a function of time, only line 13 needed to be changed. 
+Thus, I implemented a python function whose input are the model parameters (see listing \ref{roberta_model_definition}), and which would return the power at a specified time. 
+Evaluating this scheduling approach will take place in section \ref{sec:evaluate_scheduling}, after another scheduling algorithm is introduced.
+
 
 \subsection{{Checkpoint \& resume scheduling for heterogeneous jobs}}
 
-\section{Evaluating carbon-aware scheduling with the new job model}
+Under the constant-power, no startup-overhead assumption of the already exisiting implementation, the algorithm for this scheduler worked like the following:
+
+\begin{itemize}
+    \item order all timeslots until the job deadline by their emissions ascending
+    \item exeute the job on those timeslots until done
+\end{itemize}
+
+This would minimize the carbon emissions, as only the best timeslots would be used, but would also create unrealistic schedules sometimes. 
+For example, in figure \ref{fig:schedule_problems}, if a job's deadline is in the distant future, due to the diurnal nature of the electic grid, the job would be scheduled on the "peaks" of each day. Sometimes this would lead to a job being simulated as being executed for very short timeframs at a time\todo{Check wording}. As shown in the power measurement chapers, this kind of scheduling would create alot of overhead from starting so many times.
+
+\begin{figure}
+    \missingfigure{I should show a Gantt chart of the mishappen scheduling for the checkpoint resume scheduler}
+    \caption{Problems in the checkpoint \& resume scheduling under the previous assumptions}
+    \label{fig:schedule_problems}
+\end{figure}
+
+
+In order to implement a scheduler for the improved job model, I chose to use \emph{linear programming} (also: LP).
+In a nutshell, LP is an optimization method, that given linear equations and constraints, finds a set of variables (or a vector) that would minimize (or maximize) an optimization goal. 
+The reason for choosing this approach over, for example coming up with a "standard" algorithm, was that I had never used LP before and that due to the "inherent optimization", the burden of\todo{Kann man das so sagen?} proof for the correctness would be lower. LP
+
+Translating this to the context of carbon-aware scheduling, the resulting vector would decode when a job should be executed, the optimization goal would be to minimize the emitted carbon. 
+A constraint for example could be that all timeslots being executed should add up to the job length. 
+The big challenge is then to model all of this in the form of mathematical equations, which will be most part of this section's remainder.
+
+\paragraph{Personal experience with linear programming}
+
+Linear programming is its own programming paradigm. Unlike, for example, imperative programming, where each instruction would be coded explicitly, enabling classic debugging and such, in LP, a mathematical model would be written which is then solved by a \emph{solver}. 
+Different implementations for these solvers exist, but atleast in my case, the result output by a solver would either be an error, or the result set. 
+As the solver uses the whole model simultaneously, debugging individual parts of the model is not possible outside of removing them from the overall model.
+
+Thus, an iterative approach to LP proved useful. 
+I would encode some part of my overall problem into the model, solve it, and immediatly plot the variables of the result set and check them visually.
+The visual check is very important. 
+Many times the solver would solve the problem "so well" that jobs would get scheduled in a way that the emitted carbon is minimized, but the jobs would be executed in edge cases that I did not intend but that are possible under the model, examples of this will be given in the following parts.
+
+Another part of programming LP is "just knowing the tricks". 
+Many common programming operations, especially ones for control flow, cannot be expressed directly (as they need to be a linear equation).
+There are some mapping for such operations, but finding out how seems to be harder than in other paradigms, since the LP community appears to be smaller in comparison and online ressources are limited.
+Some "tricks" will be highlighted in the latter parts aswell. 
+
+\paragraph{Modelling carbon-aware scheduling in a linear program}
+
+In this part, I would like to preset the steps taken to model the scheduler as an LP problem, highlight some implementation details and visualizing the results of each step.
+I used python's \verb|PuLP| library.
+It allows creating LP models to standard file types and also helps in calling external solvers aswell as querying the results.
+
+\subparagraph{Executing the job}
+
+Firstly, as the job has a certain length and a set deadline, I chose to use an array of timeslot-variables as my result set. Each such variable would be a boolean signifiying whether the job would be executed at that time.
+For the first constraint, the sum of all boolean variables (which are represented as 0 and 1) should add up to the job length, effectivly executing the job for length-many timeslots.
+The necessary objective function is to be defined as each timeslot-being-executed multiplied by the carbon-per-watt at that timeslot.
+
+As an example, the code for this is shown in listing \ref{}
+
+\begin{lstlisting}
+
+\end{lstlisting}
+
+
+
+
+\section{Evaluating carbon-aware scheduling with the new job model} \label{sec:evaluate_scheduling}
 
 Hi!
