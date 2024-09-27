@@ -1149,3 +1149,60 @@ STARTUP_LENGTH = 10 #int(mockPowerFunction.duration_startup)  # Startup time for
   + auch wenn nur rauskommt, das 
 + Fokus auf das Phasenmodell perhaps, das hab ich dann _auch_ noch mal benutzt in der Simulation
 + man kann auch den fokus dann eher auf die ergebnisse legen
+
+# Svens Feedback
+
++ Titel zw. deutsch und englisch gleich halten (parameterized),
++ framing überdenken: parametrisierbares testbed vs.  improving the current model
+  + Sven mag das testbed mehr
+  + auf jeden fall später nochmal grammarly rüberlaufen lassen
+  + "We" mag Sven __mehr__, dann gerne nochmal in die selbständigkeitserklärung anpassen bzgl. dem scientific "we"
+  + gerne mehr aktive formulierungen weniger "verkaufen": i would like to highlight vs. of particular interessest is...
+  + structured lit. review; siehe telegram -> sven's strukturforschlag
+  + weniger could / would!! Todos at me motivierender schreiben
+  + nie "smart" alleine benutzen
+  + quotation vs. __citation__
+  + "improve on existing models" 
+  + in related work sich besser abgrenzen duch praising der ex. work usw.
+  + model und implementation gerne als 2 contributions sprachlich hervorheben (e.g. eig. nahmen und kapitel)
+  + perhaps "state of the art" statt "related work"
+  + introduction sollte somehow mit dem titel verbunden sein
+  + france in summer story, seasonal effects e.g. nuclear power stations having no cooling water
+  + fig. 2.1
+    + [agora](https://www.agora-energiewende.org/data-tools/agorameter/chart/today/power_generation/01.09.2023/31.08.2024/daily)
+    + seasonal effects, winterferien, ganz viele signale
+    + ![alt text](image-36.png)
+  + vor dem schreiben nochmal die scientific lingo "lernen" via paper lesen
+  + man __KANN__ den background auch in der intro reinmachen, alternativ kann das intro das problem schildern und motivieren
+    + ist beides OK
+    + zZ ist im background recht viel von der motivation drin. gotta see
+    + "background" eher für das "lösung verstehen"
+    + intro kann sachen includen um motivation zu verstehen
+    + "GAIA on Carbs" meinen part kann ich auch neu benennen
+  + Evaluation ist ein eigenes Kapitel
+  + Typographie checken ` '
+  + \usepackage[per-mode=symbol, exponent-product = \cdot]{siunitx}
+  + Figure und Section sind eigennamen
+  + package autoref könnte perhaps bei den \ref helfen
+  + ~ benutzen um die das \ref zu binden (ist ein non breaking whitespace)
+  + Thankfully, ... => In the recently ... usw.
+    + Wissenschaftler mit stock im po sein
+  + Polze mag keine Fußnoten, perhaps eine extra online-ressources bibliographie zusätzlich 
+    + "citeWeb" macro erstellen
+  + shell commands, auch mit Zeilennummern, dann kann man darüber besser diskutieren
+  + überprüfen bzgl. anführungsstrichen, perhaps ist ein \emph besser
+  + Es ist immer Figure \ref, keine \ref  nummer alleine stehen haben 
+  + Figures sollten mehr alleine stehen können, dazu die caption anpassen
+    + Caption kann dazu auch länger werden, die muss die ganze Figure erklären können. man KANN das auch in der legende erklären.
+    + "Tonspur zu den slides"
+    + Die approaches bzgl. caption und legende kann man auc mischen,
+    + Graphiken mit Legende lassen sich leichter in die verteigigung packen
+    + Capitalization in den Kapitelüberschriften konsistent halten, __titlecase__
+      + prague und lisbon street tiles
+      + Chicago oder APA Style
+      + auch für alles innerhalb einer Figure
+      + auch in der Bibliographie durchziehen, wenn profi bist
+      + compound vs prefixwords
+      + violence ensured when capitalizing To A etc. 
+
+  + 2700€ netto @ uni etwa

@@ -10,8 +10,6 @@ We should probably argue why the current job model used in literature is not suf
 \subsection{Power Measurements on Machine Learning Jobs}
 \label{sec:power_measurements}
 
-\todo{Für die Durchführung von Messungen ist es zwingend erforderlich, die verwendete Testumgebung (Hardware wie auch Software) zu dokumentieren sowie Messparameter gewissenhaft zu wählen. Zu den wichtigsten Parametern gehren die Anzahl der Messwiederholungen, die Anwendung von Warmup-Läufen sowie die Identifikation und Vermeidung möglicher störender Einflüsse.}
-
 \todo{I feel like I should add a paragraph somewhere explaining what I want to measure}
 
 \paragraph{Options for measuring power}
@@ -46,7 +44,7 @@ I then used \emph{pinpoint}, a tool for energy profiling that can use different 
 
 The experiments were run on my personal computer, the components of that are listed via the \emph{hwlist} tool, with unnecessary columns and rows being redacted for brevity:
 
-\begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Hardware that was measured}, basicstyle=\ttfamily]
+\begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Hardware environment of the measurements}, basicstyle=\ttfamily]
    $ lshw -short -C processor -C memory -C display -C bus
 Class          Description
 ==========================
@@ -102,10 +100,10 @@ The way of doing experiment \ref{experiment:startup_only} was to copy the script
 As this is being run on standard hardware on a standard operating system, all experiment are subject to noise. 
 For example, \emph{Dynamic frequency and voltage scaling (DFVS)}, the OS technique of increasing CPU "speeds" according to work load would add power in an uncontrolled way. Also, background tasks may happen "randomly", increasing power usage. 
 
-Thus, for the testing, any foreground apps would be closed. I also used \emph{cpupower}, as shown in snippet below, to set the CPU frequency to a set value:
+Thus, for the testing, any foreground apps would be closed. I also used the Linux tool \verb|cpupower|, as shown in snippet below, to set the CPU frequency to a set value:
 
-\todo{Think about whether this is really interesting, I guess keep it if I need more content}
-\todo{What is the MAXFREQ of my ryzen 5?}
+\todo{Think about whether this is actually interesting, I guess keep it if I need more content}
+\todo{What is the MAXFREQ of my Ryzen 5?}
 \begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Used operating system information}, basicstyle=\ttfamily]
     MINFREQ=$(cpupower frequency-info --hwlimits | sed -n '1d;p' \
         | awk '{print $1}')
@@ -123,13 +121,13 @@ Thus, for the testing, any foreground apps would be closed. I also used \emph{cp
 \label{listing:setting_cpu_frequency}
 
 As machine learning makes use of available GPUs, the frequency should also be similarly set to a defined value. 
-NVIDIA provides guide on how to do so \footnote{\url{https://developer.nvidia.com/blog/advanced-api-performance-setstablepowerstate}}.
+NVIDIA provides guide on how to do so\footnote{\url{https://developer.nvidia.com/blog/advanced-api-performance-setstablepowerstate}}.
 Sadly, my used GPU, the NVIDIA GTX 1070, is not capable of fixing the frequency as of the time of conducting these experiments. 
-While it is supposed to be possible according to SOURCE\todo{Reconstruct this argument, perhaps theres still something in my PC history | grep}, but there seems to currently be drivers issue preventing this\todo{Find the forum post of people complaining}. 
+While it is supposed to be possible according to\todo[inline]{SOURCE, Reconstruct this argument, perhaps there is still something in my PC history | grep}, but there seems to currently be drivers issue preventing this\todo{Find the forum post of people complaining}. 
 Thus, the frequency of the GPU was not fixed. 
 To reduce the effect of frequency scaling here, the time between experiments was increased generously so that any impact from such scaling would reoccur throughout each run and there would be reduced dependency between runs.
 
-\todo{further explain how the experiments were conducted}
+\todo{Further explain how the experiments were conducted}
 
 \paragraph{Conducting each experiment}
 
@@ -182,6 +180,7 @@ There was an option to discuss the measurement results after normalizing each me
     \includegraphics[width=\linewidth]{power-measurements/stacked_plots/roberta_full_0714.pdf}
     \caption{Stacked trend lines of the power consumption for the full runs}
     \label{fig:plot_full_stacked}
+    \todo[inline]{These are not yet accurate, the multiple evaluate phases are being grouped into one, which is wrong.}
 \end{figure}
 
 The main takeaways from these measurements are:
@@ -189,7 +188,7 @@ The main takeaways from these measurements are:
 \begin{enumerate}
     \item There is a long (about 25\%) start-up phase, which is spent in starting python, loading libraries, and loading data to disc.
     \item There are periodical work-phases; a high-power training phase would be followed by low-power evaluation\todo{Uhm, where did my evaluation phase markers go?? They are mushed together as they share a label} phase and a low-power checkpointing.
-    \item There also appears to be higher variance in measurements during the training phases in comparison to the others.
+    \item A higher variance in measurements occurs during the training phases in comparison to the others.
 \end{enumerate}
 
 This already shows, that improvements upon the constant-power model used in \cite{wiesner_lets_2021} are possible. 
@@ -227,7 +226,7 @@ Additional considerations are that the amount of epoch that are worked off befor
 Unlike the previous experiment, where work is stopped as soon as checkpoint is created, this time the program will be stopped just before a checkpoint is created (in this case just the second checkpoint would be saved). 
 This should show the maximum created overhead from a checkpoint \& resume strategy. 
 
-While this may sound artificial, it could happen in environments where the interaction between the scheduler and the job is not well orchestrated, for example in an environment where jobs are stopped "at random" like in a cloud spot instance.\todo{Improve the wording here}.
+While this may sound artificial, it could happen in environments where the interaction between the scheduler and the job is not well orchestrated, for example in an environment where jobs are stopped "at random" like in a cloud spot instance.\todo{Improve the wording here}
 
 Again, the results are visualized in figure \ref{fig:plot_partial_abort_stacked} and \ref{fig:plot_partial_abort_continue_stacked}. Attention should be paid to:
 
@@ -284,12 +283,20 @@ class Phase(TypedDict):
     is_checkpoint: NotRequired[bool]   
 \end{lstlisting}
 
-Some simplifications are made: the duration of each phase is well known and the power per phase is a constant. Phases can also be named for later reference.
-Using these specifications, a simple time-to-power function can be defined, that looks up the input time and traverses the phases in order. While not very efficient, this works well enough in a simulation environment.
+Some simplifications are made: the duration of each phase is well known and the power per phase is a constant. 
+Phases can also be named for later reference.
+These phases essentially define a step function, i.e. piecewise constant function.
+Unlike a traditional step function, the start- and endpoints of each "piece" would be encoded implicitly by the previous phases.
+Using these specifications, a simple time-to-power function can be defined, that looks up the input time and traverses the phases in order.
+
+Initially, I also considered allowing any expression instead of a constant value for power and then using Python's \verb|evaluate()| to e.g. allow a function-per-phase model.
+In section \ref{sec:checkpoint_resume_lp}, having a rather restrictive step function will be of advantage, however. \todo{Add some more explanation to this in that section}
+
+\todo[inline]{What to do if the events are not known? How does this work for more complex jobs}
 
 The measurements that have been taken can now be fit into this new model. 
 As each measurement-point can be associated to a phase via the aforementioned added logging, the average of each phase-associated measurement is used to determine the model parameters. 
-The durations of the phases are calculated simularly by taking the average time the logging occured during the measurements.
+The durations of the phases are calculated similarly by taking the average time the logging occurred during the measurements.
 
 Using this strategy on the 10 complete runs results in figure \ref{fig:model_overlaid}, which shows the derived model on black with the previous figure \ref{fig:plot_full} in less opacity. 
 The startup phase looks well approximated, visually however there is some error during the work phases.
@@ -313,7 +320,7 @@ The first one would give a measure of the model's accuracy on a short-time (sub-
 Each of the 10 runs would be taken as the ground truth while the other 9 would be used to create the model. The results are the following: t power between the prediction and remainder has an RSME of 39.3 W while the difference in total energy is calculated as -0.1 kJ. 
 
 Interpreting this, it seems that the model performs poorly as a predictor for die exact power used at some timepoint as the RMSE is rather large (think of the maximum power drawn being about 250W). 
-However, in the context of carbon aware scheduling, this should not be too big of an issue as the time frames for carbon-emissions are order of magnitude larger. 
+However, in the context of carbon aware scheduling, this should not be too big of an issue as the time frames for carbon-emissions are orders of magnitudes larger (electricitymaps has a resolution of 1 hour for each intenstiy of carbon emissions). 
 The high error likely comes from the high variance during the training phases which is not captured in the model.
 
 The total energy predicted by the model is very close to the actual real life experiment, this should mean that the total carbon calculated on the model should also be close to the carbon emitted by the real program.
@@ -322,32 +329,32 @@ The total energy predicted by the model is very close to the actual real life ex
 
 Now that an improvement on the job model has been made, the question, on how to evaluate the implications of said model, remains. 
 
-% We first need to explain why we chose our approach (building upon exisiting work inside GAIA). The other option that is not using a simulation would be to schedule real jobs, for example by creating a slurm plugin.
+% We first need to explain why we chose our approach (building upon exisiting work inside GAIA). The other option that is not using a simulation would be to schedule real jobs, for example by creating a Slurm plugin.
 
-% We can then evaluate how well a slurm plugin would work for our given Forschungsragen. End that section by deeming the plugin idea as unfit, we can then shift to arguing for the simulation approach as that is also something that just came out in related work (perhaps we should see wether we list GAIA as related work or introduce it just then)
+% We can then evaluate how well a Slurm plugin would work for our given Forschungsragen. End that section by deeming the plugin idea as unfit, we can then shift to arguing for the simulation approach as that is also something that just came out in related work (perhaps we should see wether we list GAIA as related work or introduce it just then)
 
-\subsection{Carbon-aware scheduling via a slurm plugin}
+\subsection{Carbon-aware scheduling via a Slurm plugin}
 \label{subsec:slurm_plugin}
 
 My first idea was to use a non-simulation approach. 
-The HPI's Data Lab \footnote{\url{https://hpi.de/forschung/infrastruktur/hpi-data-engineering-lab.html}} runs a \emph{slurm} cluster and also has some nodes with power measurement infrastucture included. 
-Slurm is an "open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters"\footnote{\url{https://slurm.schedmd.com/overview.html}}. 
+The HPI's Data Lab \footnote{\url{https://hpi.de/forschung/infrastruktur/hpi-data-engineering-lab.html}} runs a \emph{Slurm} cluster and also has some nodes with power measurement infrastructure included. 
+Slurm is an "open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters"\footnote{\url{https://Slurm.schedmd.com/overview.html}}. 
 The job scheduling part is important here, it also supports a plugin infrastructure that includes scheduling plugins. 
-One of the highlighted papers\cite{inigo_goiri_greenslot_2011} in the related works section specifically used slurm for its carbon-aware scheduler implementation and thus seemed like a good starting point for my own work.
+One of the highlighted papers\cite{inigo_goiri_greenslot_2011} in the related work section specifically used Slurm for its carbon-aware scheduler implementation and thus seemed like a good starting point for my own work.
 
 \paragraph{Installing Slurm locally}
 
-For my purposes, a local installation would suffice as I would not need to run heavy workloads but instead just the scheduling part of slurm. 
-While there is a slurm \verb|apt get| package for my ubuntu version, this would not work as any plugins to be included during the slurm compilation, meaning I would have to do the same.
+For my purposes, a local installation would suffice as I would not need to run heavy workloads but instead just the scheduling part of Slurm. 
+While there is a Slurm \verb|apt get| package for my Ubuntu version, this would not work as any plugins to be included during the Slurm compilation, meaning I would have to do the same.
 
-Slurm's documentation provides some guidelines on how to install slurm, which I followed. 
-I gave cloning the main branch an attempt but I would get stuck during the compilation process, using the predefined released versions however worked.
+Slurm's documentation provides some guidelines on how to install Slurm, which I followed. 
+I tried cloning the main branch, but I got stuck during the compilation process. However, using the predefined released versions worked.
 
-Installing \verb|munge|\footnote{\url{https://github.com/dun/munge/wiki/Installation-Guide}} is also necessary, which is used for authentication in slurm.
+Installing \verb|munge|\footnote{\url{https://github.com/dun/munge/wiki/Installation-Guide}} is also necessary, which is used for authentication in Slurm.
 
-One problem arose as I tried to start the \verb|slurmd|- and \verb|slurmctld| services. The first one is the worker service that would later execute jobs submitted to slurm. The latter is the main controller that, for example, schedules jobs on workers. While the command to start them would not fail, upon node inspection via Slurm's \verb|scontrol| command, it would show that all nodes are \verb|DOWN| instantly.
+One problem arose as I tried to start the \verb|Slurmd|- and \verb|Slurmctld| services. The first one is the worker service that would later execute jobs submitted to Slurm. The latter is the main controller that, for example, schedules jobs on workers. While the command to start them would not fail, upon node inspection via Slurm's \verb|scontrol| command, it would show that all nodes are \verb|DOWN| instantly.
 |
-Dealing with slurm's problems usually leads to inspecting its logs, in my case the logs showed the following:
+Dealing with Slurm's problems usually leads to inspecting its logs, in my case the logs showed the following:
 
 \begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Slurm error logs}, basicstyle=\ttfamily]
 $ less config.log
@@ -357,14 +364,14 @@ error: Couldn't find the specified plugin name for cgroup/v2
 error: cannot find cgroup plugin for cgroup/v2
 error: cannot create cgroup context for cgroup/v2
 error: Unable to initialize cgroup plugin
-error: slurmd initialization failed
+error: Slurmd initialization failed
 
 \end{lstlisting}
 
-Slurm uses Linux' \verb|cgroup| feature to manage the submitted job's hardware ressources. The log hints at some problem related to slurm's usage of it.
-The solution was this was to provide slurm's \verb|cgroup.conf| file. In my use-case of getting slurm to simply start, this did not need to be very sophisticated so I just used an off-the-shelf (off-the-stackoverflow\footnote{\url{https://stackoverflow.com/a/74211989}}) configuration file.
+Slurm uses Linux' \verb|cgroup| feature to manage the submitted job's hardware ressources. The log hints at some problem related to Slurm's usage of it.
+The solution was this was to provide Slurm's \verb|cgroup.conf| file. In my use-case of getting Slurm to simply start, this did not need to be very sophisticated so I just used an off-the-shelf (off-the-stackoverflow\footnote{\url{https://stackoverflow.com/a/74211989}}) configuration file.
 
-Running \verb|scontrol| again, I was finally able to see idling nodes, meaning that slurm was succesfully installed form source:
+Running \verb|scontrol| again, I was finally able to see idling nodes, meaning that Slurm was successfully installed form source:
 
 \begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Slurm running}, basicstyle=\ttfamily]
 $ scontrol
@@ -373,9 +380,9 @@ scontrol: update NodeName=vincent-Laptop STATE=RESUME
 
 \paragraph{Creating a scheduler plugin}
 
-The slurm documentation provides a short guide on how to add a plugin to slurm.\footnote{\url{https://slurm.schedmd.com/add.html}}. 
-As a start, I simply copied slurm's default scheduler (which is also a plugin) to to the specified directory under a new name, and addings that new name to slurms build files. 
-It was then was time to recompile slurm. 
+The Slurm documentation provides a short guide on how to add a plugin to Slurm.\footnote{\url{https://Slurm.schedmd.com/add.html}}. 
+As a start, I simply copied Slurm's default scheduler (which is also a plugin) to to the specified directory under a new name, and addings that new name to Slurms build files. 
+It was then was time to recompile Slurm. 
 Now however, during the recommended \verb|autoreconf| step, an error occured:
 
 \begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Plugin recompilation errors}, basicstyle=\ttfamily]
@@ -390,14 +397,14 @@ autoreconf: error: /usr/bin/autoconf failed with exit status: 1
 \end{lstlisting}
 
 The solution, while not very obvious, was to install the \verb|libgtk2.0-dev| library. \footnote{\url{https://stackoverflow.com/questions/7805815/autoconf-error-on-ubuntu-11-04}}. 
-I then added a simple logging which then showed up in slurm's log files too.
+I then added a simple logging which then showed up in Slurm's log files too.
 
 \paragraph{Adding more logic to the scheduler plugin}
 
-One very helpful step for developing inside slurm is to enable the debugging flags.
+One very helpful step for developing inside Slurm is to enable the debugging flags.
 This must be decided before compilation by using the \verb|--enable-developer| and \verb|--disable-optimizations| flags during the \verb|/configure| step. 
 With that, debug symbols are added to the outgoing binaries. 
-As I was using vscode, I could then attach its debugger to the running slurm thread with full functionality.
+As I was using vscode, I could then attach its debugger to the running Slurm thread with full functionality.
 
 The code of the plugin runs in its own thread and there is no sandboxing or similar around it.
 Thus there are seemingly no limitation on what can be done inside the plugin. 
@@ -406,25 +413,25 @@ For testing, I read out information on the incoming jobs such as set constraints
 \paragraph{Problems of a scheduler plugin}
 
 One big problem manifested in that not all jobs "showed up" inside the plugin's job queue. 
-If I would submit 6 jobs, via slurm's \verb|squeue| command, only a part such as the last 3 could be logged inside the plugin.
-A possible explaination for this could be slurms scheduler architecture: while there is a scheduler plugin, there also is a scheduler inside slurm's main loop. 
+If I would submit 6 jobs, via Slurm's \verb|squeue| command, only a part such as the last 3 could be logged inside the plugin.
+A possible explaination for this could be Slurms scheduler architecture: while there is a scheduler plugin, there also is a scheduler inside Slurm's main loop. 
 That main scheduler loop also uses the same job queue as the plugin.
 
-To hack around this, I tried disabling slurm's main scheduling loop by setting \verb|sched_interval=-1| inside the slurm configuration file. 
+To hack around this, I tried disabling Slurm's main scheduling loop by setting \verb|sched_interval=-1| inside the Slurm configuration file. 
 While this had the effect of being able to access all incoming jobs inside the plugin, it also had the side-effect of disabling all logic concerning starting the jobs.
 So by choosing this route, the plugin would apparently also need to re-implement alot of extra logic, which conventionally would be not be put inside the scheduler plugin. 
 
 I also looked into whether there were any API hooks that are exposed to the plugin. 
-Up until slurm version 20.11, scheduler plugins had callbacks such as when jobs were submitted. There also was support for "passive" scheduler that would get invoked when determined by slurm.
+Up until Slurm version 20.11, scheduler plugins had callbacks such as when jobs were submitted. There also was support for "passive" scheduler that would get invoked when determined by Slurm.
 The version I tested however,  23.11, removed all such functionality and documentation. All plugins are implemented via threads that only have callbacks on when they are started and stopped.
 
 Thus, since there was no apparent way of getting around this scheduler race condition between the plugin and the main loop. 
 The scheduler approach as a whole was dropped. 
 While I would not say that a plugin approach is impossible, the effort to implement one from scratch subjectivly seems very high. 
-The public documentation for developing on slurm is scarce. 
-There is a mailing list that can be searched, but it looks to be mostly aimed for administrating slurm and not developing it.
+The public documentation for developing on Slurm is scarce. 
+There is a mailing list that can be searched, but it looks to be mostly aimed for administrating Slurm and not developing it.
 
-Other avenues that could be explored are slurm's Lua plugins. There is also a \emph{slurm simulator}\footnote{\url{https://hpckp.org/articles/how-to-use-the-slurm-simulator-as-a-development-and-testing-environment/}} which could potentially be used for carbon-aware scheduling simulation, but that I did not look into much for reasons of little documentation and seeming lack of continued support.
+Other avenues that could be explored are Slurm's Lua plugins. There is also a \emph{Slurm simulator}\footnote{\url{https://hpckp.org/articles/how-to-use-the-Slurm-simulator-as-a-development-and-testing-environment/}} which could potentially be used for carbon-aware scheduling simulation, but that I did not look into much for reasons of little documentation and seeming lack of continued support.
 
 \subsection{Using a Simulation approach}
 
@@ -445,26 +452,26 @@ I would first like to describe the existing testbed in detail to make it clear w
     \label{fig:class_diagram}
 \end{figure}
 
-The main part of GAIA is the scheduler. At program start, it takes parameters\todo{I should probably give an overview of which parameters are supported so I have that terminology later} that determine the scheduling, such as wheter tasks can be interrupted, how to use the carbon information (e.g. use a perfect-information / oracle approach or to use a running average), and how to balance the dollar cost for scheduling. 
+The main part of GAIA is the scheduler. At program start, it takes parameters\todo{I should probably give an overview of which parameters are supported, so I have that terminology later} that determine the scheduling, such as whether tasks can be interrupted, how to use the carbon information (e.g. use a perfect-information / oracle approach or to use a running average), and how to balance the dollar cost for scheduling. 
 The latter I removed for simplicity, which is marked in the figure via the red color of the reserved and spot instances. In my case of carbon-aware scheduling, I did not need that feature.
 
 In the original implementation, the scheduler had multiple queues of tasks. 
 The paper presented an approach of a short queue (tasks under 2 hours) and long tasks (all other), short tasks would get scheduled on spot instances. 
-Again, as I already removed the spot instance, feature, I did not need to multiplicity of queues and they were thus removed. 
+Again, as I already removed the spot instance, feature, I did not need the queue multiplicity and it was removed.
 
-The tasks queues are are based on historical traces. GAIA provided muliple traces already that are described in the paper. To those I added a trace of of the HPI's Data Lab, which will be analysed in section \todo{Link this}.
+The tasks queues are based on historical traces. GAIA provided multiple traces that are described in the paper. To those I added a trace of the HPI's Data Lab, which will be analysed in section\todo{Link this}.
 
 Tasks have a predetermined length (as saved in the trace), and they also hold some data that is used for scheduling such as their arrival time in the system, and how long they should wait until execution. 
 Some properties such as required CPUs were removed.
-My contribtion of the phases-and-power model was added to the tasks.
+My contribution of the phases-and-power model was added to the tasks.
 
 The Scheduler policies are also marked green, as I added scheduler policies that could use this new model. Specifically, I added a (non-) checkpoint \& resume scheduler that works on oracle carbon prediction, this will be further explained in the latter sections.
 
 Scheduled Tasks are submitted to a cluster.
-In my case, this is a simulated, already implemented, cluster that simply logs when each tasks is entered and when they are finished. 
+In my case, this is a simulated, already implemented, cluster that simply logs when each task is entered and finished. 
 In the original paper, they also used an open source adapter that would submit the tasks to an actual Slurm cluster. 
 While this approach could have been used, I decided against it on the basis of not adding further complexity. 
-Thus I also removed the slurm adapter from my implementation.
+Thus I also removed the Slurm adapter from my implementation.
 
 % \paragraph{Data being used}
 % 
@@ -502,7 +509,7 @@ arrival_time,   length,     cpus
 838.0,          23549.0,    1
 \end{lstlisting}
 
-In the original GAIA implementation, jobs have an \verb|arrival_time|, which signify when the job should be added to the simulation in seconds. 
+In the original GAIA implementation, jobs have a \verb|arrival_time|, which signify when the job should be added to the simulation in seconds. 
 The \verb|length| of a job similarly encodes the seconds a job needs to fully execute. The \verb|cpu| column was not interesting for my work, as previously discussed.
 
 The chosen way of supplying the model information was to add two new columns to the trace files, which would entail the type of job and a column for arguments. 
@@ -530,9 +537,9 @@ As an example, a simplified \verb|roberta.py|, the job that was measured in sect
 \end{lstlisting}
 
 In order to use this model definition and read out the power of a job at a given time, a function was crated that essentially traverses all phases in order, keeping track of the time, and returning the power of the phase when the requested time is reached. 
-This was als used to create figure \ref{fig:model_overlaid}.
+This was also used to create figure \ref{fig:model_overlaid}.
 
-A generalising helper type is \verb|ml|, which takes a dictionary of paramerters and converts that to model paramerters for the \verb|phases| type. A similar job as to the one above would be created with the following:
+A generalizing helper type is \verb|ml|, which takes a dictionary of parameters and converts that to model parameters for the \verb|phases| type. A similar job as to the one above would be created with the following:
 
 \begin{lstlisting}[frame=single, numbers=none, caption={Generic model definition for machine learning jobs}, label={list:roberta_model_definition_generic}, basicstyle=\ttfamily]
 {
@@ -550,7 +557,7 @@ A generalising helper type is \verb|ml|, which takes a dictionary of paramerters
 
 \subsection{Uninterrupted oracle scheduling} \label{sec:uninterrupted_oracle_scheduling}
 
-There aleady was an existing version of this scheduling approach which assumed constant power and that the carbon trace would be fully known ("oracle"). 
+There already was an existing version of this scheduling approach which assumed constant power and that the carbon trace would be fully known ("oracle"). 
 Jobs would not be able to checkpoint \& resume in this version.
 The algorithm for which is pseudocoded in listing \ref{list:pseudocode_oracle}.
 
@@ -573,21 +580,21 @@ function carbon_emissions_of_job(job, carbon_trace):
 \end{lstlisting}
 
 In order to adjust this to the new model where power is a function of time, only line 13 needed to be changed. 
-Thus, I implemented a python function whose input are the model parameters (see listing \ref{roberta_model_definition}), and which would return the power at a specified time. 
+Thus, I implemented a python function whose input is the model parameters (see listing \ref{roberta_model_definition}), and which would return the power at a specified time. 
 Evaluating this scheduling approach will take place in section \ref{sec:evaluate_scheduling}, after another scheduling algorithm is introduced.
 
 
-\subsection{{Checkpoint \& resume scheduling for heterogeneous jobs}}
+\subsection{{Checkpoint \& resume scheduling for heterogeneous jobs}} \label{sec:checkpoint_resume_lp}
 
-Under the constant-power, no startup-overhead assumption of the already exisiting implementation, the algorithm for this scheduler worked like the following:
+Under the constant-power, no startup-overhead assumption of the already existing implementation, the algorithm for this scheduler worked like the following:
 
 \begin{itemize}
-    \item order all timeslots until the job deadline by their emissions ascending
-    \item exeute the job on those timeslots until done
+    \item order all time slots until the job deadline by their emissions ascending
+    \item execute the job on those time slots until done
 \end{itemize}
 
-This would minimize the carbon emissions, as only the best timeslots would be used, but would also create unrealistic schedules sometimes. 
-For example, in figure \ref{fig:schedule_problems}, if a job's deadline is in the distant future, due to the diurnal nature of the electic grid, the job would be scheduled on the "peaks" of each day. Sometimes this would lead to a job being simulated as being executed for very short timeframs at a time\todo{Check wording}. As shown in the power measurement chapers, this kind of scheduling would create alot of overhead from starting so many times.
+This would minimize the carbon emissions, as only the best time slots would be used, but would also create unrealistic schedules sometimes. 
+For example, in figure \ref{fig:schedule_problems}, if a job's deadline is in the distant future, due to the diurnal nature of the electric grid, the job would be scheduled on the "peaks" of each day. Sometimes this would lead to a job being simulated as being executed for very short timeframes at a time\todo{Check wording}. As shown in the power measurement chapter, this kind of scheduling would create a lot of overhead from starting so many times.
 
 \begin{figure}
     \missingfigure{I should show a Gantt chart of the mishappen scheduling for the checkpoint resume scheduler}
@@ -598,39 +605,39 @@ For example, in figure \ref{fig:schedule_problems}, if a job's deadline is in th
 
 In order to implement a scheduler for the improved job model, I chose to use \emph{linear programming} (also: LP).
 In a nutshell, LP is an optimization method, that given linear equations and constraints, finds a set of variables (or a vector) that would minimize (or maximize) an optimization goal. 
-The reason for choosing this approach over, for example coming up with a "standard" algorithm, was that I had never used LP before and that due to the "inherent optimization", the burden of\todo{Kann man das so sagen?} proof for the correctness would be lower. LP
+The reason for choosing this approach over, for example coming up with a "standard" algorithm, was that I had never used LP before and that due to the "inherent optimization", the burden of\todo{Kann man das so sagen?} proof for the correctness would be lower.
 
 Translating this to the context of carbon-aware scheduling, the resulting vector would decode when a job should be executed, the optimization goal would be to minimize the emitted carbon. 
-A constraint for example could be that all timeslots being executed should add up to the job length. 
+A constraint for example could be that all time slots being executed should add up to the job length. 
 The big challenge is then to model all of this in the form of mathematical equations, which will be most part of this section's remainder.
 
 \paragraph{Personal experience with linear programming}
 
 Linear programming is its own programming paradigm. Unlike, for example, imperative programming, where each instruction would be coded explicitly, enabling classic debugging and such, in LP, a mathematical model would be written which is then solved by a \emph{solver}. 
 Different implementations for these solvers exist, but atleast in my case, the result output by a solver would either be an error, or the result set. 
-As the solver uses the whole model simultaneously, "debugging" individual parts of the model is not possible outside of removing them from the overall model.
+As the solver uses the whole model simultaneously, "debugging" individual parts of the model is not possible outside removing them from the overall model.
 
 Thus, an iterative approach to LP proved useful. 
-I would encode some part of my overall problem into the model, solve it, and immediatly plot the variables of the result set and check them visually.
+I would encode some part of my overall problem into the model, solve it, and immediately plot the variables of the result set and check them visually.
 The visual check is very important. 
-Many times the solver would solve the problem "so well" that jobs would get scheduled in a way that the emitted carbon is minimized, but the jobs would be executed in edge cases that I did not intend but that are possible under the model, examples of this will be given in the following parts.
+Many times the solver would solve the problem "so well" that jobs would get scheduled in a way that the emitted carbon is minimized, but the jobs would be executed in edge cases that I did not intend, but that are possible under the model, examples of this will be given in the following parts.
 
 Another part of programming LP is "just knowing the tricks". 
 Many common programming operations, especially ones for control flow, cannot be expressed directly (as they need to be a linear equation).
-There are some mapping for such operations, but finding out how seems to be harder than in other paradigms, since the LP community appears to be smaller in comparison and online ressources are limited.
-Some "tricks" will be highlighted in the latter parts aswell. 
+There are some mappings for such operations, but finding out how seems to be harder than in other paradigms, since the LP community appears to be smaller in comparison and online resources are limited.
+Some "tricks" will be highlighted in the latter parts as well. 
 
 \paragraph{Modelling carbon-aware scheduling in a linear program}
 
 In this part, I would like to preset the steps taken to model the scheduler as an LP problem, highlight some implementation details and visualizing the results of each step.
 I used python's \verb|PuLP| library.
-It allows creating LP models to standard file types and also helps in calling external solvers aswell as querying the results.
+It allows creating LP models to standard file types and also helps in calling external solvers as well as querying the results.
 
 \subparagraph{Executing the job}
 
-Firstly, as the job has a certain length and a set deadline, I chose to use an array of timeslot-variables as my result set. Each such variable would be a boolean signifiying whether the job would be executed at that time.
-For the first constraint, the sum of all boolean variables (which are represented as 0 and 1) should add up to the job length, effectivly executing the job for length-many timeslots.
-The necessary objective function is to be defined as each timeslot-being-executed multiplied by the carbon-per-watt at that timeslot.
+Firstly, as the job has a certain length and a set deadline, I chose to use an array of time slot-variables as my result set. Each such variable would be a boolean signifying whether the job would be executed at that time.
+For the first constraint, the sum of all boolean variables (which are represented as 0 and 1) should add up to the job length, effectively executing the job for length-many time slots.
+The necessary objective function is to be defined as each time slot-being-executed multiplied by the carbon-per-watt at that time slot.
 
 As an example, the code for this is shown in listing \ref{fig:lp_work}.
 
@@ -647,17 +654,17 @@ prob.solve(solver)
 
 The first line creates an LP problem and defines the optimization goal to be a minimizing one. 
 Then, a variable "work" is defined as being \verb|DEADLINE|-many (in this case 300) integer-indexed boolean variables. 
-These will be modeled as the timeslots.
-Line 4 defines the optimization goal; each timeslot will be multiplied by the carbon emitted there. As one factor is a boolean, this will only increase the sum if the timeslot is scheduled. 
+These will be modeled as the time slots.
+Line 4 defines the optimization goal; each time slot will be multiplied by the carbon emitted there. As one factor is a boolean, this will only increase the sum if the time slot is scheduled. 
 The last two lines start the solving library. 
-\verb|PuLP| offers an open source solver by default, but during development this proved to be very slow and also did not offer features such as timelimits and retrieving intermediate results.
-I thus chose the \emph{gurobi} solver, a commercial solver that also offers academic licenses. 
+\verb|PuLP| offers an open source solver by default, but during development this proved to be very slow and also did not offer features such as time limits and retrieving intermediate results.
+I thus chose the \emph{Gurobi} solver, a commercial solver that also offers academic licenses. 
 That one supported the previously lamented features and increased development time by a lot. 
 
-The running example will be a deadline of 300 timeslots, the job has a startup phase of 20 units and has 100 work units. 
+The running example will be a deadline of 300 time slots, the job has a startup phase of 20 units and has 100 work units. 
 The above code leads to a result set that is visualized in figure \ref{fig:lp_work},
-which on the bottom part shows the carbon emissions at each timeslot and the upper graph shows the chosen timeslots.
-Looking at the figure, the results are not too suprising: the chosen timeslots are just the points where emissions are lowest, essentially being equal to the result of the WaitAWhile-Algorithm.
+which on the bottom part shows the carbon emissions at each time slot and the upper graph shows the chosen time slots.
+Looking at the figure, the results are not too surprising: the chosen time slots are just the points where emissions are lowest, essentially being equal to the result of the WaitAWhile-Algorithm.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/lp_work.pdf}
@@ -681,7 +688,7 @@ for i in range(STARTUP_LENGTH - 1, DEADLINE):
 \end{lstlisting}
 
 In this snippet, two extra dictionary-variables are introduced, \verb|startup_finished| and \verb|startup|.
-For every timeslot (line 1), set \verb|startup_finished| to true if and only if there is a 0 to 1 transition along the \verb|work| dictionary. This becomes apparent when looking at the following truth table \ref{tab:truth_table_startup_finished}.
+For every time slot (line 1), set \verb|startup_finished| to true if and only if there is a 0 to 1 transition along the \verb|work| dictionary. This becomes apparent when looking at the following truth table \ref{tab:truth_table_startup_finished}.
 Notice how the numerical booleans help in this case, as negative integers get mapped to \verb|0|, or \verb|false| respectively.
 
 \begin{table}[h!]
@@ -694,16 +701,16 @@ Notice how the numerical booleans help in this case, as negative integers get ma
     $1$ & $0$ & $max(-1, 0) = 0$ & $0$ \\ \hline
     $1$ & $1$ & $0$ & $0$ \\ \hline
 \end{tabular}
-\caption{Truth table for finding when working timeslots begin}
+\caption{Truth table for finding when working time slots begin}
 \label{tab:truth_table_startup_finished}
 \end{table}
 
-Line 3 and 4 ensure that "working" timeslots and "startup" timeslots are mutually exclusive.
-The last loop defined that if (\verb|* startup_finsihed[i]|) a startup must be finished by some timeslot, the previous \verb|STARTUP_LENGTH|-many timeslots must be used for starting the job.
+Line 3 and 4 ensure that "working" time slots and "startup" time slots are mutually exclusive.
+The last loop defined that if (\verb|* startup_finsihed[i]|) a startup must be finished by some time slot, the previous \verb|STARTUP_LENGTH|-many time slots must be used for starting the job.
 
-At this point, the solver scheduled jobs in a way that would sometimes execute the job at the very first timeslots, as no startup could happen before timeslot $0$, thus minimizing carbon but obviously producing a bogus result.
+At this point, the solver scheduled jobs in a way that would sometimes execute the job at the very first time slots, as no startup could happen before time slot $0$, thus minimizing carbon but obviously producing a bogus result.
 I thus added an extra constraint that work can only be scheduled after atleast the length of the startup phase.
-The emitted carbon goal is changed to also include these new startup timeslot, similarly to the previous listing \ref{list:lp_overhead}.
+The emitted carbon goal is changed to also include these new startup time slot, similarly to the previous listing \ref{list:lp_overhead}.
 With this step, the result already looks more like a reasonable schedule, as shown in figure \ref{fig:lp_overhead}. 
 This time, the optimal schedule includes executing the job in one go.
 Doing a visual check, the job is also executed on seemingly the lowest carbon intensities.
@@ -717,9 +724,9 @@ Doing a visual check, the job is also executed on seemingly the lowest carbon in
 \subparagraph{Adding a notion of progress}
 
 So far, the assumption of constant power has been continued.
-Changing this assumption under the previous other scheduler using the greedy algorithm in setion \ref{sec:uninterrupted_oracle_scheduling}, was relativly easy, as changing the constant expression to python function of the model sufficed. 
+Changing this assumption under the previous other scheduler using the greedy algorithm in section \ref{sec:uninterrupted_oracle_scheduling}, was relatively easy, as changing the constant expression to python function of the model sufficed. 
 This cannot be reused in LP however, as the problem definition may only include linear equations, which a generic function is not. 
-In order to add dynamic power into the the linear program, I decided to \emph{linearize} the function, meaning the model needed to be split up into multiple linear approximations.
+In order to add dynamic power into the linear program, I decided to \emph{linearize} the function, meaning the model needed to be split up into multiple linear approximations.
 
 As the model already is essentially a step function of time to power, each phase being one step, the mapping is inherently pretty close. 
 As such, \emph{a lot} of equations were needed that each express "if the progress in the job is $t$, set power to $model(t)$". 
@@ -744,20 +751,20 @@ for t in range(DEADLINE-1):
         prob += work_time_progressed[t] == work_time_progressed[t-1] + work[t]
 \end{lstlisting}
 
-On a base level, the idea is to count up each progress variables by 1, if a timeslot is being determined for work or startup respectively (see line 12 for this).
+On a base level, the idea is to count up each progress variables by 1, if a time slot is being determined for work or startup respectively (see line 12 for this).
 
 This snippet also includes an LP "trick", namely the \emph{Big M Method}. 
-In line 4, a constant \verb|M| is defined as "a \emph{large} integer, that cannot otherwise occur in the result set", in this case "large" being twice the amount of timeslots but it could also be some other arbitrarily-chosen large number.
+In line 4, a constant \verb|M| is defined as "a \emph{large} integer, that cannot otherwise occur in the result set", in this case "large" being twice the amount of time slots but it could also be some other arbitrarily-chosen large number.
 
 Take line 9 as an example: 
 remember that \verb|starting[t]| is either $0$ or $1$, multiplying this by a large number means the right side is either $0$ or "\emph{large}". 
-Constraning a variable to be less that \verb|M| effectivly does nothing (is "\emph{relaxed}"), as every value of that variable is less than \verb|M| by definition of \verb|M|. 
-The whole can expression be translated to "if a timeslot is not used for starting the job, set the progress to 0, otherwise ignore this constraint", the Big M Method enables a way to add conditional constraints to a model!
+Constraining a variable to be less that \verb|M| effectively does nothing (is "\emph{relaxed}"), as every value of that variable is less than \verb|M| by definition of \verb|M|. 
+The whole can expression be translated to "if a time slot is not used for starting the job, set the progress to 0, otherwise ignore this constraint", the Big M Method enables a way to add conditional constraints to a model!
 
 While line 9 this defines the \verb|startup_progress| outside the startup phases, line 7 and 8 are needed to increase the progress by exactly 1. 
-Notice how depending on the type of inequality, \emph{M} is either added or substracted to the equation, a conditional "greater than"-relation is relaxed by setting the constraint to 0.
+Notice how depending on the type of inequality, \emph{M} is either added or subtracted to the equation, a conditional "greater than"-relation is relaxed by setting the constraint to 0.
 
-All in all, there is now a way to keep track of a job's progress inside the model, as shown in figure \ref{fig:lp_progress}'s upper graph. Attention should be drawn to the \verb|work_progress| which keeps its value even when timeslots are not used for work. 
+All in all, there is now a way to keep track of a job's progress inside the model, as shown in figure \ref{fig:lp_progress}'s upper graph. Attention should be drawn to the \verb|work_progress| which keeps its value even when time slots are not used for work. 
 The schedule found by the solver is not different to the previous one which added overhead, as the optimization goal was not changed and the progress indicators have no impact on the scheduling (yet).
 
 \begin{figure}
@@ -779,6 +786,7 @@ When such indicators exist, the formula for calculating a schedule's carbon emis
 With that goal in mind, we add the pseudocode listed in \ref{list:lp_phases} to determine when a phase is active. 
 
 \begin{lstlisting}[frame=single, numbers=left, caption={Phase detection in LP}, label={list:lp_phases}, basicstyle=\ttfamily, breaklines]
+# for each phase
 # let phase_indicator, phase_indicator_upper, phase_indicator_lower be DEADLINE-many boolean variables
 
 # set lower_bound to be the minimum progress this phase can occur in 
@@ -797,12 +805,12 @@ for t in range(DEADLINE):
     prob += phase_variable[t] <= phase_indicator_upper[t]
 \end{lstlisting}
 
-Unwrapping this, two helper variables are added per phase per timeslot. 
+Unwrapping this, two helper variables are added per phase per time slot. 
 A lower variable indicates that the previously established progress is above the threshold for a phase, while the upper variable indicates the opposite. 
 The \verb|phase_variabel| is then "active" where these two overlap (line 14 to 17 define a logical "AND").
 
 The constraint of line 8 is only applied if the indicator is \verb|false|.
-If it is false, the progress at the timeslot must be below the lower bound (as negative numbers are equal to 0).
+If it is false, the progress at the time slot must be below the lower bound (as negative numbers are equal to 0).
 Line 9 works on the negated indicator, applying the constraint if it is \verb|true|. 
 If the indicator is \verb|true|, progress must be higher than the lower bound. 
 Combining this, the expression \verb|phase_indicator_lower[t] <=> progress[t] > lower_bound| is added to the model. 
@@ -810,7 +818,7 @@ The upper bound is formulated in the following two lanes similarly.
 
 Using this addition, the schedule now looks like the one shown in figure \ref{fig:lp_states}. 
 Unlike the previous times, splitting the job up into two parts is now the optimal solution. 
-Attention should be drawn to the cirumstance that the the high-powered phase (the green one) is scheduled on the lowest carbon emissions while the low-powered one is scheduled on the higher emission timeslots.
+Attention should be drawn to the circumstance that the high-powered phase (the green one) is scheduled on the lowest carbon emissions while the low-powered one is scheduled on the higher emission time slots.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/lp_states.pdf}
@@ -823,15 +831,15 @@ Attention should be drawn to the cirumstance that the the high-powered phase (th
 As of now, checkpointing may happen at any point in the scheduler, as the \verb|work_progress| is never reset. 
 Checkpointing at specific points, such as after specific phases like in the entry ML example in section, will be left for future work.
 
-Another problem are the runtime and hardware requirements for finding a solution.
-While the upper example of 250 timeslots and a job length of 120 were found within minutes on my laptop (a Lenovo T470 with 8GB RAM and an i5-7200U CPU @ 2.50GHz), bigger problem sizes such as 5000 timeslots and a length of 800 would barely finish within 30 minutes with a \emph{gap}-value of 98\%.
+Another issue is the runtime and hardware requirements for finding a solution.
+While the upper example of 250 time slots and a job length of 120 were found within minutes on my laptop (a Lenovo T470 with 8GB RAM and an i5-7200U CPU @ 2.50GHz), bigger problem sizes such as 5000 time slots and a length of 800 would barely finish within 30 minutes with a \emph{gap}-value of 98\%.
 As the LP solver computes the problem, the gap value is an indicator of how close the solver is to finding the optimal solution, the optimal solution is found when the gap is at 0\%.
 
 Solvers are able to take advantage of multiple CPU cores, but in my case, the issue was probably a lack of memory. 
-Glancing into the system monitor util on Ubuntu would show that all 8 GB are in use and that swap space is being used a lot.
+Glancing into the system monitor utility on Ubuntu would show that all 8 GB are in use and that swap space is being used a lot.
 
-A solution for this could be to improve the time each timeslots represents in order to reduce search space.
-One way could be to calculate the greatest common devisor between all phases and the carbon-emission resolution and use that as a basis for each timeslot.
+A solution for this could be to improve the time each time slots represents in order to reduce search space.
+One way could be to calculate the greatest common divisor between all phases and the carbon-emission resolution and use that as a basis for each time slot.
 
 \todo[inline]{I could perhaps do a tiny evaluation on runtime and hardware usage, doing a cute lil graph with x being problem time, z being job length, y being runtime / memory usage}
 
@@ -842,12 +850,30 @@ In order to evaluate the carbon savings made possible by the previously establis
 As the already existing job traces hold no information regarding their power or their phases, some test cases will be presented and used for the models.
 The baseline to test against will each be a job that has no dynamic power information attached to it, but that has the same overall power, just averaged out.
 
-\subsection{Testcases for evaluation}
+\subsection{Evaluation setup}
+
+The different cases are presented in the following table, these are non-exhaustive, however; other constellations are possible as this is a rather explorative approach to evaluating whether dynamic power can reduce carbon emissions in carbon-aware scheduling.
+
+
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{c|c}
+    Name & Graph \\ \hline
+    short-startup & - \\
+    long-startup & ----- \\
+    no-startup &  \\
+\end{tabular}
+\caption{}
+\label{tab:eval_test_cases}
+\end{table}
+
+
 
 \todo[inline]{Some interesting testcases could include different lengths / costs for startup phases, different arrangement of high or low power work phases}
 
 
-\todo[inline]{One thing to keep in mind for is how to handle different job lengths; the jobs inside the traces have wildly differing lengths}
+\todo[inline]{One thing to keep in mind for is how to handle different job lengths; the jobs inside the traces have wildly differing lengths. Another thing to keep in mind is that the submission dates in the traces do matter though}
 
 
 \subsection{Results for uninterrupted scheduling}
