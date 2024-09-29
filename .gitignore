@@ -5,6 +5,7 @@ power-measurements/checkpoints-saved
 traces
 mypy.ini
 .vscode/
+gurobi1103
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

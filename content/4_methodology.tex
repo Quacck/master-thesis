@@ -648,7 +648,7 @@ work = LpVariable.dicts("work", (t for t in range(DEADLINE)), cat="Binary")
 prob += lpSum([work[t] * carbon_cost_at_time[t] for t in range(DEADLINE)]) 
 prob += lpSum(work[t] for t in range(DEADLINE)) == WORK_LENGTH
 
-solver = pulp.GUROBI_CMD(timeLimit=timelimit)
+solver = pulp.Gurobi_CMD(timeLimit=timelimit)
 prob.solve(solver)
 \end{lstlisting}
 
@@ -838,43 +838,80 @@ As the LP solver computes the problem, the gap value is an indicator of how clos
 Solvers are able to take advantage of multiple CPU cores, but in my case, the issue was probably a lack of memory. 
 Glancing into the system monitor utility on Ubuntu would show that all 8 GB are in use and that swap space is being used a lot.
 
-A solution for this could be to improve the time each time slots represents in order to reduce search space.
-One way could be to calculate the greatest common divisor between all phases and the carbon-emission resolution and use that as a basis for each time slot.
+\subparagraph{Decreasing the Problem Size}
+
+In the previously shown Figures, each carbon-emission data point would correspond to one time slot, which in turn corresponds to one unit of time in the job. 
+Going by the resolution of the carbon-emissions, each data point describes the emissions for one hour. 
+In the original \verb|GAIA| implementation, job lengths are given in seconds, however. 
+The example workload used for measuring in Section \ref{sec:power_measurements} also showed that timescales in seconds are useful. 
+
+Using a 1:1 mapping between those would result in 3600 (60s * 60) time slots for each hour, resulting in very large problem sizes in turn needing long execution times and high amounts of memory.
+
+In order to improve on the issues mentioned above, the following optimization is made: by calculating the \emph{greatest common divisor (gcd)} between all phase durations and the time resolution of the carbon-emissions (3600), all durations can be scaled down by the \verb|gcd|. Each time slot in the model would then represent \verb|gcd|-many seconds.
+
+The effect of this optimization heavily depends on the input phases. 
+If there are very short phases, the \verb|gcd| would likewise be low and problem size would not be decreased much. 
 
 \todo[inline]{I could perhaps do a tiny evaluation on runtime and hardware usage, doing a cute lil graph with x being problem time, z being job length, y being runtime / memory usage}
 
 
 \section{Evaluating carbon-aware scheduling with the new job model} \label{sec:evaluate_scheduling}
 
-In order to evaluate the carbon savings made possible by the previously established dynamic power model, I would like to do the following:
-As the already existing job traces hold no information regarding their power or their phases, some test cases will be presented and used for the models.
-The baseline to test against will each be a job that has no dynamic power information attached to it, but that has the same overall power, just averaged out.
+In order to evaluate the carbon savings made possible by the previously established dynamic power model, the following approach is proposed:
+As the already existing job traces hold no information regarding the power or their phases, some test cases will be presented and used for the models.
+In a rather explorative process, we use the following parameters and run the simulation on all possible permutations of them. 
+This is done using the \verb|generate_evaluation_jobs.sh| script, but a high-level view of the used parameters is given thus:
 
-\subsection{Evaluation setup}
+\begin{enumerate}
+    \item Checkpoint \& restore scheduling or non-interrupted scheduling
+    \item Different phase configurations, in general, we assume there to be a (long or short) high-powered phase and a (long or short) low-powered phase periodically up to the given job length. 
+    \item Startup-lengths between none and 5 minutes
+    \item Startup power levels between 100 W and 300 W
+    \item Different deadlines picked from 4 hours, 12 hours, and 1 day
+    \item Different Job lengths, from 1 hour to 3 hours. \label{eval_list:lengths}
+\end{enumerate}
 
-The different cases are presented in the following table, these are non-exhaustive, however; other constellations are possible as this is a rather explorative approach to evaluating whether dynamic power can reduce carbon emissions in carbon-aware scheduling.
+Another dimension will be comparing these scenarios against having no information on phases, instead only having an averaged constant wattage of the otherwise existing phases.
+This would represent the previous \verb|GAIA| implementation, where jobs had a constant amount of power at all points in time. 
 
+\subsection{Running the Evaluation on a Cluster}
 
+As previously discussed in Section \ref{sec:checkpoint_resume_lp}, calculating the checkpoint \& resume scheduling tends to have high runtime and memory requirements. 
+For that reason, the simulation was executed on the \emph{SCORE Lab}, standing for "scientific compute resources", of HPI.
 
-\begin{table}[h!]
-\centering
-\begin{tabular}{c|c}
-    Name & Graph \\ \hline
-    short-startup & - \\
-    long-startup & ----- \\
-    no-startup &  \\
-\end{tabular}
-\caption{}
-\label{tab:eval_test_cases}
-\end{table}
+After requesting and gaining access, \verb|rsync| was used to transfer the simulation to the cluster. 
+Slurm could then be used to schedule all experiments individually (that were generated using the mentioned \verb|generate_all_jobs.sh| script), which would parallelize the evaluation, leading to faster results.
 
+One problem arose in the licensing of the used \emph{Gurobi} solver. 
+Under the used academic license, only 2 \emph{"sessions"} are allowed simultaneously.
+A session is defined via the hostname of the executing machine, which is communicated to the solver's licensing servers live.
+As such, scheduling each experiment by itself lead to many sessions being started, as Slurm would distribute the jobs on the available nodes.
+While there is some leeway in the amount of sessions, experiments would crash beyond the 5th instance as the solver would not start.
 
+We work under this restriction by distributing the experiments across two workers (via a script called \verb|evalute_dynamic_power.sh|); as each experiment has an index, one worker executes the even numbered jobs and the other executes the odd ones. 
+Using the even-odd strategy results in both workers having about the same amount of work.
 
-\todo[inline]{Some interesting testcases could include different lengths / costs for startup phases, different arrangement of high or low power work phases}
+The workers in this case are python docker containers that were created with the help SCORE Lab's online knowledge base.
+The command for launching one example worker, in this case the one for even jobs, is given in Listing \ref{list:evaluation_slurm}.
 
+\begin{lstlisting}[language=bash, frame=single, numbers=left, caption={Executing the Evaluation inside the SCORE Lab's Slurm environment}, label={list:evaluation_slurm}, basicstyle=\ttfamily]
+sbatch -A polze -p magic \
+    --container-image=python \
+    --container-name=test \
+    --container-writable \
+    --mem=128G \
+    --cpus-per-task=128 \
+    --time=24:0:0 \
+    --output=slurmlogs/output_%j.txt \
+    --error=slurmlogs/error_%j.txt \
+    --container-mounts=/hpi/fs00/home/vincent.opitz:/home/vincent.opitz \
+    --container-workdir=/home/vincent.opitz/master-thesis/GAIA \
+    run_all_even_jobs.sh
+ \end{lstlisting}
 
-\todo[inline]{One thing to keep in mind for is how to handle different job lengths; the jobs inside the traces have wildly differing lengths. Another thing to keep in mind is that the submission dates in the traces do matter though}
-
+Now the simulation can be run with 128 GB RAM as specified in line 5. 
+The \verb|-p magic| parameter results in us using a compute node. 
+Line 3, \verb|--container-writable|, means that the container will be reused if called again under the same name, this lets us conduct set up using (\verb|pip install|).
 
 \subsection{Results for uninterrupted scheduling}
 
