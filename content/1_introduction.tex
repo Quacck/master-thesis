@@ -1,13 +1,27 @@
-\chapter{Introduction}
+\chapter{Introduction and Motivation}
 
-\begin{itemize}
-    \item I could start with a fact stating that datacenters use X amount of energy which in turn emits carbon for its production
-    \item We can reduce the amount of carbon emitted for the same amount of work by scheduling our work in smart way
-    \item this is not a new idea; datacenters around the world are already using data provided by e.g. electricitymaps
-    \item one thing that is not represented in literature however is the heterogenity of jobs, as well as the emph{checkpoint \& resume} capabilities of some jobs, particularly machine learning jobs which are projected to make UP X amount of energy in the coming years [QUOTATION NEEDED] 
-    \item I want to create a better model for jobs in datacenters
-    \item I then want to use that new model to investigate wether we can exploit the heterogenity of jobs to further reduce carbon emissions
-    \item One hypothesis is for example that, we can match high-power phases of jobs to the lowest carbon-intensive time frames, so we do not "waste" those rare times with low-power phases
-    \item We can also investigate wether the previously proposed stop \& resume techniques still work if the assumption that stopping and resuming a job has no overhead is broken.
-    \item We hypothesis that a stop \& resume strategy can stil lead to reduced carbon emissions but only on certain jobs.
-\end{itemize}
+In times of climate change, the need to reduce carbon emissions is prevalent. 
+One area of interest is carbon produced for computation in data centers. 
+These produce carbon indirectly via the electricity they use.
+However, not all power is produced equally: while a data center may source its power from the public grid, the public grid itself is sourced from different producers. 
+These include high-carbon intensive technologies such as coal and gas but also include low-carbon sources such as solar and wind. 
+The latter, renewables and especially solar, follow a diurnal rhythm over the day:
+as the sun shines more during the day, a bigger part of the total power production then comes from solar, reducing the overall carbon intensity of the grid.
+This can be used for \emph{carbon aware scheduling}, by planning work in datacenters to be executed during such low intensity times, the overall carbon can be reduced.
+
+Data centers are currently projected to experience \emph{exponential} growth in their power requirements, largely fueled by pushes in AI. 
+
+Current work on carbon aware scheduling includes shifting jobs temporally and spatially. 
+One common theme among them, however, is that the workload models do not include program heterogeneity: while real world programs may include high-powered times for computation and low-powered times for e.g. I/O, this is not reflected in literature. 
+Another common strategy for executing jobs during low-carbon timeframes, is to \emph{checkpoint \& resume}: a job may be, for example, stopped as carbon-intensity is increasing and resumed when a certain threshold is reached. 
+This generally assumes, that resuming a job carries no overhead. 
+
+In this work, we will improve upon the homogeneous, no overhead workload model used in literature, by measuring an AI program and deferring a new model upon that.
+
+The research question will be the following:
+
+\begin{enumerate}
+    \item How high are carbon savings under a workload model including resume-overhead and power-heterogeneity?
+    \item How does this compare to previous work in the field using the homogeneous model?
+    \item Which jobs are better suited for carbon aware scheduling?
+\end{enumerate}
