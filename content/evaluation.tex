@@ -17,7 +17,7 @@ This is done using the \verb|generate_evaluation_jobs.sh| script, but a high-lev
 Another dimension will be comparing these scenarios against having no information on phases, instead only having an averaged constant wattage of the otherwise existing phases.
 This would represent the previous \verb|GAIA| implementation, where jobs had a constant amount of power at all points in time. 
 
-\subsection{Running the Evaluation on a Cluster}
+\section{Running the Evaluation on a Cluster}
 
 As previously discussed in Section \ref{sec:checkpoint_resume_lp}, calculating the checkpoint \& resume scheduling tends to have high runtime and memory requirements. 
 For that reason, the simulation was executed on the \emph{SCORE Lab}, standing for "scientific compute resources", of HPI.
@@ -56,6 +56,6 @@ Now the simulation can be run with 128 GB RAM as specified in line 5.
 The \verb|-p magic| parameter results in us using a compute node. 
 Line 3, \verb|--container-writable|, means that the container will be reused if called again under the same name, this lets us conduct set up using (\verb|pip install|).
 
-\subsection{Results for uninterrupted scheduling}
+\section{Results for uninterrupted scheduling}
 
-\subsection{Results for checkpoint \& resume scheduling}
+\section{Results for checkpoint \& resume scheduling}

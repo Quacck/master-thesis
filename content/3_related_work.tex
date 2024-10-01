@@ -1,50 +1,71 @@
-\chapter{Related Work}
+\chapter{State of the Art}
 
-\paragraph{A systematic approach}
+This chapter will outline the current state-of-the-art research surrounding carbon aware (temporal) scheduling, as well as the approach taken for determining that.
 
-I used the following system for finding related work to my topic; 
-first, my supervisors and I would brainstorm for search engine keywords. 
-The specific words are in the attachments\todo{Literaturrecherche aufarbeiten und hier verlinken}, but can be grouped into two groups: one for all things carbon-aware and one for keywords about servers / computing / HPC and such.
+\paragraph{Systematic Approach}
+
+We used the following system for finding related work to my topic; 
+first, two groups of keywords are brainstormed for use in querying academic search engines, one group corresponds to carbon-awareness and the other deals with computing environments.
+The specific keywords used for each group are listed in Table \ref{tab:lit_study_keywords}.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|p{7cm}|}
+\hline
+    Group & Keywords \\ \hline
+    carbon-awareness & \text{energy efficiency}, \text{energy consumption}, \text{carbon impact} \\ \hline
+    \text{computing environments} & \text{datacenter}, \text{load balancing}, \text{scheduling}, \text{job shop}, \text{job management}, \text{compute cluster}, \text{hpc}, \text{placement}, \text{cloud} \\ \hline
+\end{tabular}
+\caption{List of keywords for each group used in the literature study}
+\label{tab:lit_study_keywords}
+\end{table}
 
 Using these two groups, I could then create Google Scholar queries via the cross product between them. 
-Using the double-quotation feature would further limit the results.
-For each query, I would then read the abstracts of roughly the first 5 results, depending on if their titles sounded subjectively fit. 
+Use of the double-quotation feature restricts the results further.
+For each query, we then read the abstracts of, on average, the first 5 results, depending on if their titles seemed subjectively fit. 
 
-These would then be entered into a spreadsheet: for each query, 5 paper titles. Additionally, I would also further explore papers through \emph{connected papers}\footnote{\url{https://www.connectedpapers.com/}} or looking up individual authors on a subjective basis. 
+These are then be entered into a spreadsheet: for each query, 5 paper titles. Additionally, we further explored papers through \emph{connected papers}\footnote{\url{https://www.connectedpapers.com/}} or looking up individual authors on a subjective basis. 
 The papers from the 2023 and 2024 HotCarbon Workshops\footnote{\url{https://hotcarbon.org/}} also proved to be related.
 
-I then "rated" each paper into three categories:
+We then sort each paper into one of the following category:
 
 \begin{itemize}
     \item Green, meaning that they seem very connected and are good first entries into the topic
     \item Orange, which would indicate that are somehow connected to the paper and might be read at a later date
-    \item Red, the paper is either irrelevant or had some other flaw. These would not be touched again in the course of my work
+    \item Red, the paper is either irrelevant or had some other flaw. These would not be used again in the course of our work
 \end{itemize}
 
+\paragraph{Results}
+
+The results are exported as \verb|literature_study.csv| in the appendix, according to its evaluation using the \verb|literature_study_evaluation| Jupyter Notebook, 145 abstract were read. 
+Figure \ref{fig:literature_study}\todo{Think real hard if I need this figure} shows the amount of papers assigned to each category.
+
 \begin{figure}
-    \missingfigure{Bar chart showing the differently labelled entries of my literature study}
+    \includegraphics[width=\linewidth]{literaturrecherche/literature_study.pdf}
     \caption[short]{Results of the literature study}
     \label{fig:literature_study}
 \end{figure}
 
-With this approach, X abstracts were read. Figure \ref{fig:literature_study} shows that X abstracts \todo{Figure out results of the literature stuff} were deemed "good" for the purpose of this work. The complete list of papers analyzed can be found in \todo{THE ATTACHMENTS}
+Overall, through this approach, a lot of unrelated papers were found.
+Nevertheless, with the 15 papers marked \emph{green}, the current state of carbon aware scheduling can be highlighted.
+Out of those, the following are of particular interest.
 
-I would like to highlight some papers:
+\subparagraph{GreenSlot: Scheduling energy consumption in green datacenters\cite{inigo_goiri_greenslot_2011}} According to the analyzed papers, this seems to be the first paper that deals with carbon aware scheduling by implementing it as a \emph{Slurm} plugin (See section \ref{subsec:slurm_plugin} for further information on Slurm and such plugins)
+In contrast to our scenario, where we try to optimize carbon emissions via the public electricity grid, GreenSlot is about datacenters having their own renewable energy production (e.g. via having solar panels on the roof). 
+Using weather data, \emph{GreenSlot} would then predict when solar energy production is high, scheduling jobs preferably in those time frames.
+Under their workload model, jobs may also have deadlines.
+If those deadlines cannot be met using only renewables, \emph{Greenslot} will additionally schedule jobs on high-carbon times, based on electricity cost.
 
-\paragraph{GreenSlot: Scheduling energy consumption in green datacenters\cite{inigo_goiri_greenslot_2011}} According to the analyzed papers, this seems to be the first paper that deals with carbon aware scheduling by implementing it as a \emph{Slurm} plugin (See section \ref{subsec:slurm_plugin} for further information on Slurm and such plugins)
-In contrast to our scenario, where we try to optimize carbon emissions via the public electricity grid, GreenSlot is about datacenters having their own renewable energy production (solar panels on the roof). Using weather data, \emph{GreenSlot} would then predict when solar energy production is high, scheduling jobs to those time frames.  
-
-\paragraph{The War of the Efficiencies: the Tension between Carbon and Energy Optimization} \cite{hanafy_war_2023} outline the different ways of carbon aware computing. 
+\subparagraph{The War of the Efficiencies: the Tension between Carbon and Energy Optimization}\cite{hanafy_war_2023} This paper outlines the different ways of carbon aware computing. 
 Among those are \emph{temporal shifting}, the idea that jobs can be executed later when energy is more carbon efficient, is also the main idea for my work. 
 They also use \emph{spatial shifting}, moving jobs across the globe to areas where higher carbon efficiency is possible. 
 \emph{Resource scaling} uses dynamic amounts of hardware according to carbon emissions.
 In the end, \emph{rate shifting} is the idea to also scale hardware frequencies. During carbon-efficient times, CPU speeds would be increased, leading to faster processing speeds and more energy usage.
 
-All of these techniques are then tested under various parameters. My work will only make use of the temporal shifting, and abstract away the other methods of further saving carbon.
+All of these techniques are then tested under various parameters. My work will only make use of the temporal shifting, and abstract away the other methods of further carbon savings.
 
-\paragraph{Let's wait awhile: how temporal workload shifting can reduce carbon emissions in the cloud} This paper will be built upon in my work the most.
+\subparagraph{Let's wait awhile: how temporal workload shifting can reduce carbon emissions in the cloud} This paper will be built upon in my work the most.
 \cite{wiesner_lets_2021} uses a simulation approach, to simulate temporal shifting. Their workload model consists of known length jobs that can use \emph{checkpoint \& restore} to be executed at different time slices. 
 They would further use different traces and test these traces under the assumption of different job-deadlines, meaning that each job would have to be completed by a certain timeframe, and also different regions of the world as described in the background part\todo{Think about linking this to the earlier part}. 
 Their main takeaways are that increased deadlines lead to reduced carbon emissions, but that this effect also has diminishing returns. 
 They also deduced that regions such as California, with high amounts of solar power, have higher potential for carbon-savings in comparison to nuclear-heavy regions such as France.
-\todo{Measuring the Carbon Intensity of AI in Cloud Instances is very similar to this!}
