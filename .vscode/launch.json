@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+    
 
     
         {
@@ -22,7 +23,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "cwd": "${fileDirname}/..",
-            "args": ["--scheduling-policy", "suspend-resume", "--task-trace", "different_lengths", "--dynamic-power-draw", "--dynamic-power-draw-type", "constant-from-periodic-phases", "--dynamic-power-draw-phases", "{'startup':[{'name': 'startup','duration': 1800, 'power': 150}],'work':[{'name': 'high', 'power': 200, 'duration': 3600}, {'name': 'low', 'power': 100, 'duration': 3600}]}", "--carbon-policy", "oracle", "--start-index", "7000", "--w", "24", "--filename", "results/simulation/different_lengths/suspend-resume_constant-from-periodic-phases_0_1800_200_24", "--repeat"]
+            "args": ["--scheduling-policy", "suspend-resume", "--task-trace", "different_lengths", "--dynamic-power-draw", "--dynamic-power-draw-type", "periodic-phases", "--dynamic-power-draw-phases", "{'startup':[{'name': 'startup','duration': 0, 'power': 150}],'work':[{'name': 'high', 'power': 200, 'duration': 1800}, {'name': 'low', 'power': 100, 'duration': 3600}]}", "--carbon-policy", "oracle", "--start-index", "7000", "--w", "4", "--filename", "results/simulation/different_lengths/suspend-resume_constant-from-periodic-phases_0_1800_200_24", "--repeat"]
         }
     ]
 }
