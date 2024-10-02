@@ -1,35 +1,32 @@
 \chapter{Background}
 
-This chapter will be used to introduce some basic terminology as well as some basic arguments on why carbon-aware scheduling is useful.
+In this chapter, we will introduce some basic terminology as well as provide further information surrounding carbon scheduling.
 
-\paragraph{The composition of the public grid}
-The public grid is made up of many energy producers. This \emph{energy mix} is composed of different sources: low-carbon technologies like solar, wind, or hydroelectricity and carbon-intensive sources like coal, gas, or oil. 
+\paragraph{The Composition of the Public Grid}
 
-Figure \ref{fig:energy_mix} shows one such energy example, for a specific location, in this case Germany.
-As it was summer, solar production made up large amount of power at that time. 
-Germany is further interesting in the sense, that it is a country that has no nuclear power stations anymore.
-
-\begin{figure}
-    \includegraphics[width=\linewidth, height=200pt]{images/2_background2024-08-20-15-28-19.png}
-    \caption[short]{An example snapshot of the energy mix in Germany, at DATE}
-    \label{fig:energy_mix}
-\end{figure}
-
-Over the day, the demand and supply for power changes. Carbon-efficient sources will generally follow the weather: Solar production follows the amount of sun shining and thus follows a \emph{diurnal} rhythm over the day. Wind and hydroelectricity will also depend on the weather. 
-Nuclear energy is generally also considered carbon-efficient, but is generally not useful for carbon-efficient scheduling as the amount of energy produced from is generally stable throughout \todo{QUOTATION NEEDED, maybe use look in on of the related work papers} the day, meaning that there is little use in deferring work to a later time. 
-
-As near-time weather predictions have high accuracy, this enables X.\todo{QUOTATION NEEDED}
-
-Thus, at each point in time the amount of CO2 per unit of electric power can be determined by averaging the amount of power each source supplies to the grid and how much carbon it emits. Figure \ref{fig:carbon_curve} is an example X-day timeframe of the carbon-curve.
+As outlined in the previous chapter, there is a diurnal rhythm to the renewable energy production.
+In addition to that, there is also a seasonal effect on the energy grid composition:
+As shown in Figure \ref{fig:energy_mix_year}, during warm seasons (e.g. July), more solar is produced than in colder seasons, and the share in renewables rises accordingly.
 
 \begin{figure}
-    \missingfigure{The carbon curve for a few countries at the same time Germany, France, and Poland, }
-    \caption[short]{Carbon in per unit of energy in select countries}
-    \label{fig:carbon_curve}
+    \includegraphics[width=\linewidth]{agorameter/energy_production_year.pdf}
+    \caption[short]{Mix of energy production in Germany in 2023. Data provided by \url{agora-energiewende.org}}
+    \label{fig:energy_mix_year}
 \end{figure}
 
-\paragraph{Power grid Signals}
-Carbon-aware scheduling commonly works two possible metrics or signals: the \emph{average emissions} are the metric describing the amount of carbon per unit of energy, basically what has been used in the text so far. Another metric is the \emph{marginal emissions}, answering the question of "if more energy is used at this point in time, how much carbon would that cost?". 
+The demand for power also has an effect on the overall composition. 
+During times of low demand, less conventional power needs to be produced and renewables have a higher share as well.
+This can be seen in the seasonal Figure: during Christmas holidays in December, people spend more time at home, requiring less additional conventional energy (e.g. for industrial consumers, as people also work less).
+
+All the above is a local or national view on the public grid. 
+When looking at energy production globally, a spatial dimension is added. 
+This takes effect in the form of different countries having peak solar production at different times (following the earth's rotation), but also takes effect in the composition of production capabilities.
+Some countries may have less investment in renewables or may use nuclear power plants, which are also deemed low-carbon but have less of a seasonal or diurnal rhythm (if they are not limited by lack of cooling water\footnote{\url{https://www.euronews.com/green/2023/07/13/frances-nuclear-power-stations-to-limit-energy-output-due-to-high-river-temperatures}}).
+
+Thus, as outlined by \cite{wiesner_lets_2021}, national public grids have a certain affinity for carbon aware scheduling. Generally, the higher the solar capacities, the higher the potential carbon saving from such an approach. 
+
+\paragraph{Power Grid Signals}
+Carbon-aware scheduling commonly works on two possible metrics or signals: the \emph{average emissions} are the metric describing the amount of carbon per unit of energy, basically what has been used in the text so far. Another metric is the \emph{marginal emissions}, answering the question of "if more energy is used at this point in time, how much carbon would that cost?". 
 The answer to that question is usually that non-renewable power plants have to increase production as renewable sources cannot increase production to meet demand (as the sun and wind intensity are set by the weather). 
 Going by the marginal metric, any kind of carbon aware scheduling would be pointless, as any work at any point in time would result in the same increase of carbon. 
 Thankfully, there are secondary reasons that would render carbon-aware scheduling useful. One of them are is \emph{curtailment}. 
@@ -38,10 +35,10 @@ Carbon aware scheduling via the average emissions signal, would lower the amount
 Another argument can also be made\todo{Find the quote} that by increasing power demand during times when renewable production is high, energy producers would be "signalled" that there is demand for renewable energy.
 Lastly, as renewable energy is generally cheaper in production than non-renewable energy\todo{Need a citation here!}, scheduling work on low carbon-periods coincides with cheaper energy prices as well. While this would not reduce costs on most energy contracts, there are also some contracts that use dynamic pricing \footnote{One example for dynamic pricing would be \emph{Tibber}: \url{https://tibber.com/de}}
 
-\paragraph{Types of work in a datacenter} According to \cite{tanenbaum_operating_2006}, there are 3 environments in which scheduling may take place. \emph{Batch systems} describe environments in which there is no user interaction.
+\paragraph{Workloads in a Datacenter} According to Tanenbaum and Woodhull \cite{tanenbaum_operating_2006}, there are three environments in which scheduling may take place. \emph{Batch systems} describe environments in which there is no user interaction.
 A user may submit their job, and it would be executed according to the scheduler at some point in time. \todo{Does this need more examples?}
-On the contrary, in \emph{interactive} settings, a user would be interacting with the system "live", and would thus expect quick responses to their inputs. 
-The last environment would be a \emph{real time} system. There deadlines and predictability would dictate how a scheduler would operate.
+On the contrary, in \emph{interactive} settings, a user interacts with the system, and thus expects quick responses to their inputs. 
+The last environment are \emph{real time} systems. There, deadlines and predictability dictate how a scheduler operate.
 
 For this work's topic, carbon-aware scheduling, only batch systems will be looked at as they allow more freedom to the times of scheduled jobs. 
 
@@ -49,7 +46,7 @@ For this work's topic, carbon-aware scheduling, only batch systems will be looke
 
 Which metrics are there POI-A, etc.
 
-\paragraph{Power intake of a computer}
+\paragraph{Power Intake of a Computer}
 As there will be power measurements in \ref{sec:power_measurements}, some basic understanding of energy and power used for computation will be provided:
 \begin{itemize}
     \item I could mostly borrow from the EBRH slides; there is some base power needed that is correlated to the hardware (dynamic and static energy)

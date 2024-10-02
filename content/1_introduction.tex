@@ -4,11 +4,18 @@ In times of climate change, the need to reduce carbon emissions is prevalent.
 One area of interest is carbon produced via electrical power used in data centers. 
 However, not all power is produced equally: while a data center may source its power from the public grid, the public grid itself is sourced from different producers. 
 These include high-carbon intensive technologies such as coal and gas but also include low-carbon sources such as solar and wind. 
-The latter, renewables and especially solar, follow a diurnal rhythm over the day:
-as the sun shines more during the day, a bigger part of the total power production then comes from solar, reducing the overall carbon intensity of the grid.
+The latter, renewables and especially solar, follow a diurnal rhythm over the day as shown in Figure \ref{fig:energy_mix}.
+
+\begin{figure}
+    \includegraphics[width=\linewidth]{agorameter/energy_production_week.pdf}
+    \caption[short]{Mix of energy production in Germany between the 16th to 22nd of September (Monday to Sunday). Data provided by \url{agora-energiewende.org}}
+    \label{fig:energy_mix}
+\end{figure}
+
+As the sun shines more during the day, a bigger part of the total power production then comes from solar, reducing the overall carbon intensity of the grid.
 This can be used for \emph{carbon aware scheduling}, by planning work in datacenters to be executed during such low intensity times, the overall carbon can be reduced.
 
-Data centers are currently projected to experience \emph{exponential} growth in their power requirements, largely fueled by pushes in AI.\todo{Pick some cool citations here}
+Data centers are currently projected to experience exponential growth in their power requirements, largely fueled by pushes in AI.\cite{schwartz_green_2019}
 
 Current work on carbon aware scheduling includes shifting jobs temporally and spatially. 
 One common theme among them, however, is that the workload models do not include program heterogeneity: while real world programs may include high-powered times for computation and low-powered times for e.g. I/O, this is not reflected in literature. 
