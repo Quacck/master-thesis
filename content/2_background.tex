@@ -1,4 +1,5 @@
 \chapter{Background}
+\label{chap:backgroud}
 
 In this chapter, we will introduce some basic terminology as well as provide further information surrounding carbon scheduling.
 
@@ -33,7 +34,7 @@ Thankfully, there are secondary reasons that would render carbon-aware schedulin
 This encompasses any methods that reduce the amount of produced renewable energy. As the power grid always needs to have a balance between demand and production, curtailment methods such as turning of wind turbines, selling power at a loss, or charging batteries may be used. 
 Carbon aware scheduling via the average emissions signal, would lower the amount of curtailment needed, as demand for energy would increase at those times.
 Another argument can also be made\todo{Find the quote} that by increasing power demand during times when renewable production is high, energy producers would be "signalled" that there is demand for renewable energy.
-Lastly, as renewable energy is generally cheaper in production than non-renewable energy\todo{Need a citation here!}, scheduling work on low carbon-periods coincides with cheaper energy prices as well. While this would not reduce costs on most energy contracts, there are also some contracts that use dynamic pricing \footnote{One example for dynamic pricing would be \emph{Tibber}: \url{https://tibber.com/de}}
+Lastly, as renewable energy is generally cheaper in production than non-renewable energy\todo{Need a citation here!}, scheduling work on low carbon-periods coincides with cheaper energy prices as well. While this would not reduce costs on most energy contracts, there are also some contracts that use dynamic pricing \footnote{One example for dynamic pricing is \emph{Tibber}: \url{tibber.com}}
 
 \paragraph{Workloads in a Datacenter} According to Tanenbaum and Woodhull \cite{tanenbaum_operating_2006}, there are three environments in which scheduling may take place. \emph{Batch systems} describe environments in which there is no user interaction.
 A user may submit their job, and it would be executed according to the scheduler at some point in time. \todo{Does this need more examples?}
@@ -53,3 +54,18 @@ As there will be power measurements in \ref{sec:power_measurements}, some basic 
     \item this also depends on frequency (which is why later we set our CPU frequency to some hard coded value [or do not do that in the case of my GPU lol])
     \item basically, use this paragraph to outline all things we take care of in my power measurements
 \end{itemize}
+
+\paragraph{Measuring Power}
+
+There are multiple options for measuring the power of a given computer. One way of classifying these options would be under them being either \emph{logical measurements} or \emph{physical measurements}.
+
+Logical ones would create a model on some metrics and derive the used power. One example would be using Linux' \emph{perf} tool to read hardware performance counters. \todo{This needs some more here}
+
+Advantages of choosing a logical approach would be that no external hardware is needed and that the overhead of the measurement would be low, as the hardware counters are being kept track of anyway. 
+Disadvantages on the other hand would be that such a model would have to be created or chosen and would include some form of error as all models do.
+
+Physical measurements follow another route; measurement devices would be put between the operating hardware and the power supply. 
+The point where a power measuring device is inserted would dictate what could and could not be measured, a wall mounted measurement device could only measure all power going into a computer and not differentiate between individual programs.
+
+Advantages of physical measurements are that they can give a more holistic measurement of a system as would be the case for a wall mounted measurement device. 
+Portability is an issue however, unlike operating-system supported tools such as perf, a measurement device would need more effort to be used on another system (or be entirely not useable, for example when such devices are only rated for a certain power level).

@@ -1,30 +1,35 @@
 \chapter{Defining a New Workload model}
 
+In order to improve on the homogenous, no startup-cost, workload model used in related work, we will first conduct power measurements on a sample program, and then use that information for the new model.
+
 \section{Power Measurements on Machine Learning Jobs}
 \label{sec:power_measurements}
 
-\todo{I feel like I should add a paragraph somewhere explaining what I want to measure}
+\paragraph{The test environment}
 
-\paragraph{Options for measuring power}
+The experiments were run on my personal computer, the components of that are listed via the \emph{hwlist} tool, with some columns and rows being redacted for brevity:
 
-There are multiple options for measuring the power of a given computer. One way of classifying these options would be under them being either \emph{logical measurements} or \emph{physical measurements}.
+The experiments are run on a personal computer, its specification being outlined in Table \ref{tab:measurement_environment}, the values being determined with Linux' \verb|hwlist| and \verb|lshw| tools.
 
-Logical ones would create a model on some metrics and derive the used power. One example would be using Linux' \emph{perf} tool to read hardware performance counters. \todo{This needs some more here}
-
-Advantages of choosing a logical approach would be that no external hardware is needed and that the overhead of the measurement would be low, as the hardware counters are being kept track of anyway. 
-Disadvantages on the other hand would be that such a model would have to be created or chosen and would include some form of error as all models do.
-
-Physical measurements follow another route; measurement devices would be put between the operating hardware and the power supply. 
-The point where a power measuring device is inserted would dictate what could and could not be measured, a wall mounted measurement device could only measure all power going into a computer and not differentiate between individual programs.
-
-Advantages of physical measurements are that they can give a more holistic measurement of a system as would be the case for a wall mounted measurement device. 
-Portability is an issue however, unlike operating-system supported tools such as perf, a measurement device would need more effort to be used on another system (or be entirely not useable, for example when such devices are only rated for a certain power level).
-
-Due to having a power-measurement tool on-site in our university and it allowing whole-system measurements directly, I chose to follow the physical measurement option. 
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|c|c|}
+    \hline
+        Operating system & Ubuntu 24.04 LTS \\ \hline
+        Kernel & Linux 6.8.0-39-generic \\ \hline
+        CPU & AMD Ryzen 5 1600X Six-Core Processor \\ \hline
+        Memory & 16GiB \\ \hline
+        GPU & GeForce GTX 1070 \\ \hline
+    \end{tabular}
+    \caption{Environment parameters the measurements were made on}
+\label{tab:measurement_environment}
+\end{table}
 
 \paragraph{Measurement tool}
 
-The concrete tool used is the \emph{Microchip MCP39F511N Power Monitor (henceforth called MCP)}, which can be inserted between the device to test and the wall mounted power supply. A picture of it can be found in figure \ref{fig:mcp}. The MCP can report the current power consumption in 10 mW steps, each 5ms.
+Like outlined in Chapter \ref{chap:backgroud}, multiple measurement options exists. 
+As the HPI has the \emph{Microchip MCP39F511N Power Monitor (henceforth called MCP)} on-site, they will be used as a physical measurement device.
+The MCP is placed between the device to test and the wall mounted power supply. A picture of it can be found in figure \ref{fig:mcp}. It can report the current power consumption in 10 mW steps, each 5ms.
 
 \begin{figure}
     \missingfigure{A figure of the MCP, ask Sven about this}
@@ -34,47 +39,25 @@ The concrete tool used is the \emph{Microchip MCP39F511N Power Monitor (hencefor
 
 \todo{I could include an extra paragraph on why the MCP is cool, and what it does differently, perhaps. Was there anything cool? I vaguely remember some measurement devices having two capacitors to more accurately determine usage}
 
-I then used \emph{pinpoint}, a tool for energy profiling that can use different inputs, among them being the MCP, to read out its data. 
-
-\paragraph{The test environment}
-
-The experiments were run on my personal computer, the components of that are listed via the \emph{hwlist} tool, with unnecessary columns and rows being redacted for brevity:
-
-\begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Hardware environment of the measurements}, basicstyle=\ttfamily]
-   $ lshw -short -C processor -C memory -C display -C bus
-Class          Description
-==========================
-bus            AB350 Gaming K4
-memory         16GiB System Memory
-processor      AMD Ryzen 5 1600X Six-Core Processor
-display        GP104 [GeForce GTX 1070]
-\end{lstlisting}
-
-Information about the operating system is given via \emph{hostnamectl}, again some parts redacted:
-
-\begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Used operating system information}, basicstyle=\ttfamily]
-    $ hostnamectl 
-   Operating System: Ubuntu 24.04 LTS                
-             Kernel: Linux 6.8.0-39-generic
-\end{lstlisting}
+The software used for reading out MCP data is \emph{pinpoint}\cite{kohler_pinpoint_2020}.
 
 \paragraph{Measured Program}
 
 Machine learning (ML) was used as the main motivation for checkpoint \& resume scheduling in the related works\cite {wiesner_lets_2021} and thus was also chosen by me to be measured and modeled. 
 
-The concrete model and framework is secondary for our measurement. In my case, a small model would be chosen in order to have fewer data points for processing as well as faster iterations on the measurement script. 
+The concrete model and framework is secondary for our measurement. In our case, a small model\footnote{\url{huggingface.co/distilbert/distilroberta-base}} is chosen in order to have fewer data points for processing, as well as faster iterations on the measurement script. 
 
-There is a vast amount of machine learning frameworks. For a high-level model, the feature set of the framework only needed to support checkpointing, resuming, and some basic form of logging. 
-Glancing at the documentation of popular frameworks such as \emph{torch}, \emph{tensorflow}, and \emph{huggingface} shows that these features are commonly supported. 
+There is a vast amount of machine learning frameworks. 
+For a high-level model, the feature set of the framework only needed to support checkpointing, resuming, and some basic form of logging. 
+A glance at the documentation of popular frameworks such as \emph{torch}, \emph{tensorflow}, and \emph{huggingface} shows that these features are commonly supported. 
 
-With not much bias towards any framework, huggingface was chosen because my supervisor Felix supplied a sample "hello-world"-esque machine learning script for python \emph{roberta.py}\footnote{\url{https://github.com/Quacck/master-thesis/blob/main/power-measurements/roberta.py}}.
-
-The huggingface trainer supports callbacks, I thus modified the code by adding timestamped logs. These "Events" would be output into another \verb|.csv| file I could later use.\todo{Later use for WHAT?!}
+With not much bias towards any framework, huggingface was chosen.
+The huggingface trainer supports callbacks, we modified a given ML script to also log timestamped events when a training iteration, for example, starts or ends. 
+These events are then saved into another \verb|.csv| file for each experiment.
 
 \paragraph{Conducted Experiments}
 
-A script \footnote{\url{https://github.com/Quacck/master-thesis/blob/main/power-measurements/measure_roberta.sh}} was created to execute each experiment. 
-
+A script \verb|measure_roberta.sh| was used to execute each experiment. 
 On a high-level view, the following experiments were conducted: 
 
 \begin{enumerate}
@@ -85,21 +68,19 @@ On a high-level view, the following experiments were conducted:
     \item \label{experiment:baseline}Do nothing, measure the system at rest
 \end{enumerate}
 
-Experiment \ref{experiment:full} would give a baseline for what the job would look like without checkpoint \& resume. Number \ref{experiment:partial_checkpointed} and \ref{experiment:partial_checkpointed_aborted} would be used to determine the overhead of checkpointing the job. \ref{experiment:startup_only} would be used to validate the other ones. The last experiment is necessary to determine the baseline energy consumption of the environment.
+Experiment \ref{experiment:full} gives a baseline for what the job looks like without checkpoint \& resume. Number \ref{experiment:partial_checkpointed} and \ref{experiment:partial_checkpointed_aborted} would be used to determine the overhead of checkpointing the job. \ref{experiment:startup_only} would be used to validate the other ones. The last experiment is necessary to determine the baseline energy consumption of the environment.
 
-To execute these experiments inside a repeatable bash script, additional command line parameters were added to the given python script. 
-For example, there would be a boolean parameter \verb|--resume_from_checkpoint|, or an integer parameter \verb|--stop_after_epoch| would be used for experiment \ref{experiment:full} to \ref{experiment:partial_checkpointed}. 
-The way of doing experiment \ref{experiment:startup_only} was to copy the script, and delete everything after the imports.
+To execute these experiments inside a repeatable bash script, additional command line parameters were added to the program. 
+For example, a boolean parameter \verb|--resume_from_checkpoint| and an integer parameter \verb|--stop_after_epoch| are used for experiment \ref{experiment:full} to \ref{experiment:partial_checkpointed}. 
+The way of conducting experiment \ref{experiment:startup_only} was to copy the script, and delete everything after the imports.
 
 \paragraph{Creating repeatable measurements}
 
 As this is being run on standard hardware on a standard operating system, all experiment are subject to noise. 
-For example, \emph{Dynamic frequency and voltage scaling (DFVS)}, the OS technique of increasing CPU "speeds" according to work load would add power in an uncontrolled way. Also, background tasks may happen "randomly", increasing power usage. 
+For example, \emph{Dynamic frequency and voltage scaling (DFVS)}, the OS technique of increasing CPU "speeds" according to work load add power in an uncontrolled way. Also, background tasks may happen \emph{randomly}, increasing power usage. 
 
-Thus, for the testing, any foreground apps would be closed. I also used the Linux tool \verb|cpupower|, as shown in snippet below, to set the CPU frequency to a set value:
+Thus, for the testing, any foreground apps are closed. We also used the Linux tool \verb|cpupower|, as shown in snippet below, to set the CPU frequency to a set value of 3.6 GHz, which is the maximum frequency:
 
-\todo{Think about whether this is actually interesting, I guess keep it if I need more content}
-\todo{What is the MAXFREQ of my Ryzen 5?}
 \begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Used operating system information}, basicstyle=\ttfamily]
     MINFREQ=$(cpupower frequency-info --hwlimits | sed -n '1d;p' \
         | awk '{print $1}')
@@ -117,28 +98,29 @@ Thus, for the testing, any foreground apps would be closed. I also used the Linu
 \label{listing:setting_cpu_frequency}
 
 As machine learning makes use of available GPUs, the frequency should also be similarly set to a defined value. 
-NVIDIA provides guide on how to do so\footnote{\url{https://developer.nvidia.com/blog/advanced-api-performance-setstablepowerstate}}.
-Sadly, my used GPU, the NVIDIA GTX 1070, is not capable of fixing the frequency as of the time of conducting these experiments. 
-While it is supposed to be possible according to\todo[inline]{SOURCE, Reconstruct this argument, perhaps there is still something in my PC history | grep}, but there seems to currently be drivers issue preventing this\todo{Find the forum post of people complaining}. 
+NVIDIA provides guide on how to do so\footnote{\url{developer.nvidia.com/blog/advanced-api-performance-setstablepowerstate}}.
+Our used GPU, the NVIDIA GTX 1070, is not capable of fixing the frequency as of the time of conducting these experiments. 
+While it is supposed to be possible, there seems to currently be drivers issue preventing this\footnote{\url{github.com/NVIDIA/open-gpu-kernel-modules/issues/483}}. \todo{Maybe add a prove that it could work.}
 Thus, the frequency of the GPU was not fixed. 
-To reduce the effect of frequency scaling here, the time between experiments was increased generously so that any impact from such scaling would reoccur throughout each run and there would be reduced dependency between runs.
+To reduce the effect of frequency scaling here, the time between experiments was increased generously so that any impact from such scaling reoccurs throughout each run, reducing dependencies between runs.
 
-\todo{Further explain how the experiments were conducted}
+During the training, data is downloaded and saved, which is however deleted before the next experiment. 
+The python process is also not kept between runs, forcing a uniform load of any libraries.
 
 \paragraph{Conducting each experiment}
 
-Each experiment was re-run 10 times. Between each run, there would be a \verb|sleep| period of 10 seconds and one of two minutes in the partial executions. 
+Each experiment was re-run 10 times. Between each run, there is a \verb|sleep| period of 10 seconds and one of two minutes in the partial executions. 
 Additionally, \verb|pinpoint|'s feature of measuring before and after the actual program-to-test would be used. 
-This leads to a period of 30 seconds being measured around the actual experiment. 
-Plotting these additional time frames would give a quick visual indicator whether experiments are sufficiently isolated from each other, ergo when the power draw is at the baseline as the actual program starts.
+This leads to a period of 30 seconds being measured around the program exection. 
+Plotting these additional time frames gives a quick visual indicator whether experiments are sufficiently isolated from each other, ergo when the power draw is at the baseline as the actual program starts.
 
 As there is some data being downloaded and persisted during the execution of the ML, before each run, the data would be cleaned up.
 
 \paragraph{Collected data}
 
-For each experiment, a named and timestamped folder would be created in the \verb|/power-measurements| folder of my repository. Each folder would then hold a \verb|.csv| with pinpoint's timestamped power measurements. 
-The added timestamped-logging would be saved into another \verb|.csv|. 
-While figuring out how to conduct the experiments, I would then plot these measurements early and visually spot if there were any obvious errors or mistakes.
+For each experiment, a named and timestamped folder is created in the \verb|/power-measurements| folder of my repository. Each folder then holds a \verb|.csv| with pinpoint's timestamped power measurements. 
+The added timestamped-logging is saved into another \verb|.csv|. 
+On the way to the final measurements, we plot each experiment early and visually spot if there are any obvious errors or mistakes.
 
 \paragraph{Determining the baseline power draw}
 
@@ -147,11 +129,11 @@ One sample run is shown in Figure \ref{fig:plot_baseline}.
 The blue dots in figure represent each data point. The red line is a smoothed Gaussian trend line with $\sigma = 2$. 
 Dark-green vertical lines are the logged or derived "events" for each run. In this case, nothing happens, so it is only the start and end of \verb|sleep 120|. 
 Notice how the trace starts 30 seconds before the start and continues for another 30 seconds because of the aforementioned \verb|pinpoint| feature.
-Going further, these additional measurements will be redacted for brevity, unless something worth mentioning happens outside the actual experiments.\todo{Check later if something interesting happens or if I should reword this.}
+Going further, these additional measurements will be redacted for brevity.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{power-measurements/measurements_sleep_0714004033/plot.pdf}
-    \caption{Sample run of the baseline experiment}
+    \caption{Sample run of the baseline experiment. The dotted line is the global average. The red line is a smoothed Gaussian trend line.}
     \label{fig:plot_baseline}
 \end{figure}
 
@@ -161,10 +143,9 @@ The baseline power draw will be less interesting going further, but will put per
 
 \paragraph{The non-interrupted run}
 
-For the non-interrupted machine learning run, a figure of a sample run is provided in \ref{fig:plot_full}. 
+For the non-interrupted machine learning run, a sample run is provided in Figure \ref{fig:plot_full}. 
 Figure \ref{fig:plot_full_stacked} shows the stacked trend lines of the 10 different runs.
-For simplicity's sake, I refrained from doing more elaborate statistical analysis on the different runs as the visual check of them being very similar seemed enough. 
-There was an option to discuss the measurement results after normalizing each measurement point to its phase, but that would not change the result.\todo{What?}
+For simplicity's sake, we refrained from doing more elaborate statistical analysis on the different runs as the visual check of them being very similar seemed enough.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{power-measurements/measurements_roberta_full_0714010405/plot.pdf}
@@ -210,19 +191,17 @@ Here we can observe that
 
 \begin{enumerate}
     \item The amount of work done is the same. 
-    Similarly to the full-run experiment, the ML still takes the full 5 epochs and has the same work-phases
+    Similarly to the full-run experiment, the ML training still takes the full 5 epochs and has the same work-phases
     \item There is no overhead from checkpointing itself, as the checkpoints are being created regardless of them being resumed from later.
     \item Resuming the jobs results in an added start-up phase. This phase is slightly shorter by a few seconds than the ones in the full runs, likely due to not needing to download the dataset again.
 \end{enumerate}
-
-Additional considerations are that the amount of epoch that are worked off before checkpointing and resuming may matter, but it will be assumed that this is not the case.\todo{I could just run this again with another epoch parameter}
 
 \paragraph{Results from checkpoint and resume with abort}
 
 Unlike the previous experiment, where work is stopped as soon as checkpoint is created, this time the program will be stopped just before a checkpoint is created (in this case just the second checkpoint would be saved). 
 This should show the maximum created overhead from a checkpoint \& resume strategy. 
 
-While this may sound artificial, it could happen in environments where the interaction between the scheduler and the job is not well orchestrated, for example in an environment where jobs are stopped "at random" like in a cloud spot instance.\todo{Improve the wording here}
+While this may sound artificial, it could happen in environments where the interaction between the scheduler and the job is not well orchestrated, for example in an environment where jobs are stopped \emph{at random} like in a cloud spot instance.\todo{Improve the wording here}
 
 Again, the results are visualized in figure \ref{fig:plot_partial_abort_stacked} and \ref{fig:plot_partial_abort_continue_stacked}. Attention should be paid to:
 
@@ -245,14 +224,13 @@ Again, the results are visualized in figure \ref{fig:plot_partial_abort_stacked}
 
 \paragraph{Calculating the energy costs of each run}
 
-To support the argument that there is indeed an overhead from checkpointing \& resuming, I calculated the energy needed via integral of each experiment:
+To support the argument that there is indeed an overhead from checkpointing \& resuming, we calculated the energy needed for each experiment:
 
 \begin{itemize}
     \item  unstopped costs 12.97 kJ on average with an std of 0.04
     \item  save+resume costs 13.94 kJ on average with an std of 0.1
     \item  save+abort+resume costs 15.72 kJ on average with an std of 0.07
 \end{itemize}
-
 
 \section{Modelling}
 
@@ -286,38 +264,39 @@ These phases essentially define a step function, i.e. piecewise constant functio
 Unlike a traditional step function, the start- and endpoints of each "piece" would be encoded implicitly by the previous phases.
 Using these specifications, a simple time-to-power function can be defined, that looks up the input time and traverses the phases in order.
 
-Initially, I also considered allowing any expression instead of a constant value for power and then using Python's \verb|evaluate()| to e.g. allow a function-per-phase model.
-In section \ref{sec:checkpoint_resume_lp}, having a rather restrictive step function will be of advantage, however. \todo{Add some more explanation to this in that section}
+Initially, we considered allowing any expression instead of a constant value for power and then using Python's \verb|evaluate()| to e.g. allow a function-per-phase model.
+In Section \ref{sec:checkpoint_resume_lp}, having a rather restrictive step function will be of advantage, however. \todo{Add some more explanation to this in that section}
 
 \todo[inline]{What to do if the events are not known? How does this work for more complex jobs}
 
 The measurements that have been taken can now be fit into this new model. 
 As each measurement-point can be associated to a phase via the aforementioned added logging, the average of each phase-associated measurement is used to determine the model parameters. 
-The durations of the phases are calculated similarly by taking the average time the logging occurred during the measurements.
+The durations of the phases are calculated similarly by taking the average time the logging occurred at during the measurements.
 
-Using this strategy on the 10 complete runs results in figure \ref{fig:model_overlaid}, which shows the derived model on black with the previous figure \ref{fig:plot_full} in less opacity. 
+Using this strategy on the 10 complete runs results in Figure \ref{fig:model_overlaid}, which shows the derived model in black with the previous Figure \ref{fig:plot_full} in less opacity. 
 The startup phase looks well approximated, visually however there is some error during the work phases.
-The training phases each have a high variance, which is not captured by the constant power approximation. After each training  phase, the power goes down seemingly liniarly, which is also approxiimated by the constant.
+The training phases each have a high variance, which is not captured by the constant power approximation. After each training  phase, the power goes down seemingly linearly, which is also approximated by the constant.
 
 One notable point, this model is a superset of the previous constant-no-overhead model used in the related work.
-These jobs can be modeled with just one workphase, resulting in a constant power over its execution. Leaving the startup phases empty creates no overhead on resuming.
+Previous jobs can be modeled with just one phase of work, resulting in a constant power over its execution. Leaving the startup phases empty creates no overhead on resuming.
 
 \todo{Should probably add the phase markers back in}
 \begin{figure}
     \includegraphics[width=\linewidth]{power-measurements/model_overlaid.pdf}
-    \caption{Model of roberta.py (black) vs. all measurements}
+    \caption{Model of roberta.py (black) vs. the measured runs}
     \label{fig:model_overlaid}
 \end{figure}
 
-\paragraph{Model error analysis}
+\paragraph{Model Error Analysis}
 
-To analyse the error of this model, I cross validated the power's and total energy's RMSE using \verb|scikit-learn|'s \verb|LeaveOneOut| strategy. 
+To analyze the error of this model, we cross validated the power's RMSE and the total energy using \verb|scikit-learn|'s \verb|LeaveOneOut| strategy. 
 The first one would give a measure of the model's accuracy on a short-time (sub-second) scale, the latter would  tell the long-time (whole job) scale accuracy of the model.
 
-Each of the 10 runs would be taken as the ground truth while the other 9 would be used to create the model. The results are the following: t power between the prediction and remainder has an RSME of 39.3 W while the difference in total energy is calculated as -0.1 kJ. 
+Each of the 10 runs would be taken as the ground truth while the other 9 would be used to create the model. 
+The results are the following: the power between the prediction and remainder has an RSME of 39.3 W while the difference in total energy is calculated as -0.1 kJ. 
 
-Interpreting this, it seems that the model performs poorly as a predictor for die exact power used at some timepoint as the RMSE is rather large (think of the maximum power drawn being about 250W). 
-However, in the context of carbon aware scheduling, this should not be too big of an issue as the time frames for carbon-emissions are orders of magnitudes larger (electricitymaps has a resolution of 1 hour for each intenstiy of carbon emissions). 
+Interpreting this, it seems that the model performs poorly as a predictor of the exact power used at some time point as the RMSE is rather large (think of the maximum power drawn being about 250W). 
+However, in the context of carbon aware scheduling, this should not be too big of an issue as the time frames for carbon-emissions are orders of magnitudes larger (\emph{electricitymaps} has a resolution of 1 hour for carbon emissions intensities). 
 The high error likely comes from the high variance during the training phases which is not captured in the model.
 
 The total energy predicted by the model is very close to the actual real life experiment, this should mean that the total carbon calculated on the model should also be close to the carbon emitted by the real program.

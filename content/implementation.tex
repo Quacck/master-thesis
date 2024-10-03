@@ -1,4 +1,4 @@
-\chapter{Choosing an implementation approach}
+\chapter{Implementing Schedulers using the New Model}
 
 Now that an improvement on the job model has been made, the question, on how to evaluate the implications of said model, remains. 
 
@@ -6,7 +6,9 @@ Now that an improvement on the job model has been made, the question, on how to 
 
 % We can then evaluate how well a Slurm plugin would work for our given Forschungsragen. End that section by deeming the plugin idea as unfit, we can then shift to arguing for the simulation approach as that is also something that just came out in related work (perhaps we should see wether we list GAIA as related work or introduce it just then)
 
-\section{Carbon-aware scheduling via a Slurm plugin}
+\section{Choosing an Implementation Approach}
+
+\subsection{Carbon-aware scheduling via a Slurm plugin}
 \label{subsec:slurm_plugin}
 
 My first idea was to use a non-simulation approach. 
@@ -106,7 +108,7 @@ There is a mailing list that can be searched, but it looks to be mostly aimed fo
 
 Other avenues that could be explored are Slurm's Lua plugins. There is also a \emph{Slurm simulator}\footnote{\url{https://hpckp.org/articles/how-to-use-the-Slurm-simulator-as-a-development-and-testing-environment/}} which could potentially be used for carbon-aware scheduling simulation, but that I did not look into much for reasons of little documentation and seeming lack of continued support.
 
-\section{Using a Simulation approach}
+\subsection{Using a Simulation approach}
 
 Thankfully, just at that time, a new paper \cite{hanafy_going_2024} was released. 
 They made a prototype testbed for simulating job scheduling on cloud providers. These Jobs could be executed on spot instances (cheap VMs that seek to increase cloud utilization), on-demand instances (short-notices VMs that are thus more expensive) or pre bought VMs (medium cost, but may be wasted), the paper then discussed balancing carbon- and dollar costs. 
@@ -502,7 +504,7 @@ Attention should be drawn to the circumstance that the high-powered phase (the g
 \subparagraph{Issues of the implementation}
 
 As of now, checkpointing may happen at any point in the scheduler, as the \verb|work_progress| is never reset. 
-Checkpointing at specific points, such as after specific phases like in the entry ML example in section, will be left for future work.
+Checkpointing at specific points, such as after specific phases like in the entry ML example in section, will be left for future work.\todo{Add this to future work!}
 
 Another issue is the runtime and hardware requirements for finding a solution.
 While the upper example of 250 time slots and a job length of 120 were found within minutes on my laptop (a Lenovo T470 with 8GB RAM and an i5-7200U CPU @ 2.50GHz), bigger problem sizes such as 5000 time slots and a length of 800 would barely finish within 30 minutes with a \emph{gap}-value of 98\%.

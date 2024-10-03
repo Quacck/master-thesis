@@ -1,21 +1,28 @@
-\chapter{Evaluating carbon-aware scheduling with the new job model} \label{sec:evaluate_scheduling}
+\chapter{Evaluating Carbon-Aware Scheduling on the New Workload Model} \label{sec:evaluate_scheduling}
 
 In order to evaluate the carbon savings made possible by the previously established dynamic power model, the following approach is proposed:
 As the already existing job traces hold no information regarding the power or their phases, some test cases will be presented and used for the models.
 In a rather explorative process, we use the following parameters and run the simulation on all possible permutations of them. 
-This is done using the \verb|generate_evaluation_jobs.sh| script, but a high-level view of the used parameters is given thus:
+This is done using the \verb|generate_evaluation_jobs.sh| script, the used parameters are listed in the following table:
 
-\begin{enumerate}
-    \item Checkpoint \& restore scheduling or non-interrupted scheduling
-    \item Different phase configurations, in general, we assume there to be a (long or short) high-powered phase and a (long or short) low-powered phase periodically up to the given job length. 
-    \item Startup-lengths between none and 5 minutes
-    \item Startup power levels between 100 W and 300 W
-    \item Different deadlines picked from 4 hours, 12 hours, and 1 day
-    \item Different Job lengths, from 1 hour to 3 hours. \label{eval_list:lengths}
-\end{enumerate}
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|c|c|}
+    \hline
+        Parameter & Values \\ \hline
+        Scheduling Stratey & checkpoint \& resume, non-interrupted \\ \hline
+        Phases & high- and low-powered phases of different lengths \\ \hline
+        Startup length & no startup, 5 minutes, 10 minutes, 30 minutes \\ \hline
+        Statup power level & 100 W, 200 W \\ \hline
+        Waiting time & 4 hours, 12 hours, 1 day, 2 days \\ \hline
+        Job length & 1, 2, and 3 hours \\ \hline
+    \end{tabular}
+    \caption{Overview of the parameters used for the evaluation}
+    \label{tab:evaluation_parameters}
+    \end{table}
 
 Another dimension will be comparing these scenarios against having no information on phases, instead only having an averaged constant wattage of the otherwise existing phases.
-This would represent the previous \verb|GAIA| implementation, where jobs had a constant amount of power at all points in time. 
+This would represent the previous \verb|GAIA| implementation, where jobs had a constant amount of power at all points in time.
 
 \section{Running the Evaluation on a Cluster}
 
@@ -56,6 +63,9 @@ Now the simulation can be run with 128 GB RAM as specified in line 5.
 The \verb|-p magic| parameter results in us using a compute node. 
 Line 3, \verb|--container-writable|, means that the container will be reused if called again under the same name, this lets us conduct set up using (\verb|pip install|).
 
-\section{Results for uninterrupted scheduling}
+\section{Results}
 
-\section{Results for checkpoint \& resume scheduling}
+\todo[inline]{First, make a cool graph showing each job, comparing between scheduling it with (-out) checkpoint \$ resume. HOPEFULLY, this will show that checkpointing \& resuming decreases carbon emissions for (some) jobs. 
+Then, compare this to the findings in the GAIA paper, perhaps confirming them.
+}
+\todo[inline]{Secondly, compare each job with phase-information against a job without that information. If things go well, there'd be some gain from having dynamic phases. If not, maybe give some speculation on the reasons.}
