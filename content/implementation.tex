@@ -110,8 +110,8 @@ Other avenues that could be explored are Slurm's Lua plugins. There is also a \e
 
 \subsection{Using a Simulation approach}
 
-Thankfully, just at that time, a new paper \cite{hanafy_going_2024} was released. 
-They made a prototype testbed for simulating job scheduling on cloud providers. These Jobs could be executed on spot instances (cheap VMs that seek to increase cloud utilization), on-demand instances (short-notices VMs that are thus more expensive) or pre bought VMs (medium cost, but may be wasted), the paper then discussed balancing carbon- and dollar costs. 
+In a recently released paper by Hanafy et. al \cite{hanafy_going_2024}, a prototype testbed for simulating job scheduling on cloud providers is implemented. 
+These Jobs could be executed on spot instances (cheap VMs that seek to increase cloud utilization), on-demand instances (short-notices VMs that are thus more expensive) or pre bought VMs (medium cost, but may be wasted), the paper then discussed balancing carbon- and dollar costs. 
 They included a small notion notion of hardwre requirements in the form of required CPUs per job, but that was only used to scale the cost; all hardware requirements were abstracted away in the form of the cloud always having computing ressources available.
 
 The important part is that they also included an implementation of some schedulers used in the highlighted related works. Among that an implementation for WaitAWhile\cite{wiesner_lets_2021}.
@@ -499,6 +499,7 @@ Attention should be drawn to the circumstance that the high-powered phase (the g
     \includegraphics[width=\linewidth]{GAIA/notebooks/lp_states.pdf}
     \caption{The final scheduling including dynamic power via phases}
     \label{fig:lp_states}
+    \todo[inline]{These graphs needs some more love, the legend is pretty bad.}
 \end{figure}
 
 \subparagraph{Issues of the implementation}
@@ -526,5 +527,3 @@ In order to improve on the issues mentioned above, the following optimization is
 
 The effect of this optimization heavily depends on the input phases. 
 If there are very short phases, the \verb|gcd| would likewise be low and problem size would not be decreased much. 
-
-\todo[inline]{I could perhaps do a tiny evaluation on runtime and hardware usage, doing a cute lil graph with x being problem time, z being job length, y being runtime / memory usage}

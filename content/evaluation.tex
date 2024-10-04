@@ -11,7 +11,7 @@ This is done using the \verb|generate_evaluation_jobs.sh| script, the used param
     \hline
         Parameter & Values \\ \hline
         Scheduling Stratey & checkpoint \& resume, non-interrupted \\ \hline
-        Phases & high- and low-powered phases of different lengths \\ \hline
+        Phases & high- and low-powered phases of different lengths periodically \\ \hline
         Startup length & no startup, 5 minutes, 10 minutes, 30 minutes \\ \hline
         Statup power level & 100 W, 200 W \\ \hline
         Waiting time & 4 hours, 12 hours, 1 day, 2 days \\ \hline
@@ -23,6 +23,8 @@ This is done using the \verb|generate_evaluation_jobs.sh| script, the used param
 
 Another dimension will be comparing these scenarios against having no information on phases, instead only having an averaged constant wattage of the otherwise existing phases.
 This would represent the previous \verb|GAIA| implementation, where jobs had a constant amount of power at all points in time.
+
+\todo[inline]{This needs some better explanation, the phases don't really make too much sense, perhaps just go with the generic ML-job setup I introduced earlier}
 
 \section{Running the Evaluation on a Cluster}
 
