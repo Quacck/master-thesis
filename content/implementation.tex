@@ -140,13 +140,13 @@ Tasks have a predetermined length (as saved in the trace), and they also hold so
 Some properties such as required CPUs were removed.
 My contribution of the phases-and-power model was added to the tasks.
 
-The Scheduler policies are also marked green, as I added scheduler policies that could use this new model. Specifically, I added a (non-) checkpoint \& resume scheduler that works on oracle carbon prediction, this will be further explained in the latter sections.
+The Scheduler policies are also marked green, as I added scheduler policies that could use this new model. Specifically, I added a (non-) suspend \& resume scheduler that works on the assumption of perfect carbon intensity knowledge, this will be further explained in the latter sections.
 
 Scheduled Tasks are submitted to a cluster.
 In my case, this is a simulated, already implemented, cluster that simply logs when each task is entered and finished. 
 In the original paper, they also used an open source adapter that would submit the tasks to an actual Slurm cluster. 
 While this approach could have been used, I decided against it on the basis of not adding further complexity. 
-Thus I also removed the Slurm adapter from my implementation.
+Thus, I also removed the Slurm adapter from my implementation.
 
 % \paragraph{Data being used}
 % 
@@ -233,7 +233,7 @@ A generalizing helper type is \verb|ml|, which takes a dictionary of parameters 
 \subsection{Uninterrupted oracle scheduling} \label{sec:uninterrupted_oracle_scheduling}
 
 There already was an existing version of this scheduling approach which assumed constant power and that the carbon trace would be fully known ("oracle"). 
-Jobs would not be able to checkpoint \& resume in this version.
+Jobs would not be able to suspend \& resume in this version.
 The algorithm for which is pseudocoded in listing \ref{list:pseudocode_oracle}.
 
 \begin{lstlisting}[frame=single, numbers=left, caption={Pseudocode for the original non-interrupt oracle scheduler}, label={list:pseudocode_oracle}, basicstyle=\ttfamily]
@@ -259,7 +259,7 @@ Thus, I implemented a python function whose input is the model parameters (see l
 Evaluating this scheduling approach will take place in section \ref{sec:evaluate_scheduling}, after another scheduling algorithm is introduced.
 
 
-\subsection{{Checkpoint \& resume scheduling for heterogeneous jobs}} \label{sec:checkpoint_resume_lp}
+\subsection{{Suspend \& Resume Scheduling for Heterogeneous Jobs}} \label{sec:checkpoint_resume_lp}
 
 Under the constant-power, no startup-overhead assumption of the already existing implementation, the algorithm for this scheduler worked like the following:
 
@@ -273,7 +273,7 @@ For example, in figure \ref{fig:schedule_problems}, if a job's deadline is in th
 
 \begin{figure}
     \missingfigure{I should show a Gantt chart of the mishappen scheduling for the checkpoint resume scheduler}
-    \caption{Problems in the checkpoint \& resume scheduling under the previous assumptions}
+    \caption{Problems in the suspend \& resume scheduling under the previous assumptions}
     \label{fig:schedule_problems}
 \end{figure}
 

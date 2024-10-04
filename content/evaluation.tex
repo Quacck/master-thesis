@@ -10,7 +10,7 @@ This is done using the \verb|generate_evaluation_jobs.sh| script, the used param
     \begin{tabular}{|c|c|}
     \hline
         Parameter & Values \\ \hline
-        Scheduling Stratey & checkpoint \& resume, non-interrupted \\ \hline
+        Scheduling Stratey & suspend \& resume, non-interrupted \\ \hline
         Phases & high- and low-powered phases of different lengths periodically \\ \hline
         Startup length & no startup, 5 minutes, 10 minutes, 30 minutes \\ \hline
         Statup power level & 100 W, 200 W \\ \hline
@@ -28,7 +28,7 @@ This would represent the previous \verb|GAIA| implementation, where jobs had a c
 
 \section{Running the Evaluation on a Cluster}
 
-As previously discussed in Section \ref{sec:checkpoint_resume_lp}, calculating the checkpoint \& resume scheduling tends to have high runtime and memory requirements. 
+As previously discussed in Section \ref{sec:checkpoint_resume_lp}, calculating the suspend \& resume scheduling tends to have high runtime and memory requirements. 
 For that reason, the simulation was executed on the \emph{SCORE Lab}, standing for "scientific compute resources", of HPI.
 
 After requesting and gaining access, \verb|rsync| was used to transfer the simulation to the cluster. 

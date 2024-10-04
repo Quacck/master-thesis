@@ -29,12 +29,12 @@ Thus, as outlined by \cite{wiesner_lets_2021}, national public grids have a cert
 \paragraph{Power Grid Signals}
 Carbon-aware scheduling commonly works on two possible metrics or signals: the \emph{average emissions} are the metric describing the amount of carbon per unit of energy, basically what has been used in the text so far. Another metric is the \emph{marginal emissions}, answering the question of "if more energy is used at this point in time, how much carbon would that cost?". 
 The answer to that question is usually that non-renewable power plants have to increase production as renewable sources cannot increase production to meet demand (as the sun and wind intensity are set by the weather). 
-Going by the marginal metric, any kind of carbon aware scheduling would be pointless, as any work at any point in time would result in the same increase of carbon. 
+Going by the marginal metric, any kind of carbon aware scheduling is pointless, as any work at any point in time results in the same increase of carbon. 
 There are, however, secondary reasons that render carbon-aware scheduling useful still. 
 One of them are is \emph{curtailment}. 
-This encompasses any methods that reduce the amount of produced renewable energy. As the power grid always needs to have a balance between demand and production, curtailment methods such as turning of wind turbines, selling power at a loss, or charging batteries may be used. 
-Carbon aware scheduling via the average emissions signal, would lower the amount of curtailment needed, as demand for energy would increase at those times.
-Another argument can also be made\todo{Find the quote} that by increasing power demand during times when renewable production is high, energy producers would be "signalled" that there is demand for renewable energy.
+Curtailment encompasses any methods that reduce the amount of produced renewable energy. As the power grid always needs to have a balance between demand and production, curtailment methods such as turning of wind turbines, selling power at a loss, or charging batteries may be used. 
+Carbon aware scheduling via the average emissions signal lowers the amount of curtailment needed, as demand for energy would increase at those times.
+Another argument made, for example by Fridgen et al. \cite{fridgen_not_2021}, is that by increasing power demand during times when renewable production is high, investments in renewables would be promoted. 
 Lastly, as renewable energy is generally cheaper in production than non-renewable energy\todo{Need a citation here!}, scheduling work on low carbon-periods coincides with cheaper energy prices as well. While this would not reduce costs on most energy contracts, there are also some contracts that use dynamic pricing \footnote{One example for dynamic pricing is \emph{Tibber}: \url{tibber.com}}
 
 \paragraph{Workloads in a Datacenter} According to Tanenbaum and Woodhull \cite{tanenbaum_operating_2006}, there are three environments in which scheduling may take place. \emph{Batch systems} describe environments in which there is no user interaction.

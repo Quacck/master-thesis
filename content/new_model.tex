@@ -43,7 +43,7 @@ The software used for reading out MCP data is \emph{pinpoint}\cite{kohler_pinpoi
 
 \paragraph{Measured Program}
 
-Machine learning (ML) was used as the main motivation for checkpoint \& resume scheduling in the related works\cite {wiesner_lets_2021} and thus was also chosen by me to be measured and modeled. 
+Machine learning (ML) was used as the main motivation for suspend \& resume scheduling in the related works\cite {wiesner_lets_2021} and thus was also chosen by me to be measured and modeled. 
 
 The concrete model and framework is secondary for our measurement. In our case, a small model\footnote{\url{huggingface.co/distilbert/distilroberta-base}} is chosen in order to have fewer data points for processing, as well as faster iterations on the measurement script. 
 
@@ -68,7 +68,7 @@ On a high-level view, the following experiments were conducted:
     \item \label{experiment:baseline}Do nothing, measure the system at rest
 \end{enumerate}
 
-Experiment \ref{experiment:full} gives a baseline for what the job looks like without checkpoint \& resume. Number \ref{experiment:partial_checkpointed} and \ref{experiment:partial_checkpointed_aborted} would be used to determine the overhead of checkpointing the job. \ref{experiment:startup_only} would be used to validate the other ones. The last experiment is necessary to determine the baseline energy consumption of the environment.
+Experiment \ref{experiment:full} gives a baseline for what the job looks like without suspend \& resume. Number \ref{experiment:partial_checkpointed} and \ref{experiment:partial_checkpointed_aborted} would be used to determine the overhead of checkpointing the job. \ref{experiment:startup_only} would be used to validate the other ones. The last experiment is necessary to determine the baseline energy consumption of the environment.
 
 To execute these experiments inside a repeatable bash script, additional command line parameters were added to the program. 
 For example, a boolean parameter \verb|--resume_from_checkpoint| and an integer parameter \verb|--stop_after_epoch| are used for experiment \ref{experiment:full} to \ref{experiment:partial_checkpointed}. 
@@ -199,7 +199,7 @@ Here we can observe that
 \paragraph{Results from checkpoint and resume with abort}
 
 Unlike the previous experiment, where work is stopped as soon as checkpoint is created, this time the program will be stopped just before a checkpoint is created (in this case just the second checkpoint would be saved). 
-This should show the maximum created overhead from a checkpoint \& resume strategy. 
+This should show the maximum created overhead from a suspend \& resume strategy. 
 
 While this may sound artificial, it could happen in environments where the interaction between the scheduler and the job is not well orchestrated, for example in an environment where jobs are stopped \emph{at random} like in a cloud spot instance.\todo{Improve the wording here}
 

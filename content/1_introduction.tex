@@ -19,7 +19,7 @@ Data centers are currently projected to experience exponential growth in their p
 
 Current work on carbon aware scheduling includes shifting jobs temporally and spatially. 
 One common theme among them, however, is that the workload models do not include program heterogeneity: while real world programs may include high-powered times for computation and low-powered times for e.g. I/O, this is not reflected in literature. 
-Another common strategy for executing jobs during low-carbon timeframes, is to \emph{checkpoint \& resume}: a job may be, for example, stopped as carbon-intensity is increasing and resumed when a certain threshold is reached. 
+Another common strategy for executing jobs during low-carbon timeframes, is to \emph{suspend \& resume}: a job may be, for example, stopped as carbon-intensity is increasing and resumed when a certain threshold is reached. 
 This generally assumes, that resuming a job carries no overhead. 
 
 In this work, we will improve upon the homogeneous, no overhead workload model used in literature, by measuring an AI program and deferring a new model upon that.
