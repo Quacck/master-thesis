@@ -114,7 +114,7 @@ Additionally, \verb|pinpoint|'s feature of measuring before and after the actual
 This leads to a period of 30 seconds being measured around the program exection. 
 Plotting these additional time frames gives a quick visual indicator whether experiments are sufficiently isolated from each other, ergo when the power draw is at the baseline as the actual program starts.
 
-As there is some data being downloaded and persisted during the execution of the ML, before each run, the data would be cleaned up.
+As there is some data being downloaded and persisted during the execution of the ML, before each run, that data is removed,
 
 \paragraph{Collected data}
 
@@ -149,15 +149,14 @@ For simplicity's sake, we refrained from doing more elaborate statistical analys
 
 \begin{figure}
     \includegraphics[width=\linewidth]{power-measurements/measurements_roberta_full_0714010405/plot.pdf}
-    \caption{Sample run of the full run experiment}
+    \caption{Sample run of the full run experiment, the background indicates the phase as determined by the added logging}
     \label{fig:plot_full}
 \end{figure}
 
 \begin{figure}
     \includegraphics[width=\linewidth]{power-measurements/stacked_plots/roberta_full_0714.pdf}
-    \caption{Stacked trend lines of the power consumption for the full runs}
+    \caption{All full-run trend lines stacked. }
     \label{fig:plot_full_stacked}
-    \todo[inline]{These are not yet accurate, the multiple evaluate phases are being grouped into one, which is wrong.}
 \end{figure}
 
 The main takeaways from these measurements are:

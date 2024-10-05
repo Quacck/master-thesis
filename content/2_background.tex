@@ -24,29 +24,38 @@ When looking at energy production globally, a spatial dimension is added.
 This takes effect in the form of different countries having peak solar production at different times (following the earth's rotation), but also takes effect in the composition of production capabilities.
 Some countries may have less investment in renewables or may use nuclear power plants, which are also deemed low-carbon\todo{Needs citation} but have less of a seasonal or diurnal rhythm (if they are not limited by lack of cooling water\footnote{\url{https://www.euronews.com/green/2023/07/13/frances-nuclear-power-stations-to-limit \allowbreak -energy-output-due-to-high-river-temperatures}}).\todo{Needs to be integrated better xd}
 
-Thus, as outlined by \cite{wiesner_lets_2021}, national public grids have a certain affinity for carbon aware scheduling. Generally, the higher the solar capacities, the higher the potential carbon saving from such an approach. 
+Thus, national public grids have a certain affinity for carbon aware scheduling\cite{wiesner_lets_2021}. Generally, the higher the solar capacities, the higher the potential carbon saving from such an approach. 
 
 \paragraph{Power Grid Signals}
-Carbon-aware scheduling commonly works on two possible metrics or signals: the \emph{average emissions} are the metric describing the amount of carbon per unit of energy, basically what has been used in the text so far. Another metric is the \emph{marginal emissions}, answering the question of "if more energy is used at this point in time, how much carbon would that cost?". 
-The answer to that question is usually that non-renewable power plants have to increase production as renewable sources cannot increase production to meet demand (as the sun and wind intensity are set by the weather). 
-Going by the marginal metric, any kind of carbon aware scheduling is pointless, as any work at any point in time results in the same increase of carbon. 
-There are, however, secondary reasons that render carbon-aware scheduling useful still. 
-One of them are is \emph{curtailment}. 
+Carbon-aware scheduling commonly uses one of two possible metrics or signals: the \emph{average emissions} are the metric describing the amount of carbon per unit of energy. These are calculated using a weighted average of all power supplies at a point int time.
+
+Another metric is the \emph{marginal emissions}, answering the question of "if more energy is used at this point in time, how much carbon does that cost?". 
+
+The marginal emissions are closely related to the way energy producers in- or decrease production.
+In order to reduce electricity prices, additional demand on the grid is dispatched to the cheapest power plant with remaining capacity. 
+These power plants, also called \emph{marginal power plants}, have a correlation to the carbon emissions.
+With the cheapest power coming from renewables, additional demand is supplied with more expensive, more carbon intensive, conventional power plants.
+
+Two providers of signal data are \emph{Electricitymaps}\footnote{\url{electricitymaps.com}} and \emph{WattTime}\footnote{\url{watttime.org}}.
+Electricitymaps has a free access API for historical and current average emissions. Both providers only offer the marginal signal commercially, however. 
+
+Going further, the average signal will be used. 
+Note should be taken that current literature is still split on which signal is best. 
+A recently released and aptly named paper by Sukprasert et. al \cite{sukprasert_limitations_2024} may be read for further information on grid signals, as well as arguments for either signal.
+
+Out of these, reasons for using the average signal is, for example, \emph{curtailment}. 
 Curtailment encompasses any methods that reduce the amount of produced renewable energy. As the power grid always needs to have a balance between demand and production, curtailment methods such as turning of wind turbines, selling power at a loss, or charging batteries may be used. 
 Carbon aware scheduling via the average emissions signal lowers the amount of curtailment needed, as demand for energy would increase at those times.
 Another argument made, for example by Fridgen et al. \cite{fridgen_not_2021}, is that by increasing power demand during times when renewable production is high, investments in renewables would be promoted. 
 Lastly, as renewable energy is generally cheaper in production than non-renewable energy\todo{Need a citation here!}, scheduling work on low carbon-periods coincides with cheaper energy prices as well. While this would not reduce costs on most energy contracts, there are also some contracts that use dynamic pricing \footnote{One example for dynamic pricing is \emph{Tibber}: \url{tibber.com}}
 
-\paragraph{Workloads in a Datacenter} According to Tanenbaum and Woodhull \cite{tanenbaum_operating_2006}, there are three environments in which scheduling may take place. \emph{Batch systems} describe environments in which there is no user interaction.
-A user may submit their job, and it would be executed according to the scheduler at some point in time. \todo{Does this need more examples?}
-On the contrary, in \emph{interactive} settings, a user interacts with the system, and thus expects quick responses to their inputs. 
+\paragraph{Workloads in a Datacenter} According to Tanenbaum and Woodhull\cite{tanenbaum_operating_2006}, there are three environments in which scheduling may take place. \emph{Batch systems} describe environments in which there is no user interaction. 
+Scientific simulations and computations, machine learning workloads, and data processing tasks are examples of these workloads\cite{sukprasert_limitations_2024}.
+A user may submit their job, and it would be executed according to the scheduler at some point in time. 
+On the contrary, in \emph{interactive} settings, a user interacts with the system, and thus expects quick responses to their inputs. An example of an interactive job are web requests, which should be answered quickly inherently.
 The last environment are \emph{real time} systems. There, deadlines and predictability dictate how a scheduler operate.
 
-For this work's topic, carbon-aware scheduling, only batch systems will be looked at as they allow more freedom to the times of scheduled jobs. 
-
-\todo{I could also add more stuff about metrics and so on, but I am not using them yet in my implementation}
-
-Which metrics are there POI-A, etc.
+For this work's topic, (temporal) carbon-aware scheduling, only batch systems will be looked at as they allow more freedom to the times of scheduled jobs.
 
 \paragraph{Power Intake of a Computer}
 As there will be power measurements in \ref{sec:power_measurements}, some basic understanding of energy and power used for computation will be provided:
@@ -58,15 +67,15 @@ As there will be power measurements in \ref{sec:power_measurements}, some basic 
 
 \paragraph{Measuring Power}
 
-There are multiple options for measuring the power of a given computer. One way of classifying these options would be under them being either \emph{logical measurements} or \emph{physical measurements}.
+There are multiple options for measuring the power of a given computer. One way of classifying these options is categorizing them under \emph{logical measurements} or \emph{physical measurements}.
 
-Logical ones would create a model on some metrics and derive the used power. One example would be using Linux' \emph{perf} tool to read hardware performance counters. \todo{This needs some more here}
+Logical ones create a model on some metrics and derive the used power. One example is using Linux' \emph{perf} tool to read hardware performance counters, then assigning an energy cost to select counters and multiplying that. 
 
-Advantages of choosing a logical approach would be that no external hardware is needed and that the overhead of the measurement would be low, as the hardware counters are being kept track of anyway. 
-Disadvantages on the other hand would be that such a model would have to be created or chosen and would include some form of error as all models do.
+Advantages of choosing a logical approach are that no external hardware is needed and that the overhead of the measurement is low, as the hardware counters are being kept track of anyway. 
+Disadvantages on the other hand are that such a model has to be created or chosen and includes some form of error as all models do.
 
-Physical measurements follow another route; measurement devices would be put between the operating hardware and the power supply. 
-The point where a power measuring device is inserted would dictate what could and could not be measured, a wall mounted measurement device could only measure all power going into a computer and not differentiate between individual programs.
+Physical measurements follow another route; measurement devices are put between the operating hardware and the power supply. 
+The point where a power measuring device is inserted dictates what could and could not be measured, a wall mounted measurement device could only measure all power going into a computer and not differentiate between individual programs.
 
 Advantages of physical measurements are that they can give a more holistic measurement of a system as would be the case for a wall mounted measurement device. 
-Portability is an issue however, unlike operating-system supported tools such as perf, a measurement device would need more effort to be used on another system (or be entirely not useable, for example when such devices are only rated for a certain power level).
+Portability is an issue however, unlike operating-system supported tools such as perf, a measurement device needs more effort to be used on another system (or be entirely not useable, for example when such devices are only rated for a certain power level).
