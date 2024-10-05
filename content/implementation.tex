@@ -87,7 +87,7 @@ For testing, I read out information on the incoming jobs such as set constraints
 
 \paragraph{Problems of a scheduler plugin}
 
-One big problem manifested in that not all jobs "showed up" inside the plugin's job queue. 
+One big problem manifested in that not all jobs \emph{showed up} inside the plugin's job queue. 
 If I would submit 6 jobs, via Slurm's \verb|squeue| command, only a part such as the last 3 could be logged inside the plugin.
 A possible explaination for this could be Slurms scheduler architecture: while there is a scheduler plugin, there also is a scheduler inside Slurm's main loop. 
 That main scheduler loop also uses the same job queue as the plugin.
@@ -159,22 +159,22 @@ Thus, I also removed the Slurm adapter from my implementation.
 
 \section{Implementing simulation-schedulers using the new model}
 
-I would first like to summarize assumption that GAIA makes on the problem of carbon aware scheduling:
+We will first summarize the assumptions that GAIA makes on the problem of carbon aware scheduling:
 
 \begin{enumerate}
     \item job lengths are known
     \item all considered jobs are batch jobs and can thus be shifted temporally based on user deadlines
     \item carbon information is provided for near future time spans, no error is considered
     \item there are no hardware limitations or considerations, all jobs are executed in an isolated manner
-    \item jobs have a constant power draw and can be checkpointed \& resumed for free
+    \item jobs have a constant power draw and can be suspended \& resumed for free
 \end{enumerate}
 
-Especially the last point will be modified going further. As shown in section \ref{sec:improving_the_model}, jobs now have a predefined, variable power draw according to the defined phases. Resuming a job also carries an additional startup phase with it.
+Especially the last point will be modified going further. As shown in Section \ref{sec:improving_the_model}, jobs now have a predefined, variable power draw according to the defined phases. Resuming a job will also carry an additional startup phase with it.
 
 \subsection{Modifying the existing jobs to use the new model}
 
-The first step to be taken was to add the described model to the jobs as outlined in figure \ref{fig:class_diagram}. 
-So far, jobs were generated from \verb|csv|-formatted traces, one example being provided in listing \ref{list:trace_csv}.
+The first step to be taken was to add the described model to the jobs as outlined in Figure \ref{fig:class_diagram}. 
+So far, jobs were generated from \verb|csv|-formatted traces, one example being provided in Listing \ref{list:trace_csv}.
 
 \begin{lstlisting}[frame=single, numbers=none, caption={Excerpt from the Alibaba-PAI trace}, label={list:trace_csv}, basicstyle=\ttfamily]
 arrival_time,   length,     cpus
@@ -211,6 +211,8 @@ As an example, a simplified \verb|roberta.py|, the job that was measured in sect
 }
 \end{lstlisting}
 
+Instead of supplying the phase information via \verb|.csv|, we also added a parameter to set a value for all jobs.
+
 In order to use this model definition and read out the power of a job at a given time, a function was crated that essentially traverses all phases in order, keeping track of the time, and returning the power of the phase when the requested time is reached. 
 This was also used to create figure \ref{fig:model_overlaid}.
 
@@ -234,14 +236,14 @@ A generalizing helper type is \verb|ml|, which takes a dictionary of parameters 
 
 There already was an existing version of this scheduling approach which assumed constant power and that the carbon trace would be fully known ("oracle"). 
 Jobs would not be able to suspend \& resume in this version.
-The algorithm for which is pseudocoded in listing \ref{list:pseudocode_oracle}.
+The algorithm for which is pseudocoded in Listing \ref{list:pseudocode_oracle}.
 
 \begin{lstlisting}[frame=single, numbers=left, caption={Pseudocode for the original non-interrupt oracle scheduler}, label={list:pseudocode_oracle}, basicstyle=\ttfamily]
 function schedule_job_no_checkpointing_resuming(job):
     possible_starts = []
-    for every possible starttime until deadline:
+    for every possible starttime with respect to deadline:
         calculate carbon_emissions_of_job at starttime
-        add carbon_emission to possible_starts
+        add carbon_emission, starttime to possible_starts
     
     return starttime with least carbon emissions
 
@@ -254,86 +256,75 @@ function carbon_emissions_of_job(job, carbon_trace):
     return sum_of_emissions
 \end{lstlisting}
 
-In order to adjust this to the new model where power is a function of time, only line 13 needed to be changed. 
-Thus, I implemented a python function whose input is the model parameters (see listing \ref{roberta_model_definition}), and which would return the power at a specified time. 
+In order to adjust this to the new model where power is a function of time, only line 13 needed changes. 
+Thus, I implemented a python function whose input is the model parameters (see Listing \ref{roberta_model_definition}), returning the power at a specified time. 
 Evaluating this scheduling approach will take place in section \ref{sec:evaluate_scheduling}, after another scheduling algorithm is introduced.
-
 
 \subsection{{Suspend \& Resume Scheduling for Heterogeneous Jobs}} \label{sec:checkpoint_resume_lp}
 
 Under the constant-power, no startup-overhead assumption of the already existing implementation, the algorithm for this scheduler worked like the following:
 
 \begin{itemize}
-    \item order all time slots until the job deadline by their emissions ascending
-    \item execute the job on those time slots until done
+    \item order all time slots until the deadline by their emissions ascending
+    \item execute the job on the first job-length many time slots
 \end{itemize}
 
-This would minimize the carbon emissions, as only the best time slots would be used, but would also create unrealistic schedules sometimes. 
-For example, in figure \ref{fig:schedule_problems}, if a job's deadline is in the distant future, due to the diurnal nature of the electric grid, the job would be scheduled on the "peaks" of each day. Sometimes this would lead to a job being simulated as being executed for very short timeframes at a time\todo{Check wording}. As shown in the power measurement chapter, this kind of scheduling would create a lot of overhead from starting so many times.
-
-\begin{figure}
-    \missingfigure{I should show a Gantt chart of the mishappen scheduling for the checkpoint resume scheduler}
-    \caption{Problems in the suspend \& resume scheduling under the previous assumptions}
-    \label{fig:schedule_problems}
-\end{figure}
-
-
-In order to implement a scheduler for the improved job model, I chose to use \emph{linear programming} (also: LP).
-In a nutshell, LP is an optimization method, that given linear equations and constraints, finds a set of variables (or a vector) that would minimize (or maximize) an optimization goal. 
-The reason for choosing this approach over, for example coming up with a "standard" algorithm, was that I had never used LP before and that due to the "inherent optimization", the burden of\todo{Kann man das so sagen?} proof for the correctness would be lower.
-
-Translating this to the context of carbon-aware scheduling, the resulting vector would decode when a job should be executed, the optimization goal would be to minimize the emitted carbon. 
+This would minimize the emitted carbon, as only the best time slots are used.
+Due to the diurnal nature of carbon emissions, this essentially uses each \emph{valley}, scheduling a job there. 
+With deadlines increasing, the amount of suspends \& resumes also increases accordingly.
+In order to implement a scheduler for the improved job model, I chose to use \emph{linear programming (LP)}.
+In a nutshell, LP is an optimization method, that given linear equations and constraints, finds a set of variables (or a vector) that minimize (or maximize) an optimization goal.
+Translating this to the context of carbon-aware scheduling, the resulting vector somehow decodes when a job should be executed.
+The optimization goal in this case is to minimize the emitted carbon. 
 A constraint for example could be that all time slots being executed should add up to the job length. 
 The big challenge is then to model all of this in the form of mathematical equations, which will be most part of this section's remainder.
 
-\paragraph{Personal experience with linear programming}
+\paragraph{Reflections on Linear Programming}
 
-Linear programming is its own programming paradigm. Unlike, for example, imperative programming, where each instruction would be coded explicitly, enabling classic debugging and such, in LP, a mathematical model would be written which is then solved by a \emph{solver}. 
-Different implementations for these solvers exist, but atleast in my case, the result output by a solver would either be an error, or the result set. 
-As the solver uses the whole model simultaneously, "debugging" individual parts of the model is not possible outside removing them from the overall model.
+Linear programming is its own programming paradigm. Unlike, for example, imperative programming, where each instruction is coded explicitly, enabling classic debugging and such, in LP, a mathematical model would be written which is then solved by a \emph{solver}. 
+Different implementations for these solvers exist, but atleast in our case, the result output by a solver will either be an error, or the result set. 
+As the solver uses the whole model simultaneously, \emph{debugging} individual parts of the model is not possible outside removing them from the overall model.
 
 Thus, an iterative approach to LP proved useful. 
-I would encode some part of my overall problem into the model, solve it, and immediately plot the variables of the result set and check them visually.
-The visual check is very important. 
-Many times the solver would solve the problem "so well" that jobs would get scheduled in a way that the emitted carbon is minimized, but the jobs would be executed in edge cases that I did not intend, but that are possible under the model, examples of this will be given in the following parts.
+We encode some part of our overall problem into the model, solve it, and immediately plot the variables of the result set and check them visually.
+The visual check is very important: many times the solver solved the problem "so well" that jobs are scheduled in a way that the emitted carbon is minimized, but the jobs are executed in edge cases that were not intended, but that are possible under the model, examples of this will be given in the following parts.
 
-Another part of programming LP is "just knowing the tricks". 
+Another part of programming LP is \emph{just knowing the tricks}. 
 Many common programming operations, especially ones for control flow, cannot be expressed directly (as they need to be a linear equation).
 There are some mappings for such operations, but finding out how seems to be harder than in other paradigms, since the LP community appears to be smaller in comparison and online resources are limited.
-Some "tricks" will be highlighted in the latter parts as well. 
+Some \emph{tricks} will be highlighted in the latter parts as well. 
 
 \paragraph{Modelling carbon-aware scheduling in a linear program}
 
-In this part, I would like to preset the steps taken to model the scheduler as an LP problem, highlight some implementation details and visualizing the results of each step.
-I used python's \verb|PuLP| library.
-It allows creating LP models to standard file types and also helps in calling external solvers as well as querying the results.
+In this part, we will preset the iterative steps taken to model the scheduler as an LP problem, highlight some implementation details and visualizing the results of each step.
+I used python's \verb|PuLP| library, which allows creating LP models to standard file types and also helps in calling external solvers as well as querying the results.
 
 \subparagraph{Executing the job}
 
-Firstly, as the job has a certain length and a set deadline, I chose to use an array of time slot-variables as my result set. Each such variable would be a boolean signifying whether the job would be executed at that time.
+Firstly, as the job has a certain length and a set deadline, we chose to use an array of time slot-variables as my result set. Each such variable is a boolean signifying whether the job is executed at that time.
 For the first constraint, the sum of all boolean variables (which are represented as 0 and 1) should add up to the job length, effectively executing the job for length-many time slots.
 The necessary objective function is to be defined as each time slot-being-executed multiplied by the carbon-per-watt at that time slot.
+As an example, the code for this is shown in Listing \ref{fig:lp_work}.
 
-As an example, the code for this is shown in listing \ref{fig:lp_work}.
-
-\begin{lstlisting}[frame=single, numbers=left, caption={LP Implementation for basic scheduling}, label={list:lp_work}, basicstyle=\ttfamily]
+\begin{lstlisting}[frame=single, numbers=left, caption={LP Implementation for basic scheduling}, label={list:lp_work}, basicstyle=\ttfamily, breaklines]
 prob = LpProblem("CarbonAwareScheduling", pulp.LpMinimize)
 work = LpVariable.dicts("work", (t for t in range(DEADLINE)), cat="Binary")
 
-prob += lpSum([work[t] * carbon_cost_at_time[t] for t in range(DEADLINE)]) 
-prob += lpSum(work[t] for t in range(DEADLINE)) == WORK_LENGTH
+prob += lpSum([work[t] * carbon_cost[t] for t in range(DEADLINE)]) 
+prob += lpSum(work[t] for t in range(DEADLINE)) == WORK_LENGTH 
 
 solver = pulp.Gurobi_CMD(timeLimit=timelimit)
 prob.solve(solver)
 \end{lstlisting}
 
+\todo[inline]{Fix the stupid breaklines here}
 The first line creates an LP problem and defines the optimization goal to be a minimizing one. 
 Then, a variable "work" is defined as being \verb|DEADLINE|-many (in this case 300) integer-indexed boolean variables. 
 These will be modeled as the time slots.
-Line 4 defines the optimization goal; each time slot will be multiplied by the carbon emitted there. As one factor is a boolean, this will only increase the sum if the time slot is scheduled. 
+Line 4 defines the optimization goal; each time slot will be multiplied by the carbon emitted there. As one factor is a boolean, this will only increase the sum if the time slot is scheduled. The dictionary \verb|carbon_cost| contains a constant factor for each time slot.
 The last two lines start the solving library. 
 \verb|PuLP| offers an open source solver by default, but during development this proved to be very slow and also did not offer features such as time limits and retrieving intermediate results.
-I thus chose the \emph{Gurobi} solver, a commercial solver that also offers academic licenses. 
+We thus chose the \emph{Gurobi} solver, a commercial solver that also offers academic licenses. 
 That one supported the previously lamented features and increased development time by a lot. 
 
 The running example will be a deadline of 300 time slots, the job has a startup phase of 20 units and has 100 work units. 
@@ -343,14 +334,15 @@ Looking at the figure, the results are not too surprising: the chosen time slots
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/lp_work.pdf}
-    \caption{Visualizing the result set of executing the job for its length}
+    \caption{Executing the job for length-many time uses the lowest slots.}
     \label{fig:lp_work}
-\end{figure}
+\end{figure}    
 
-\subparagraph{Adding overhead via startup phases}
+\subparagraph{Adding Overhead via Startup Phases}
 
 In order to add a cost to starting a job, the code following in listing \ref{list:lp_overhead} is complemented, some parts are excluded for brevity.
 
+\begin{minipage}{\linewidth} % holy moly, hat er nicht gemacht 😏 tex.stackexchange.com/questions/73231/avoid-page-breaks-in-lstlistings
 \begin{lstlisting}[frame=single, numbers=left, caption={LP Implementation for overhead}, label={list:lp_overhead}, basicstyle=\ttfamily]
 for t in range(DEADLINE - 1):
     prob += startup_finished[t] >= work[t + 1] - work[t]
@@ -361,9 +353,11 @@ for i in range(STARTUP_LENGTH - 1, DEADLINE):
     prob += pulp.lpSum([starting[i - j] for j in range(STARTUP_LENGTH)]) 
         >= STARTUP_LENGTH * startup_finished[i]
 \end{lstlisting}
+\end{minipage}
 
-In this snippet, two extra dictionary-variables are introduced, \verb|startup_finished| and \verb|startup|.
-For every time slot (line 1), set \verb|startup_finished| to true if and only if there is a 0 to 1 transition along the \verb|work| dictionary. This becomes apparent when looking at the following truth table \ref{tab:truth_table_startup_finished}.
+
+In this snippet, two extra dictionary-variables are introduced, \verb|startup| and \verb|startup_finished|.
+For every time slot (line 1), set \verb|startup_finished| to true if and only if there is a 0 to 1 transition along the \verb|work| dictionary (line 2). This becomes apparent when looking at Table \ref{tab:truth_table_startup_finished}.
 Notice how the numerical booleans help in this case, as negative integers get mapped to \verb|0|, or \verb|false| respectively.
 
 \begin{table}[h!]
@@ -380,13 +374,13 @@ Notice how the numerical booleans help in this case, as negative integers get ma
 \label{tab:truth_table_startup_finished}
 \end{table}
 
-Line 3 and 4 ensure that "working" time slots and "startup" time slots are mutually exclusive.
-The last loop defined that if (\verb|* startup_finsihed[i]|) a startup must be finished by some time slot, the previous \verb|STARTUP_LENGTH|-many time slots must be used for starting the job.
+Line 3 and 4 ensure that \emph{working} time slots and \emph{startup} time slots are mutually exclusive.
+The last loop defines that if (\verb|* startup_finsihed[i]|) a startup must be finished by some time slot, the previous \verb|STARTUP_LENGTH|-many time slots must be used for starting the job.
 
-At this point, the solver scheduled jobs in a way that would sometimes execute the job at the very first time slots, as no startup could happen before time slot $0$, thus minimizing carbon but obviously producing a bogus result.
-I thus added an extra constraint that work can only be scheduled after atleast the length of the startup phase.
-The emitted carbon goal is changed to also include these new startup time slot, similarly to the previous listing \ref{list:lp_overhead}.
-With this step, the result already looks more like a reasonable schedule, as shown in figure \ref{fig:lp_overhead}. 
+At this point, sometimes, the solver scheduled jobs are set up at the very first time slots, as no startup could happen before time slot $0$, thus minimizing carbon but obviously producing a bogus result.
+To fix this, we add an extra constraint that work may only be scheduled after the length of the startup phase.
+The emitted carbon goal is changed to also include these new startup time slot, similarly to the previous Listing \ref{list:lp_overhead}.
+With this step, the result already looks more like a reasonable schedule, as shown in Figure \ref{fig:lp_overhead}. 
 This time, the optimal schedule includes executing the job in one go.
 Doing a visual check, the job is also executed on seemingly the lowest carbon intensities.
 
@@ -396,12 +390,12 @@ Doing a visual check, the job is also executed on seemingly the lowest carbon in
     \label{fig:lp_overhead}
 \end{figure}
 
-\subparagraph{Adding a notion of progress}
+\subparagraph{Adding a Notion of Progress}
 
 So far, the assumption of constant power has been continued.
-Changing this assumption under the previous other scheduler using the greedy algorithm in section \ref{sec:uninterrupted_oracle_scheduling}, was relatively easy, as changing the constant expression to python function of the model sufficed. 
+Changing this assumption under the previous other scheduler using the greedy algorithm in section \ref{sec:uninterrupted_oracle_scheduling}, was relatively easy, as changing the constant expression to a python function of the model sufficed. 
 This cannot be reused in LP however, as the problem definition may only include linear equations, which a generic function is not. 
-In order to add dynamic power into the linear program, I decided to \emph{linearize} the function, meaning the model needed to be split up into multiple linear approximations.
+In order to add dynamic power into the linear program, we decided to \emph{linearize} the function, meaning the model needed to be split up into multiple linear approximations.
 
 As the model already is essentially a step function of time to power, each phase being one step, the mapping is inherently pretty close. 
 As such, \emph{a lot} of equations were needed that each express "if the progress in the job is $t$, set power to $model(t)$". 
@@ -409,7 +403,7 @@ For that a notion of progress and time is needed inside the model.
 The progress inside each startup-phase needs to reset, as that can happen multiple times during the schedule. 
 On the other hand, the progress for the productive work must not be reset between execution blocks. 
 
-I added the following code to express this:
+We add the following code to express this:
 
 \begin{lstlisting}[frame=single, numbers=left, caption={Progress Variables in LP}, label={list:lp_progress}, basicstyle=\ttfamily, breaklines]
 # define "work_time_progressed" and "startup_time_progressed" as 
@@ -429,41 +423,40 @@ for t in range(DEADLINE-1):
 On a base level, the idea is to count up each progress variables by 1, if a time slot is being determined for work or startup respectively (see line 12 for this).
 
 This snippet also includes an LP "trick", namely the \emph{Big M Method}. 
-In line 4, a constant \verb|M| is defined as "a \emph{large} integer, that cannot otherwise occur in the result set", in this case "large" being twice the amount of time slots but it could also be some other arbitrarily-chosen large number.
+In line 4, a constant \verb|M| is defined as "a \emph{large} integer, that cannot otherwise occur in the result set", in this case "large" being twice the amount of time slots, although it could also be any other arbitrarily chosen large number.
 
 Take line 9 as an example: 
 remember that \verb|starting[t]| is either $0$ or $1$, multiplying this by a large number means the right side is either $0$ or "\emph{large}". 
 Constraining a variable to be less that \verb|M| effectively does nothing (is "\emph{relaxed}"), as every value of that variable is less than \verb|M| by definition of \verb|M|. 
-The whole can expression be translated to "if a time slot is not used for starting the job, set the progress to 0, otherwise ignore this constraint", the Big M Method enables a way to add conditional constraints to a model!
+In whole, this can expression be translated to "if a time slot is not used for starting the job, set the progress to 0, otherwise ignore this constraint", the Big M Method enables a way to add conditional constraints to a model!
 
-While line 9 this defines the \verb|startup_progress| outside the startup phases, line 7 and 8 are needed to increase the progress by exactly 1. 
-Notice how depending on the type of inequality, \emph{M} is either added or subtracted to the equation, a conditional "greater than"-relation is relaxed by setting the constraint to 0.
+While line 9 defines the \verb|startup_progress| outside the startup phases, line 7 and 8 are needed to increase the progress by exactly 1. 
+Notice how depending on the type of inequality, \emph{M} is either added or subtracted to the equation, a conditional \emph{greater than} relation is relaxed by setting the constraint to zero.
 
-All in all, there is now a way to keep track of a job's progress inside the model, as shown in figure \ref{fig:lp_progress}'s upper graph. Attention should be drawn to the \verb|work_progress| which keeps its value even when time slots are not used for work. 
+All in all, there is now a way to keep track of a job's progress inside the model, as shown in Figure \ref{fig:lp_progress}'s upper graph. Attention should be drawn to the \verb|work_progress| which keeps its value even when time slots are not used for work. 
 The schedule found by the solver is not different to the previous one which added overhead, as the optimization goal was not changed and the progress indicators have no impact on the scheduling (yet).
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/lp_progress.pdf}
-    \caption{The result set now contains the progresses of the startup and work phase}
+    \caption{The result set now contains the progresses of the startup and work phases}
     \label{fig:lp_progress}
 \end{figure}
 
-\subparagraph{Adding dynamic power according to the new model}
+\subparagraph{Adding Dynamic Power According to the New Model}
 
 The goal of this part will be to have an LP variable for each phase, which indicates when the job is in that phase.
-When such indicators exist, the formula for calculating a schedule's carbon emissions can be changed to the following (\ref{formula:total_carbon}):
+When such indicators exist, the formula for calculating a schedule's carbon emissions can be changed to the following Formula (\ref{formula:total_carbon}):
 
 \begin{align}
     \label{formula:total_carbon}
     carbonEmitted(t) = \sum_{p \in Phases} isActive(p, t) * powerOfPhase(p) * carbonEmission(t)
 \end{align}
 
-With that goal in mind, we add the pseudocode listed in \ref{list:lp_phases} to determine when a phase is active. 
+With that goal in mind, we add the pseudocode in Listing \ref{list:lp_phases} to determine when a phase is active. 
 
 \begin{lstlisting}[frame=single, numbers=left, caption={Phase detection in LP}, label={list:lp_phases}, basicstyle=\ttfamily, breaklines]
 # for each phase
 # let phase_indicator, phase_indicator_upper, phase_indicator_lower be DEADLINE-many boolean variables
-
 # set lower_bound to be the minimum progress this phase can occur in 
 # set upper_bound to be the maximum similarly
 
@@ -480,18 +473,18 @@ for t in range(DEADLINE):
     prob += phase_variable[t] <= phase_indicator_upper[t]
 \end{lstlisting}
 
-Unwrapping this, two helper variables are added per phase per time slot. 
+Unwrapping this, two helper variables are added per phase and each time slot. 
 A lower variable indicates that the previously established progress is above the threshold for a phase, while the upper variable indicates the opposite. 
-The \verb|phase_variabel| is then "active" where these two overlap (line 14 to 17 define a logical "AND").
+The \verb|phase_variabel| is then \emph{active} where these two overlap (line 14 to 17 define a logical \emph{AND}).
 
 The constraint of line 8 is only applied if the indicator is \verb|false|.
-If it is false, the progress at the time slot must be below the lower bound (as negative numbers are equal to 0).
+If it is false, the progress at the time slot must be below the lower bound (as negative numbers are equal to zero).
 Line 9 works on the negated indicator, applying the constraint if it is \verb|true|. 
 If the indicator is \verb|true|, progress must be higher than the lower bound. 
 Combining this, the expression \verb|phase_indicator_lower[t] <=> progress[t] > lower_bound| is added to the model. 
-The upper bound is formulated in the following two lanes similarly.
+The upper bound is formulated in the following two lines similarly.
 
-Using this addition, the schedule now looks like the one shown in figure \ref{fig:lp_states}. 
+Using this addition, the schedule now looks like the one shown in Figure \ref{fig:lp_states}. 
 Unlike the previous times, splitting the job up into two parts is now the optimal solution. 
 Attention should be drawn to the circumstance that the high-powered phase (the green one) is scheduled on the lowest carbon emissions while the low-powered one is scheduled on the higher emission time slots.
 
@@ -505,19 +498,19 @@ Attention should be drawn to the circumstance that the high-powered phase (the g
 \subparagraph{Issues of the implementation}
 
 As of now, checkpointing may happen at any point in the scheduler, as the \verb|work_progress| is never reset. 
-Checkpointing at specific points, such as after specific phases like in the entry ML example in section, will be left for future work.\todo{Add this to future work!}
+Future work will focus on checkpointing at specific points, such as after specific phases like in the entry ML example in section.\todo{Add this to future work!}
 
-Another issue is the runtime and hardware requirements for finding a solution.
-While the upper example of 250 time slots and a job length of 120 were found within minutes on my laptop (a Lenovo T470 with 8GB RAM and an i5-7200U CPU @ 2.50GHz), bigger problem sizes such as 5000 time slots and a length of 800 would barely finish within 30 minutes with a \emph{gap}-value of 98\%.
-As the LP solver computes the problem, the gap value is an indicator of how close the solver is to finding the optimal solution, the optimal solution is found when the gap is at 0\%.
+Another issue at this point is the runtime and hardware requirements for finding a solution.
+While the upper example of 250 time slots and a job length of 120 were found within minutes on my laptop (a Lenovo T470 with 8 GB RAM and an i5-7200U CPU @ 2.50GHz), bigger problem sizes such as 5000 time slots and a length of 800 barely finish within 30 minutes with a \emph{gap} value of 98\%.
+The gap value is an indicator of how close the solver is to finding the optimal solution, with 0\% representing the optimal solution.
 
-Solvers are able to take advantage of multiple CPU cores, but in my case, the issue was probably a lack of memory. 
-Glancing into the system monitor utility on Ubuntu would show that all 8 GB are in use and that swap space is being used a lot.
+Solvers are able to take advantage of multiple CPU cores; however, in our case, the issue was likely a lack of memory. 
+Glancing into the system monitor utility on Ubuntu would show that all 8 GB of RAM are in use and that swap space is being utilized a lot.
 
 \subparagraph{Decreasing the Problem Size}
 
-In the previously shown Figures, each carbon-emission data point would correspond to one time slot, which in turn corresponds to one unit of time in the job. 
-Going by the resolution of the carbon-emissions, each data point describes the emissions for one hour. 
+In the previously shown Figures, each carbon emission data point corresponds to one time slot, which in turn corresponds to one unit of time in the job. 
+Going by the resolution of the carbon emissions, each data point describes the emissions for one hour. 
 In the original \verb|GAIA| implementation, job lengths are given in seconds, however. 
 The example workload used for measuring in Section \ref{sec:power_measurements} also showed that timescales in seconds are useful. 
 
@@ -526,4 +519,4 @@ Using a 1:1 mapping between those would result in 3600 (60s * 60) time slots for
 In order to improve on the issues mentioned above, the following optimization is made: by calculating the \emph{greatest common divisor (gcd)} between all phase durations and the time resolution of the carbon-emissions (3600), all durations can be scaled down by the \verb|gcd|. Each time slot in the model would then represent \verb|gcd|-many seconds.
 
 The effect of this optimization heavily depends on the input phases. 
-If there are very short phases, the \verb|gcd| would likewise be low and problem size would not be decreased much. 
+If there are very short phases, the \verb|gcd| is low likewise, resulting in minimal reduction of the problem size.

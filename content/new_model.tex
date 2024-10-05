@@ -21,7 +21,7 @@ The experiments are run on a personal computer, its specification being outlined
         Memory & 16GiB \\ \hline
         GPU & GeForce GTX 1070 \\ \hline
     \end{tabular}
-    \caption{Environment parameters the measurements were made on}
+    \caption{Environment parameters of the power measurements}
 \label{tab:measurement_environment}
 \end{table}
 
@@ -176,17 +176,17 @@ Similarly to before, results will be discussed using the stacked plots \ref{fig:
 
 \begin{figure}
     \includegraphics[width=\linewidth]{power-measurements/stacked_plots/roberta_stop_after_saving.pdf}
-    \caption{Power draws of the ML up until stopping after epoch 2}
+    \caption{Stacked trend lines of the experiment for stopping after the second epoch}
     \label{fig:plot_partial_saved_stacked}
 \end{figure}
 
 \begin{figure}
     \includegraphics[width=\linewidth]{power-measurements/stacked_plots/roberta_continue_after_saving.pdf}
-    \caption{Power draws after continuing from the second checkpoint}
+    \caption{Stacked trend lines of the experiment for continuing after the second epoch}
     \label{fig:plot_partial_saved_continue_stacked}
 \end{figure}
 
-Here we can observe that
+Here we can observe that:
 
 \begin{enumerate}
     \item The amount of work done is the same. 
@@ -198,16 +198,18 @@ Here we can observe that
 \paragraph{Results from checkpoint and resume with abort}
 
 Unlike the previous experiment, where work is stopped as soon as checkpoint is created, this time the program will be stopped just before a checkpoint is created (in this case just the second checkpoint would be saved). 
-This should show the maximum created overhead from a suspend \& resume strategy. 
+Ideally, this represents the maximum overhead from a suspend \& resume strategy. 
 
-While this may sound artificial, it could happen in environments where the interaction between the scheduler and the job is not well orchestrated, for example in an environment where jobs are stopped \emph{at random} like in a cloud spot instance.\todo{Improve the wording here}
-
-Again, the results are visualized in figure \ref{fig:plot_partial_abort_stacked} and \ref{fig:plot_partial_abort_continue_stacked}. Attention should be paid to:
+Again, the results are visualized in figure \ref{fig:plot_partial_abort_stacked} and \ref{fig:plot_partial_abort_continue_stacked}. 
+Attention should be paid that,
 
 \begin{enumerate}
     \item The behavior of the repeated start-up phase is kept
-    \item There is now a full additional training phase added to the overall work
+    \item There is now a full additional training and evaluation phase added to the overall work, the aborted checkpointed is also repeated.
 \end{enumerate}
+
+While this may sound artificial, it could happen in environments where the interaction between the scheduler and the job is not well orchestrated, for example in an environment where jobs are stopped \emph{at random} like in a cloud spot instance. 
+The average overhead from stopping the job at random vs. stopping after a checkpoint will likely fall at half the cost of an epoch.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{power-measurements/stacked_plots/roberta_stop_without_saving.pdf}
@@ -242,9 +244,8 @@ Summarizing the findings from the previous paragraphs; it was shown that
     \item Checkpointing \& resuming carries overhead in the form of startup costs and possible wasted work.
 \end{itemize}
 
-The parameters for the improved job model are shown in form of the python implementation in \ref{listing:model_python}. \todo{Check whether this ref works}
+The parameters for the improved job model are shown in form of the python implementation in Listing \ref{listing:model_python}.
 
-\todo{Probably need to improve the code here}
 \begin{lstlisting}[language=python, frame=single, numbers=none, caption={Python Model definition}, basicstyle=\ttfamily, label={listing:model_python}]
 class ModelParameters(TypedDict):
     startup: List[Phase]
@@ -265,8 +266,6 @@ Using these specifications, a simple time-to-power function can be defined, that
 
 Initially, we considered allowing any expression instead of a constant value for power and then using Python's \verb|evaluate()| to e.g. allow a function-per-phase model.
 In Section \ref{sec:checkpoint_resume_lp}, having a rather restrictive step function will be of advantage, however. \todo{Add some more explanation to this in that section}
-
-\todo[inline]{What to do if the events are not known? How does this work for more complex jobs}
 
 The measurements that have been taken can now be fit into this new model. 
 As each measurement-point can be associated to a phase via the aforementioned added logging, the average of each phase-associated measurement is used to determine the model parameters. 
