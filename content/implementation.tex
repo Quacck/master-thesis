@@ -386,7 +386,7 @@ Doing a visual check, the job is also executed on seemingly the lowest carbon in
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/lp_overhead.pdf}
-    \caption{LP Scheduling with overhead in form of a startup phase}
+    \caption{The scheduler now adds a startup phase if work is begun. In comparison to the previous figure, there is now a large block of work.}
     \label{fig:lp_overhead}
 \end{figure}
 
@@ -438,7 +438,7 @@ The schedule found by the solver is not different to the previous one which adde
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/lp_progress.pdf}
-    \caption{The result set now contains the progresses of the startup and work phases}
+    \caption{The scheduler now includes progress variables that keep track of the time spend in startup or work. The work progress is kept.}
     \label{fig:lp_progress}
 \end{figure}
 
@@ -490,9 +490,8 @@ Attention should be drawn to the circumstance that the high-powered phase (the g
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/lp_states.pdf}
-    \caption{The final scheduling including dynamic power via phases}
+    \caption{The final scheduling including differing power levels according to phases. In this example, there is a high-powered phase at 230 W and a low powered phase at 100 W. Notice how the first one is planned to be executed during the lowest carbon emissions.}
     \label{fig:lp_states}
-    \todo[inline]{These graphs needs some more love, the legend is pretty bad.}
 \end{figure}
 
 \subparagraph{Issues of the implementation}
