@@ -1,37 +1,32 @@
 \chapter{Implementing Schedulers using the New Model}
 
-Now that an improvement on the job model has been made, the question, on how to evaluate the implications of said model, remains. 
-
-% We first need to explain why we chose our approach (building upon exisiting work inside GAIA). The other option that is not using a simulation would be to schedule real jobs, for example by creating a Slurm plugin.
-
-% We can then evaluate how well a Slurm plugin would work for our given Forschungsragen. End that section by deeming the plugin idea as unfit, we can then shift to arguing for the simulation approach as that is also something that just came out in related work (perhaps we should see wether we list GAIA as related work or introduce it just then)
+Now that an improvement on the job model has been made, the question, on how to use said model, remains. 
 
 \section{Choosing an Implementation Approach}
 
 \subsection{Carbon-aware scheduling via a Slurm plugin}
 \label{subsec:slurm_plugin}
 
-My first idea was to use a non-simulation approach. 
+Our first idea was to use a non-simulation approach. 
 The HPI's Data Lab\webcite{web_delabhpi} runs a \emph{Slurm} cluster and also has some nodes with power measurement infrastructure included. 
 Slurm is an "open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters"\webcite{web_slurm}. 
 The job scheduling part is important here, it also supports a plugin infrastructure that includes scheduling plugins. 
-One of the highlighted papers\cite{inigo_goiri_greenslot_2011} in the related work section specifically used Slurm for its carbon-aware scheduler implementation and thus seemed like a good starting point for my own work.
+One of the highlighted papers\cite{inigo_goiri_greenslot_2011} in the related work section specifically used Slurm for its carbon-aware scheduler implementation and thus seemed like a good starting point for our work.
 
 \paragraph{Installing Slurm locally}
 
-For my purposes, a local installation would suffice as I would not need to run heavy workloads but instead just the scheduling part of Slurm. 
-While there is a Slurm \verb|apt get| package for my Ubuntu version, this would not work as any plugins to be included during the Slurm compilation, meaning I would have to do the same.
+For our purposes, a local installation suffices as we do not need to run heavy workloads but instead only need the scheduling part of Slurm. 
+While there is a Slurm \verb|apt get| package for Ubuntu, extending this with plugins i not possible as plugins need to be included during the Slurm compilation, meaning we will have to do the same.
 
-Slurm's documentation provides some guidelines on how to install Slurm, which I followed. 
-I tried cloning the main branch, but I got stuck during the compilation process. However, using the predefined released versions worked.
-
+Slurm's documentation provides some guidelines on how to install Slurm, which we followed. 
+We tried cloning the main branch, but the compilation process encountered an arror midway. However, using the predefined released versions worked.
 Installing \verb|munge|\webcite{web_munge} is also necessary, which is used for authentication in Slurm.
 
-One problem arose as I tried to start the \verb|Slurmd|- and \verb|Slurmctld| services. The first one is the worker service that would later execute jobs submitted to Slurm. The latter is the main controller that, for example, schedules jobs on workers. While the command to start them would not fail, upon node inspection via Slurm's \verb|scontrol| command, it would show that all nodes are \verb|DOWN| instantly.
-|
-Dealing with Slurm's problems usually leads to inspecting its logs, in my case the logs showed the following:
+One problem arose as we tried to start the \verb|Slurmd|- and \verb|Slurmctld| services. The first one is the worker service that later executes jobs submitted to Slurm. The latter is the main controller that, for example, schedules jobs on workers. While the command to start them did not fail, upon node inspection via Slurm's \verb|scontrol| command, it showed that all nodes were \verb|DOWN| instantly.
 
-\begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Slurm error logs}, basicstyle=\ttfamily]
+Dealing with Slurm's problems usually leads to inspecting its logs, in this case the logs showed the following:
+
+\begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Slurm's cgroup configuration is missing according to the logs}, basicstyle=\ttfamily]
 $ less config.log
 
 error: Couldn't find the specified plugin name for cgroup/v2
@@ -40,24 +35,17 @@ error: cannot find cgroup plugin for cgroup/v2
 error: cannot create cgroup context for cgroup/v2
 error: Unable to initialize cgroup plugin
 error: Slurmd initialization failed
-
 \end{lstlisting}
 
-Slurm uses Linux' \verb|cgroup| feature to manage the submitted job's hardware ressources. The log hints at some problem related to Slurm's usage of it.
-The solution was this was to provide Slurm's \verb|cgroup.conf| file. In my use-case of getting Slurm to simply start, this did not need to be very sophisticated so I just used an off-the-shelf configuration file\webcite{web_slurmd}.
+Slurm uses Linux' \verb|cgroup| feature to manage the submitted job's hardware resources. The log hints at some problem related to Slurm's usage of it.
+The solution was to provide Slurm's \verb|cgroup.conf| file. In our use-case of getting Slurm to simply start, this did not need to be very sophisticated, so we just used an off-the-shelf configuration file.\webcite{web_slurmd}
+Running \verb|scontrol| again, we were now able to see idling nodes, meaning that Slurm was successfully installed form source.
 
-Running \verb|scontrol| again, I was finally able to see idling nodes, meaning that Slurm was successfully installed form source:
+\paragraph{Creating a Scheduler Plugin}
 
-\begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Slurm running}, basicstyle=\ttfamily]
-$ scontrol
-scontrol: update NodeName=vincent-Laptop STATE=RESUME
-\end{lstlisting}
-
-\paragraph{Creating a scheduler plugin}
-
-The Slurm documentation provides a short guide on how to add a plugin to Slurm.\webcite{web_slurmguide}. 
-As a start, I simply copied Slurm's default scheduler (which is also a plugin) to to the specified directory under a new name, and addings that new name to Slurms build files. 
-It was then was time to recompile Slurm. 
+The Slurm documentation provides a short guide on how to add a plugin to Slurm.\webcite{web_slurmguide}
+As a start, we simply copied Slurm's default scheduler (which is also a plugin) to the specified directory under a new name, and adding that new name to Slurms build files. 
+It was then time to recompile Slurm. 
 Now however, during the recommended \verb|autoreconf| step, an error occured:
 
 \begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Plugin recompilation errors}, basicstyle=\ttfamily]
@@ -71,38 +59,36 @@ configure:25140: error: possibly undefined macro: AM_PATH_GLIB_2_0
 autoreconf: error: /usr/bin/autoconf failed with exit status: 1
 \end{lstlisting}
 
-The solution, while not very obvious, was to install the \verb|libgtk2.0-dev| library.\webcite{web_slurmsim} 
-I then added a simple logging which then showed up in Slurm's log files too.
+The solution, while not very obvious, was to install the \verb|libgtk2.0-dev| library\webcite{web_slurmsim}.
+We then added a simple logging to the new plugin. Upon inspecting the logs after scheduling a hello-world-script, that log message showed up as well - confirming that our new scheduler plugin was running.
 
 \paragraph{Adding more logic to the scheduler plugin}
 
 One very helpful step for developing inside Slurm is to enable the debugging flags.
 This must be decided before compilation by using the \verb|--enable-developer| and \verb|--disable-optimizations| flags during the \verb|/configure| step. 
 With that, debug symbols are added to the outgoing binaries. 
-As I was using vscode, I could then attach its debugger to the running Slurm thread with full functionality.
+As we were using VS Code, we could then attach its debugger to the running Slurm thread with full functionality.
 
 The code of the plugin runs in its own thread and there is no sandboxing or similar around it.
-Thus there are seemingly no limitation on what can be done inside the plugin. 
-For testing, I read out information on the incoming jobs such as set constraints or the user supplied comments. Terminating the jobs was also possible inside the plugin.
+Thus, there are seemingly no limitation on what can be done inside the plugin. 
+For testing, we read information on the incoming jobs such as set constraints or the user supplied comments. Terminating the jobs was also possible inside the plugin.
 
 \paragraph{Problems of a scheduler plugin}
 
 One big problem manifested in that not all jobs \emph{showed up} inside the plugin's job queue. 
-If I would submit 6 jobs, via Slurm's \verb|squeue| command, only a part such as the last 3 could be logged inside the plugin.
-A possible explaination for this could be Slurms scheduler architecture: while there is a scheduler plugin, there also is a scheduler inside Slurm's main loop. 
-That main scheduler loop also uses the same job queue as the plugin.
+If we submitted 6 jobs, via Slurm's \verb|squeue| command, only a part, such as the last 3, logged inside the plugin.
+A possible explanation for this could be Slurms' scheduler architecture: while there is a scheduler plugin, there also is a scheduler inside Slurm's main loop. These both work in parallel\webcite{web_slurmsourcecode} and they use the same job queue.
 
-To hack around this, I tried disabling Slurm's main scheduling loop by setting \verb|sched_interval=-1| inside the Slurm configuration file. 
-While this had the effect of being able to access all incoming jobs inside the plugin, it also had the side-effect of disabling all logic concerning starting the jobs.
-So by choosing this route, the plugin would apparently also need to re-implement alot of extra logic, which conventionally would be not be put inside the scheduler plugin. 
+To hack around this, we tried disabling Slurm's main scheduling loop by setting \verb|sched_interval=-1| inside the Slurm configuration file. 
+While this had the effect of being able to access all incoming jobs inside the plugin, it also had the side effect of disabling all logic concerning starting the jobs.
+So by choosing this route, the plugin needs to re-implement a lot of extra logic, which conventionally is not inside the scheduler plugin. 
 
-I also looked into whether there were any API hooks that are exposed to the plugin. 
-Up until Slurm version 20.11, scheduler plugins had callbacks such as when jobs were submitted. There also was support for "passive" scheduler that would get invoked when determined by Slurm.
-The version I tested however,  23.11, removed all such functionality and documentation. All plugins are implemented via threads that only have callbacks on when they are started and stopped.
+We also looked into whether there were any API hooks that are exposed to the plugin. 
+Up until Slurm version 20.11, scheduler plugins had callbacks\webcite{web_slurm_plugin_old} such as a job just getting submitted. There also was support for \emph{passive} schedulers that were invoked when determined by Slurm.
+The version we used however,  23.11, removed all such functionality and documentation.\webcite{web_slurm_plugin_current} All plugins are implemented via threads that only have callbacks for when they are started and stopped.
 
-Thus, since there was no apparent way of getting around this scheduler race condition between the plugin and the main loop. 
-The scheduler approach as a whole was dropped. 
-While I would not say that a plugin approach is impossible, the effort to implement one from scratch subjectivly seems very high. 
+Thus, since there was no apparent way of getting around this scheduler race condition between the plugin and the main loop, the scheduler approach was dropped. 
+While we would not say that a plugin approach is impossible, the effort to implement one from scratch seems very high. 
 The public documentation for developing on Slurm is scarce. 
 There is a mailing list that can be searched, but it looks to be mostly aimed for administrating Slurm and not developing it.
 
@@ -111,16 +97,16 @@ There is also a \emph{Slurm simulator}\webcite{web_slurmsim} which could potenti
 
 \subsection{Using a Simulation approach}
 
-In a recently released paper by Hanafy et. al \cite{hanafy_going_2024}, a prototype testbed for simulating job scheduling on cloud providers is implemented. 
-These Jobs could be executed on spot instances (cheap VMs that seek to increase cloud utilization), on-demand instances (short-notices VMs that are thus more expensive) or pre bought VMs (medium cost, but may be wasted), the paper then discussed balancing carbon- and dollar costs. 
-They included a small notion notion of hardwre requirements in the form of required CPUs per job, but that was only used to scale the cost; all hardware requirements were abstracted away in the form of the cloud always having computing ressources available.
+In a recently released paper by Hanafy et. al \cite{hanafy_going_2024}, a prototype tested for simulating job scheduling on cloud providers is implemented. 
+These Jobs are scheduled on \emph{spot} instances (cheap VMs that seek to increase cloud utilization), \emph{on-demand} instances (short-notices VMs that are thus more expensive) or \emph{pre bought} VMs (medium cost, but may not get utilized), the paper then discussed balancing carbon- and dollar costs. 
+They included a small notion of hardware requirements in the form of required CPUs per job, but that was only used to scale the cost; all hardware requirements were abstracted away in the form of the cloud always having computing resources available - \emph{hyperscale} being the keyword for this assumption.
 
 The important part is that they also included an implementation of some schedulers used in the highlighted related works. Among that an implementation for WaitAWhile\cite{wiesner_lets_2021}.
-This meant that I could add the improved job model to that exisiting testbed and have something to compare against aswell.
+This meant that we may add the improved job model to that existing testbed and have something to compare against as well.
 
-\paragraph{Description of the GAIA simulator}
+\paragraph{Description of the GAIA Simulator}
 
-I would first like to describe the existing testbed in detail to make it clear which part is my work and which is not. A class diagram is provided in \ref{fig:class_diagram} which is heavily inspired by the existing architecture diagram in the original paper. 
+We first describe the existing testbed make it clear which part is our work and which is not. A class diagram is provided in \ref{fig:class_diagram} which is heavily inspired by the existing architecture diagram in the original paper. 
 
 \begin{figure}
     \includegraphics[width=\linewidth]{images/MA Thesis Diagram.pdf}
@@ -129,34 +115,25 @@ I would first like to describe the existing testbed in detail to make it clear w
 \end{figure}
 
 The main part of GAIA is the scheduler. At program start, it takes parameters\todo{I should probably give an overview of which parameters are supported, so I have that terminology later} that determine the scheduling, such as whether tasks can be interrupted, how to use the carbon information (e.g. use a perfect-information / oracle approach or to use a running average), and how to balance the dollar cost for scheduling. 
-The latter I removed for simplicity, which is marked in the figure via the red color of the reserved and spot instances. In my case of carbon-aware scheduling, I did not need that feature.
+The latter I removed for simplicity, which is marked in the figure via the red color of the reserved and spot instances. In our case of carbon-aware scheduling, we did not need that feature.
 
 In the original implementation, the scheduler had multiple queues of tasks. 
-The paper presented an approach of a short queue (tasks under 2 hours) and long tasks (all other), short tasks would get scheduled on spot instances. 
-Again, as I already removed the spot instance, feature, I did not need the queue multiplicity and it was removed.
+The paper presented an approach of a short queue (tasks under 2 hours) and long tasks (all other), short tasks are scheduled on spot instances. 
+Again, as we already removed the spot instance, feature, the queue multiplicity was removed likewise.
 
-The tasks queues are based on historical traces. GAIA provided multiple traces that are described in the paper. To those I added a trace of the HPI's Data Lab, which will be analysed in section\todo{Link this}.
+The task queues are based on historical traces. GAIA provided multiple traces that are described in the paper.
 
-Tasks have a predetermined length (as saved in the trace), and they also hold some data that is used for scheduling such as their arrival time in the system, and how long they should wait until execution. 
+Tasks have a predetermined length, as saved in the trace, and they also hold some data that is used for scheduling such as their arrival time in the system, and how long they should wait until execution. 
 Some properties such as required CPUs were removed.
-My contribution of the phases-and-power model was added to the tasks.
+Our contribution of the phases-and-power model was added to the tasks.
 
-The Scheduler policies are also marked green, as I added scheduler policies that could use this new model. Specifically, I added a (non-) suspend \& resume scheduler that works on the assumption of perfect carbon intensity knowledge, this will be further explained in the latter sections.
+The Scheduler policies are also marked green, as we added scheduler policies that could use this new model. Specifically, we added a (non-) suspend \& resume scheduler that works on the assumption of perfect carbon intensity knowledge, this will be further explained in the latter sections.
 
-Scheduled Tasks are submitted to a cluster.
-In my case, this is a simulated, already implemented, cluster that simply logs when each task is entered and finished. 
-In the original paper, they also used an open source adapter that would submit the tasks to an actual Slurm cluster. 
-While this approach could have been used, I decided against it on the basis of not adding further complexity. 
-Thus, I also removed the Slurm adapter from my implementation.
-
-% \paragraph{Data being used}
-% 
-% here i could describe which data is already being used (the traces, aswell as the historical carbon data)
-% \begin{itemize}
-%     \item Welche Traces gibt es, wodurch werden die characterisiert? (Länge, Anzahl, etc, etc) Vllt. kann man hier nen coolen vergleich erstellen, Auch könnte man ein paar Sätze darüber schreiben, wie die bisher in GAIA aufgenommen wurden.
-%     \item Wie den scorelab trace benutzen und übersetzen? Gerne auf ner halben Seite aufschlüsseln, was die einzelnen Attribute aus sacct bedeuten.
-%     \item Ansonsten kann man noch die dynamic ernergy sachen als Datenquelle auflisten, bzw. das mini experiment mit fmnist und roberta 
-% \end{itemize}
+Scheduled tasks are submitted to a cluster.
+In our case, this is a simulated, already implemented, cluster that simply logs when each task is entered and finished. 
+In the original paper, they also used an open source adapter that submits the tasks to an actual Slurm cluster. 
+While this approach could have been used, we decided against it on the basis of not adding further complexity. 
+Thus, we also removed the Slurm adapter from our implementation.
 
 \section{Implementing simulation-schedulers using the new model}
 
@@ -185,15 +162,15 @@ arrival_time,   length,     cpus
 838.0,          23549.0,    1
 \end{lstlisting}
 
-In the original GAIA implementation, jobs have a \verb|arrival_time|, which signify when the job should be added to the simulation in seconds. 
+In the original GAIA implementation, jobs have an \verb|arrival_time|, which signify when the job is added to the simulation in seconds. 
 The \verb|length| of a job similarly encodes the seconds a job needs to fully execute. The \verb|cpu| column was not interesting for my work, as previously discussed.
 
-The chosen way of supplying the model information was to add two new columns to the trace files, which would entail the type of job and a column for arguments. 
-As of now, the following types are supported: \verb|constant|, \verb|mocked-constant-from-phases|, \verb|phases|, and \verb|ml|. 
-The first two \verb|constant| types are for backward-compatibility with GAIA, and would be used in the evaluation later. 
+The chosen way of supplying the model information was to add two new columns to the trace files, which entails the type of job and a column for arguments. 
+As of now, the following types are supported: \verb|constant|, \verb|constant-from-phases|, \verb|phases|, and \verb|ml|. 
+The first two \verb|constant| types are for backward-compatibility with GAIA, and are for the evaluation later.
 
-Type \verb|phases| is the main way of creating a job with phases such as the one used in the experiment. The supplied argument in that case would entail a python readable \verb|dict|, essentially a \verb|JSON|-like definition of the model as described in listing \ref{listing:model_python}.
-As this was just a string, I would then use Python's \verb|eval()| to read it back into a python object.\todo{Check how and if I should visualize this}
+Type \verb|phases| is the main way of creating a job with phases such as the one used in the experiment. The supplied argument in that case would entail a python readable \verb|dict|, essentially a \verb|JSON|-like definition of the model as described in Listing \ref{listing:model_python}.
+As this was just a string, we then use Python's \verb|eval()| to read it back into a python object.\todo{Check how and if I should visualize this}
 As an example, a simplified \verb|roberta.py|, the job that was measured in section \ref{sec:power_measurements}, could look like the code in listing \ref{list:roberta_model_definition}
 
 \begin{lstlisting}[frame=single, numbers=none, caption={Simplified definition for a job similar to the experiment}, label={list:roberta_model_definition}, basicstyle=\ttfamily]
@@ -215,7 +192,7 @@ As an example, a simplified \verb|roberta.py|, the job that was measured in sect
 Instead of supplying the phase information via \verb|.csv|, we also added a parameter to set a value for all jobs.
 
 In order to use this model definition and read out the power of a job at a given time, a function was crated that essentially traverses all phases in order, keeping track of the time, and returning the power of the phase when the requested time is reached. 
-This was also used to create figure \ref{fig:model_overlaid}.
+This was also used to create Figure \ref{fig:model_overlaid}.
 
 A generalizing helper type is \verb|ml|, which takes a dictionary of parameters and converts that to model parameters for the \verb|phases| type. A similar job as to the one above would be created with the following:
 
@@ -235,8 +212,8 @@ A generalizing helper type is \verb|ml|, which takes a dictionary of parameters 
 
 \subsection{Uninterrupted oracle scheduling} \label{sec:uninterrupted_oracle_scheduling}
 
-There already was an existing version of this scheduling approach which assumed constant power and that the carbon trace would be fully known ("oracle"). 
-Jobs would not be able to suspend \& resume in this version.
+There already was an existing version of this scheduling approach which assumed constant power and that the carbon trace is fully known ("oracle"). 
+Jobs is not able to suspend \& resume in this version.
 The algorithm for which is pseudocoded in Listing \ref{list:pseudocode_oracle}.
 
 \begin{lstlisting}[frame=single, numbers=left, caption={Pseudocode for the original non-interrupt oracle scheduler}, label={list:pseudocode_oracle}, basicstyle=\ttfamily]
@@ -258,7 +235,7 @@ function carbon_emissions_of_job(job, carbon_trace):
 \end{lstlisting}
 
 In order to adjust this to the new model where power is a function of time, only line 13 needed changes. 
-Thus, I implemented a python function whose input is the model parameters (see Listing \ref{roberta_model_definition}), returning the power at a specified time. 
+Thus, the previously mentioned time-to-power function replaced the Watt constant.
 Evaluating this scheduling approach will take place in section \ref{sec:evaluate_scheduling}, after another scheduling algorithm is introduced.
 
 \subsection{{Suspend \& Resume Scheduling for Heterogeneous Jobs}} \label{sec:checkpoint_resume_lp}
