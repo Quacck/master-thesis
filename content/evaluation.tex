@@ -22,28 +22,28 @@ This is done using the \verb|generate_evaluation_jobs.sh| script, the used param
     \end{table}
 
 Another dimension will be comparing these scenarios against having no information on phases, instead only having an averaged constant wattage of the otherwise existing phases.
-This would represent the previous \verb|GAIA| implementation, where jobs had a constant amount of power at all points in time.
+The latter represents the previous \verb|GAIA| implementation, where jobs had a constant amount of power at all points in time.
 
 \todo[inline]{This needs some better explanation, the phases don't really make too much sense, perhaps just go with the generic ML-job setup I introduced earlier}
 
 \section{Running the Evaluation on a Cluster}
 
-As previously discussed in Section \ref{sec:checkpoint_resume_lp}, calculating the suspend \& resume scheduling tends to have high runtime and memory requirements. 
-For that reason, the simulation was executed on the \emph{SCORE Lab}, standing for "scientific compute resources", of HPI.
+As previously discussed in Section \ref{sec:checkpoint_resume_lp}, calculating suspend \& resume scheduling tends to have high runtime and memory requirements. 
+For that reason, the simulation was executed on the \emph{SCORE Lab}, short for \emph{scientific compute resources}, of HPI.
 
 After requesting and gaining access, \verb|rsync| was used to transfer the simulation to the cluster. 
 Slurm could then be used to schedule all experiments individually (that were generated using the mentioned \verb|generate_all_jobs.sh| script), which would parallelize the evaluation, leading to faster results.
 
 One problem arose in the licensing of the used \emph{Gurobi} solver. 
-Under the used academic license, only 2 \emph{"sessions"} are allowed simultaneously.
+Under our academic license, only 2 \emph{sessions} are allowed simultaneously.
 A session is defined via the hostname of the executing machine, which is communicated to the solver's licensing servers live.
-As such, scheduling each experiment by itself lead to many sessions being started, as Slurm would distribute the jobs on the available nodes.
-While there is some leeway in the amount of sessions, experiments would crash beyond the 5th instance as the solver would not start.
+As such, scheduling each experiment by itself lead to many sessions being started, as Slurm distributes the jobs on the available nodes.
+While there is some leeway in the amount of sessions, experiments crashed beyond the 5th instance as the solver did not start.
 
 We work under this restriction by distributing the experiments across two workers (via a script called \verb|evalute_dynamic_power.sh|); as each experiment has an index, one worker executes the even numbered jobs and the other executes the odd ones. 
 Using the even-odd strategy results in both workers having about the same amount of work.
 
-The workers in this case are python docker containers that were created with the help SCORE Lab's online knowledge base.
+The workers in this case are python docker containers that were created with the help SCORE Lab's online knowledge base. \footnote{\url{score.hpi.uni-potsdam.de/docs/Slurm/index.html}}
 The command for launching one example worker, in this case the one for even jobs, is given in Listing \ref{list:evaluation_slurm}.
 
 \begin{lstlisting}[language=bash, frame=single, numbers=left, caption={Executing the Evaluation inside the SCORE Lab's Slurm environment}, label={list:evaluation_slurm}, basicstyle=\ttfamily]
@@ -63,7 +63,7 @@ sbatch -A polze -p magic \
 
 Now the simulation can be run with 128 GB RAM as specified in line 5. 
 The \verb|-p magic| parameter results in us using a compute node. 
-Line 3, \verb|--container-writable|, means that the container will be reused if called again under the same name, this lets us conduct set up using (\verb|pip install|).
+Line 3, \verb|--container-writable|, means that the container will be reused if called again under the same name, this lets us conduct set up  (\verb|pip install|).
 
 \section{Results}
 
