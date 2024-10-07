@@ -1205,8 +1205,6 @@ STARTUP_LENGTH = 10 #int(mockPowerFunction.duration_startup)  # Startup time for
       + compound vs prefixwords
       + violence ensured when capitalizing To A etc. 
 
-  + 2700€ netto @ uni etwa
-
 + srun -A polze -p magic --container-image=python --container-name=test --container-writable --mem=16G --container-mounts=/hpi/fs00/home/vincent.opitz:/home/vincent.opitz --container-workdir=/home/vincent.opitz --pty bash
 
 + ![alt text](image-37.png)

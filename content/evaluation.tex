@@ -43,7 +43,7 @@ While there is some leeway in the amount of sessions, experiments crashed beyond
 We work under this restriction by distributing the experiments across two workers (via a script called \verb|evalute_dynamic_power.sh|); as each experiment has an index, one worker executes the even numbered jobs and the other executes the odd ones. 
 Using the even-odd strategy results in both workers having about the same amount of work.
 
-The workers in this case are python docker containers that were created with the help SCORE Lab's online knowledge base. \footnote{\url{score.hpi.uni-potsdam.de/docs/Slurm/index.html}}
+The workers in this case are python docker containers that were created with the help SCORE Lab's online knowledge base.\webcite{web_knowledgebase}
 The command for launching one example worker, in this case the one for even jobs, is given in Listing \ref{list:evaluation_slurm}.
 
 \begin{lstlisting}[language=bash, frame=single, numbers=left, caption={Executing the Evaluation inside the SCORE Lab's Slurm environment}, label={list:evaluation_slurm}, basicstyle=\ttfamily]
@@ -56,6 +56,7 @@ sbatch -A polze -p magic \
     --time=24:0:0 \
     --output=slurmlogs/output_%j.txt \
     --error=slurmlogs/error_%j.txt \
+    --constraint=ARCH:X86 \
     --container-mounts=/hpi/fs00/home/vincent.opitz:/home/vincent.opitz \
     --container-workdir=/home/vincent.opitz/master-thesis/GAIA \
     run_all_even_jobs.sh
@@ -64,6 +65,8 @@ sbatch -A polze -p magic \
 Now the simulation can be run with 128 GB RAM as specified in line 5. 
 The \verb|-p magic| parameter results in us using a compute node. 
 Line 3, \verb|--container-writable|, means that the container will be reused if called again under the same name, this lets us conduct set up  (\verb|pip install|).
+Restricting the nodes to be \verb|X86| nodes via line 10 is necessary as there are other architectures available in the cluster. 
+Without this line, Slurm can schedule our jobs on nodes incompatible to the containers' pre-compiled Python binary, resulting in an error on start\webcite{web_scoreslack}.
 
 \section{Results}
 

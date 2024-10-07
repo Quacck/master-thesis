@@ -42,6 +42,7 @@
 % run bibtex thesis if you change the bibliography file
 % otherwise changes may not be compiled
 \bibliography{bibliography}
+\bibliography{web}
 
 \begin{document}
 
@@ -76,7 +77,9 @@
 	% Bibliographie
 	\ifisbook\cleardoubleemptypage\fi
 	\phantomsection\addcontentsline{toc}{chapter}{\refname}
-	\printbibliography[category=cited]
+	\printbibliography[heading=subbibliography, title={Literature}, category={cited}, notkeyword={web}]
+	\printbibliography[heading=subbibliography, title={Web Sources}, category={cited}, keyword={web}]
+	
 
 	% ggf. Anhang
 	%\appendix\include{content/appendix} % example

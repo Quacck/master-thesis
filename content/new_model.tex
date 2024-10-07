@@ -45,7 +45,7 @@ The software used for reading out MCP data is \emph{pinpoint}\cite{kohler_pinpoi
 
 Machine learning (ML) was used as the main motivation for suspend \& resume scheduling in the related works\cite {wiesner_lets_2021} and thus was also chosen by me to be measured and modeled. 
 
-The concrete model and framework is secondary for our measurement. In our case, a small model\footnote{\url{huggingface.co/distilbert/distilroberta-base}} is chosen in order to have fewer data points for processing, as well as faster iterations on the measurement script. 
+The concrete model and framework is secondary for our measurement. In our case, a small model\webcite{web_distilbertdistilroberta-base_2024} is chosen in order to have fewer data points for processing, as well as faster iterations on the measurement script. 
 
 There is a vast amount of machine learning frameworks. 
 For a high-level model, the feature set of the framework only needed to support checkpointing, resuming, and some basic form of logging. 
@@ -100,7 +100,7 @@ Thus, for the testing, any foreground apps are closed. We also used the Linux to
 As machine learning makes use of available GPUs, the frequency should also be similarly set to a defined value. 
 NVIDIA provides guide on how to do so\footnote{\url{developer.nvidia.com/blog/advanced-api-performance-setstablepowerstate}}.
 Our used GPU, the NVIDIA GTX 1070, is not capable of fixing the frequency as of the time of conducting these experiments. 
-While it is supposed to be possible, there seems to currently be drivers issue preventing this\footnote{\url{github.com/NVIDIA/open-gpu-kernel-modules/issues/483}}. \todo{Maybe add a prove that it could work.}
+While it is supposed to be possible, there seems to currently be drivers issue preventing this\webcite{web_powerlimitissue}.
 Thus, the frequency of the GPU was not fixed. 
 To reduce the effect of frequency scaling here, the time between experiments was increased generously so that any impact from such scaling reoccurs throughout each run, reducing dependencies between runs.
 
@@ -111,7 +111,7 @@ The python process is also not kept between runs, forcing a uniform load of any 
 
 Each experiment was re-run 10 times. Between each run, there is a \verb|sleep| period of 10 seconds and one of two minutes in the partial executions. 
 Additionally, \verb|pinpoint|'s feature of measuring before and after the actual program-to-test would be used. 
-This leads to a period of 30 seconds being measured around the program exection. 
+This leads to a period of 30 seconds being measured around the program execution. 
 Plotting these additional time frames gives a quick visual indicator whether experiments are sufficiently isolated from each other, ergo when the power draw is at the baseline as the actual program starts.
 
 As there is some data being downloaded and persisted during the execution of the ML, before each run, that data is removed,

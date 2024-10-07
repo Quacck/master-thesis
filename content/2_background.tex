@@ -11,7 +11,7 @@ As shown in Figure \ref{fig:energy_mix_year}, during warm seasons (e.g. July), m
 
 \begin{figure}
     \includegraphics[width=\linewidth]{agorameter/energy_production_year.pdf}
-    \caption[short]{Mix of energy production in Germany in 2023. Data provided by \url{agora-energiewende.org}}
+    \caption[short]{Mix of energy production in Germany in 2023 \webcite{web_agora}}
     \label{fig:energy_mix_year}
 \end{figure}
 
@@ -22,7 +22,7 @@ This can be seen in the seasonal Figure: during Christmas holidays in December, 
 All the above is a local or national view on the public grid. 
 When looking at energy production globally, a spatial dimension is added. 
 This takes effect in the form of different countries having peak solar production at different times (following the earth's rotation), but also takes effect in the composition of production capabilities.
-Some countries may have less investment in renewables or may use nuclear power plants, which are also deemed low-carbon\todo{Needs citation} but have less of a seasonal or diurnal rhythm (if they are not limited by lack of cooling water\footnote{\url{https://www.euronews.com/green/2023/07/13/frances-nuclear-power-stations-to-limit \allowbreak -energy-output-due-to-high-river-temperatures}}).\todo{Needs to be integrated better xd}
+Some countries may have less investment in renewables or may use nuclear power plants, which are also deemed low-carbon\todo{Needs citation} but have less of a seasonal or diurnal rhythm (if they are not limited by lack of cooling water \webcite{noauthor_heatwave_2023}).\todo{Needs to be integrated better xd}
 
 Thus, national public grids have a certain affinity for carbon aware scheduling\cite{wiesner_lets_2021}. Generally, the higher the solar capacities, the higher the potential carbon saving from such an approach. 
 
@@ -36,7 +36,7 @@ In order to reduce electricity prices, additional demand on the grid is dispatch
 These power plants, also called \emph{marginal power plants}, have a correlation to the carbon emissions.
 With the cheapest power coming from renewables, additional demand is supplied with more expensive, more carbon intensive, conventional power plants.
 
-Two providers of signal data are \emph{Electricitymaps}\footnote{\url{electricitymaps.com}} and \emph{WattTime}\footnote{\url{watttime.org}}.
+Two providers of signal data are \emph{Electricitymaps}\webcite{web_electricitymaps} and \emph{WattTime}\webcite{web_watttime}.
 Electricitymaps has a free access API for historical and current average emissions. Both providers only offer the marginal signal commercially, however. 
 
 Going further, the average signal will be used. 
@@ -47,7 +47,7 @@ Out of these, reasons for using the average signal is, for example, \emph{curtai
 Curtailment encompasses any methods that reduce the amount of produced renewable energy. As the power grid always needs to have a balance between demand and production, curtailment methods such as turning of wind turbines, selling power at a loss, or charging batteries may be used. 
 Carbon aware scheduling via the average emissions signal lowers the amount of curtailment needed, as demand for energy would increase at those times.
 Another argument made, for example by Fridgen et al. \cite{fridgen_not_2021}, is that by increasing power demand during times when renewable production is high, investments in renewables would be promoted. 
-Lastly, as renewable energy is generally cheaper in production than non-renewable energy\todo{Need a citation here!}, scheduling work on low carbon-periods coincides with cheaper energy prices as well. While this would not reduce costs on most energy contracts, there are also some contracts that use dynamic pricing \footnote{One example for dynamic pricing is \emph{Tibber}: \url{tibber.com}}
+Lastly, as renewable energy is generally cheaper in production than non-renewable energy\todo{Need a citation here!}, scheduling work on low carbon-periods coincides with cheaper energy prices as well. While this would not reduce costs on most energy contracts, there are also some contracts that use dynamic pricing \footnote{One example for dynamic pricing is \emph{Tibber}\webcite{web_tibber}}
 
 \paragraph{Workloads in a Datacenter} According to Tanenbaum and Woodhull\cite{tanenbaum_operating_2006}, there are three environments in which scheduling may take place. \emph{Batch systems} describe environments in which there is no user interaction. 
 Scientific simulations and computations, machine learning workloads, and data processing tasks are examples of these workloads\cite{sukprasert_limitations_2024}.

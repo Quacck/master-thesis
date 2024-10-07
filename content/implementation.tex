@@ -12,8 +12,8 @@ Now that an improvement on the job model has been made, the question, on how to 
 \label{subsec:slurm_plugin}
 
 My first idea was to use a non-simulation approach. 
-The HPI's Data Lab \footnote{\url{https://hpi.de/forschung/infrastruktur/hpi-data-engineering-lab.html}} runs a \emph{Slurm} cluster and also has some nodes with power measurement infrastructure included. 
-Slurm is an "open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters"\footnote{\url{https://Slurm.schedmd.com/overview.html}}. 
+The HPI's Data Lab\webcite{web_delabhpi} runs a \emph{Slurm} cluster and also has some nodes with power measurement infrastructure included. 
+Slurm is an "open source, fault-tolerant, and highly scalable cluster management and job scheduling system for large and small Linux clusters"\webcite{web_slurm}. 
 The job scheduling part is important here, it also supports a plugin infrastructure that includes scheduling plugins. 
 One of the highlighted papers\cite{inigo_goiri_greenslot_2011} in the related work section specifically used Slurm for its carbon-aware scheduler implementation and thus seemed like a good starting point for my own work.
 
@@ -25,7 +25,7 @@ While there is a Slurm \verb|apt get| package for my Ubuntu version, this would 
 Slurm's documentation provides some guidelines on how to install Slurm, which I followed. 
 I tried cloning the main branch, but I got stuck during the compilation process. However, using the predefined released versions worked.
 
-Installing \verb|munge|\footnote{\url{https://github.com/dun/munge/wiki/Installation-Guide}} is also necessary, which is used for authentication in Slurm.
+Installing \verb|munge|\webcite{web_munge} is also necessary, which is used for authentication in Slurm.
 
 One problem arose as I tried to start the \verb|Slurmd|- and \verb|Slurmctld| services. The first one is the worker service that would later execute jobs submitted to Slurm. The latter is the main controller that, for example, schedules jobs on workers. While the command to start them would not fail, upon node inspection via Slurm's \verb|scontrol| command, it would show that all nodes are \verb|DOWN| instantly.
 |
@@ -44,7 +44,7 @@ error: Slurmd initialization failed
 \end{lstlisting}
 
 Slurm uses Linux' \verb|cgroup| feature to manage the submitted job's hardware ressources. The log hints at some problem related to Slurm's usage of it.
-The solution was this was to provide Slurm's \verb|cgroup.conf| file. In my use-case of getting Slurm to simply start, this did not need to be very sophisticated so I just used an off-the-shelf (off-the-stackoverflow\footnote{\url{https://stackoverflow.com/a/74211989}}) configuration file.
+The solution was this was to provide Slurm's \verb|cgroup.conf| file. In my use-case of getting Slurm to simply start, this did not need to be very sophisticated so I just used an off-the-shelf configuration file\webcite{web_slurmd}.
 
 Running \verb|scontrol| again, I was finally able to see idling nodes, meaning that Slurm was successfully installed form source:
 
@@ -55,7 +55,7 @@ scontrol: update NodeName=vincent-Laptop STATE=RESUME
 
 \paragraph{Creating a scheduler plugin}
 
-The Slurm documentation provides a short guide on how to add a plugin to Slurm.\footnote{\url{https://Slurm.schedmd.com/add.html}}. 
+The Slurm documentation provides a short guide on how to add a plugin to Slurm.\webcite{web_slurmguide}. 
 As a start, I simply copied Slurm's default scheduler (which is also a plugin) to to the specified directory under a new name, and addings that new name to Slurms build files. 
 It was then was time to recompile Slurm. 
 Now however, during the recommended \verb|autoreconf| step, an error occured:
@@ -71,7 +71,7 @@ configure:25140: error: possibly undefined macro: AM_PATH_GLIB_2_0
 autoreconf: error: /usr/bin/autoconf failed with exit status: 1
 \end{lstlisting}
 
-The solution, while not very obvious, was to install the \verb|libgtk2.0-dev| library. \footnote{\url{https://stackoverflow.com/questions/7805815/autoconf-error-on-ubuntu-11-04}}. 
+The solution, while not very obvious, was to install the \verb|libgtk2.0-dev| library.\webcite{web_slurmsim} 
 I then added a simple logging which then showed up in Slurm's log files too.
 
 \paragraph{Adding more logic to the scheduler plugin}
@@ -106,7 +106,8 @@ While I would not say that a plugin approach is impossible, the effort to implem
 The public documentation for developing on Slurm is scarce. 
 There is a mailing list that can be searched, but it looks to be mostly aimed for administrating Slurm and not developing it.
 
-Other avenues that could be explored are Slurm's Lua plugins. There is also a \emph{Slurm simulator}\footnote{\url{https://hpckp.org/articles/how-to-use-the-Slurm-simulator-as-a-development-and-testing-environment/}} which could potentially be used for carbon-aware scheduling simulation, but that I did not look into much for reasons of little documentation and seeming lack of continued support.
+Other avenues that could be explored are Slurm's Lua plugins. 
+There is also a \emph{Slurm simulator}\webcite{web_slurmsim} which could potentially be used for carbon-aware scheduling simulation, but that I did not look into much for reasons of little documentation and seeming lack of continued support.
 
 \subsection{Using a Simulation approach}
 
