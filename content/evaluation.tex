@@ -1,6 +1,6 @@
-\chapter{Evaluating Carbon-Aware Scheduling on the New Workload Model} \label{sec:evaluate_scheduling}
+\chapter{Evaluation} \label{sec:evaluate_scheduling}
 
-\section{Describing the Evaluation Parameters}
+\section{Parameter Description}
 
 In order to evaluate the carbon savings made possible by the previously established dynamic power model, the following approach is proposed:
 As the already existing job traces hold no information regarding the power or their phases, some test cases will be presented and used for the models.
@@ -12,7 +12,7 @@ This is done using the \verb|generate_evaluation_jobs.sh| script, the used param
     \begin{tabular}{|p{0.3\linewidth}|p{0.6\linewidth}|}
     \hline
         Parameter & Values \\ \hline
-        Scheduling Stratey & suspend \& resume, non-interrupted \\ \hline
+        Scheduling Strategy & suspend \& resume, non-interrupted \\ \hline
         Phases & alternating high- and low-powered phases, each either 30 or 60 minutes long \\ \hline
         Startup length & no startup, 5 minutes, 10 minutes, 30 minutes \\ \hline
         Startup power level & 100 W, 200 W \\ \hline
@@ -77,7 +77,6 @@ Without this line, Slurm can schedule our jobs on nodes incompatible to the cont
 \section{Results}
 
 \paragraph{Effect of Suspend-Resume Scheduling}
-
 
 \todo[inline]{First, make a cool graph showing each job, comparing between scheduling it with (-out) checkpoint \$ resume. HOPEFULLY, this will show that checkpointing \& resuming decreases carbon emissions for (some) jobs. 
 Then, compare this to the findings in the GAIA paper, perhaps confirming them.

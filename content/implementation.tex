@@ -1,10 +1,6 @@
-\chapter{Implementing Schedulers using the New Model}
+\chapter{Choosing an Implementation Approach}
 
-Now that an improvement on the job model has been made, the question, on how to use said model, remains. 
-
-\section{Choosing an Implementation Approach}
-
-\subsection{Carbon-aware scheduling via a Slurm plugin}
+\section{Viability of a Slurm Plugin}
 \label{subsec:slurm_plugin}
 
 Our first idea was to use a non-simulation approach. 
@@ -99,7 +95,7 @@ There is a mailing list that can be searched, but it looks to be mostly aimed fo
 Other avenues that could be explored are Slurm's Lua plugins. 
 There is also a \emph{Slurm simulator}\webcite{web_slurmsim} which could potentially be used for carbon-aware scheduling simulation, but that we did not look into much for reasons of little documentation and seeming lack of continued support.
 
-\subsection{Using a Simulation approach}
+\section{Simulating with \programname}
 
 In a recently released paper by Hanafy et. al \cite{hanafy_going_2024}, a prototype tested for simulating job scheduling on cloud providers is implemented. 
 These Jobs are scheduled on \emph{spot} instances (cheap VMs that seek to increase cloud utilization), \emph{on-demand} instances (short-notices VMs that are thus more expensive) or \emph{pre bought} VMs (medium cost, but may not get utilized), the paper then discussed balancing carbon- and dollar costs. 
@@ -131,7 +127,7 @@ Tasks have a predetermined length, as saved in the trace, and they also hold som
 Some properties such as required CPUs were removed.
 Our contribution of the phases-and-power model was added to the tasks.
 
-The Scheduler policies are also marked green, as we added scheduler policies that could use this new model. Specifically, we added a (non-) suspend \& resume scheduler that works on the assumption of perfect carbon intensity knowledge, this will be further explained in the latter sections.
+The Scheduler policies are also marked green, as we added scheduler policies that could use \modelname. Specifically, we added a (non-) suspend \& resume scheduler that works on the assumption of perfect carbon intensity knowledge, this will be further explained in the latter sections.
 
 Scheduled tasks are submitted to a cluster.
 In our case, this is a simulated, already implemented, cluster that simply logs when each task is entered and finished. 
@@ -139,7 +135,7 @@ In the original paper, they also used an open source adapter that submits the ta
 While this approach could have been used, we decided against it on the basis of not adding further complexity. 
 Thus, we also removed the Slurm adapter from our implementation.
 
-\section{Implementing simulation-schedulers using the new model}
+\chapter{Schedulers with \modelname}
 
 We will first summarize the assumptions that GAIA makes on the problem of carbon aware scheduling:
 
@@ -153,7 +149,7 @@ We will first summarize the assumptions that GAIA makes on the problem of carbon
 
 Especially the last point will be modified going further. As shown in Section \ref{sec:improving_the_model}, jobs now have a predefined, variable power draw according to the defined phases. Resuming a job will also carry an additional startup phase with it.
 
-\subsection{Modifying the existing jobs to use the new model}
+\section{Using \modelname in \programname}
 
 The first step to be taken was to add the described model to the jobs as outlined in Figure \ref{fig:class_diagram}. 
 So far, jobs were generated from \verb|csv|-formatted traces, one example being provided in Listing \ref{list:trace_csv}.
@@ -220,7 +216,7 @@ A generalizing helper type is \verb|ml|, which takes a dictionary of parameters 
 \end{lstlisting}
 \end{minipage}
 
-\subsection{Uninterrupted oracle scheduling} \label{sec:uninterrupted_oracle_scheduling}
+\section{Uninterrupted oracle scheduling} \label{sec:uninterrupted_oracle_scheduling}
 
 There already was an existing version of this scheduling approach which assumed constant power and that the carbon trace is fully known ("oracle"). 
 Jobs is not able to suspend \& resume in this version.
@@ -246,11 +242,11 @@ function carbon_emissions_of_job(job, carbon_trace):
 \end{lstlisting}
 \end{minipage}
 
-In order to adjust this to the new model where power is a function of time, only line 13 needed changes. 
+In order to adjust this to \modelname, where power is a function of time, only line 13 needed changes. 
 Thus, the previously mentioned time-to-power function replaced the Watt constant.
 Evaluating this scheduling approach will take place in section \ref{sec:evaluate_scheduling}, after another scheduling algorithm is introduced.
 
-\subsection{{Suspend \& Resume Scheduling for Heterogeneous Jobs}} \label{sec:checkpoint_resume_lp}
+\section{{Suspend \& Resume Scheduling for Heterogeneous Jobs}} \label{sec:checkpoint_resume_lp}
 
 Under the constant-power, no startup-overhead assumption of the already existing implementation, the algorithm for this scheduler worked like the following:
 
@@ -437,7 +433,7 @@ The schedule found by the solver is not different to the previous one which adde
     \label{fig:lp_progress}
 \end{figure}
 
-\subparagraph{Adding Dynamic Power According to the New Model}
+\subparagraph{Adding Dynamic Power According to the \modelname}
 
 The goal of this part will be to have an LP variable for each phase, which indicates when the job is in that phase.
 When such indicators exist, the formula for calculating a schedule's carbon emissions can be changed to the following Formula (\ref{formula:total_carbon}):
