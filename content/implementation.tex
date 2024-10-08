@@ -250,10 +250,10 @@ Evaluating this scheduling approach will take place in section \ref{sec:evaluate
 
 Under the constant-power, no startup-overhead assumption of the already existing implementation, the algorithm for this scheduler worked like the following:
 
-\begin{itemize}
+\begin{enumerate}
     \item order all time slots until the deadline by their emissions ascending
     \item execute the job on the first job-length many time slots
-\end{itemize}
+\end{enumerate}
 
 This minimizes emitted carbon, as only the best time slots are used.
 Due to the diurnal nature of carbon emissions, this essentially uses each \emph{valley}, scheduling a job there. 

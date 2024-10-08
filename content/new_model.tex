@@ -227,13 +227,20 @@ The average overhead from stopping the job at random vs. stopping after a checkp
 
 \paragraph{Calculating the energy costs of each run}
 
-To support the argument that there is indeed an overhead from checkpointing \& resuming, we calculated the energy needed for each experiment:
+The energy costs of each experiment are contained in Table \ref{tab:experiment_overhead}.
 
-\begin{itemize}
-    \item  unstopped costs 12.97 kJ on average with an std of 0.04
-    \item  save+resume costs 13.94 kJ on average with an std of 0.1
-    \item  save+abort+resume costs 15.72 kJ on average with an std of 0.07
-\end{itemize}
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|c|c|c|}
+    \hline
+        Experiment & average energy cost & standard deviation \\ \hline
+        \ref{experiment:full}, whole run &  12.97 kJ & 0.04 \\ \hline
+        \ref{experiment:partial_checkpointed}, suspend after checkpoint and resume &  13.94  kJ & 0.1 \\ \hline
+        \ref{experiment:partial_checkpointed_aborted}, abort early and resume &  15.72 kJ & 0.07 \\ \hline
+    \end{tabular}
+    \caption{Environment parameters of the power measurements}
+\label{tab:experiment_overhead}
+\end{table}
 
 \section{Introduction of \modelname}
 
