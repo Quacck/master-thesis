@@ -1,5 +1,7 @@
 \chapter{Evaluating Carbon-Aware Scheduling on the New Workload Model} \label{sec:evaluate_scheduling}
 
+\section{Describing the Evaluation Parameters}
+
 In order to evaluate the carbon savings made possible by the previously established dynamic power model, the following approach is proposed:
 As the already existing job traces hold no information regarding the power or their phases, some test cases will be presented and used for the models.
 In a rather explorative process, we use the following parameters and run the simulation on all possible permutations of them. 
@@ -48,21 +50,23 @@ Using the even-odd strategy results in both workers having about the same amount
 The workers in this case are python docker containers that were created with the help SCORE Lab's online knowledge base.\webcite{web_knowledgebase}
 The command for launching one example worker, in this case the one for even jobs, is given in Listing \ref{list:evaluation_slurm}.
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=bash, frame=single, numbers=left, caption={Executing the Evaluation inside the SCORE Lab's Slurm environment}, label={list:evaluation_slurm}, basicstyle=\ttfamily]
-sbatch -A polze -p magic \
-    --container-image=python \
-    --container-name=test \
-    --container-writable \
-    --mem=128G \
-    --cpus-per-task=128 \
-    --time=24:0:0 \
-    --output=slurmlogs/output_%j.txt \
-    --error=slurmlogs/error_%j.txt \
-    --constraint=ARCH:X86 \
-    --container-mounts=/hpi/fs00/home/vincent.opitz:/home/vincent.opitz \
-    --container-workdir=/home/vincent.opitz/master-thesis/GAIA \
-    run_all_even_jobs.sh
- \end{lstlisting}
+    sbatch -A polze -p magic \
+        --container-image=python \
+        --container-name=test \
+        --container-writable \
+        --mem=128G \
+        --cpus-per-task=128 \
+        --time=24:0:0 \
+        --output=slurmlogs/output_%j.txt \
+        --error=slurmlogs/error_%j.txt \
+        --constraint=ARCH:X86 \
+        --container-mounts=/hpi/fs00/home/vincent.opitz:/home/vincent.opitz \
+        --container-workdir=/home/vincent.opitz/master-thesis/GAIA \
+        run_all_even_jobs.sh
+        \end{lstlisting}    
+\end{minipage}
 
 Now the simulation can be run with 128 GB RAM as specified in line 5. 
 The \verb|-p magic| parameter results in us using a compute node. 

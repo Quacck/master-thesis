@@ -26,6 +26,7 @@ One problem arose as we tried to start the \verb|Slurmd|- and \verb|Slurmctld| s
 
 Dealing with Slurm's problems usually leads to inspecting its logs, in this case the logs showed the following:
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Slurm's cgroup configuration is missing according to the logs}, basicstyle=\ttfamily]
 $ less config.log
 
@@ -36,6 +37,7 @@ error: cannot create cgroup context for cgroup/v2
 error: Unable to initialize cgroup plugin
 error: Slurmd initialization failed
 \end{lstlisting}
+\end{minipage}
 
 Slurm uses Linux' \verb|cgroup| feature to manage the submitted job's hardware resources. The log hints at some problem related to Slurm's usage of it.
 The solution was to provide Slurm's \verb|cgroup.conf| file. In our use-case of getting Slurm to simply start, this did not need to be very sophisticated, so we just used an off-the-shelf configuration file.\webcite{web_slurmd}
@@ -48,6 +50,7 @@ As a start, we simply copied Slurm's default scheduler (which is also a plugin) 
 It was then time to recompile Slurm. 
 Now however, during the recommended \verb|autoreconf| step, an error occured:
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Plugin recompilation errors}, basicstyle=\ttfamily]
 $ autoreconf
 auxdir/x_ac_sview.m4:35: warning: macro 'AM_PATH_GLIB_2_0' 
@@ -58,6 +61,7 @@ configure:25140: error: possibly undefined macro: AM_PATH_GLIB_2_0
       See the Autoconf documentation.
 autoreconf: error: /usr/bin/autoconf failed with exit status: 1
 \end{lstlisting}
+\end{minipage}
 
 The solution, while not very obvious, was to install the \verb|libgtk2.0-dev| library\webcite{web_slurmsim}.
 We then added a simple logging to the new plugin. Upon inspecting the logs after scheduling a hello-world-script, that log message showed up as well - confirming that our new scheduler plugin was running.
@@ -154,6 +158,7 @@ Especially the last point will be modified going further. As shown in Section \r
 The first step to be taken was to add the described model to the jobs as outlined in Figure \ref{fig:class_diagram}. 
 So far, jobs were generated from \verb|csv|-formatted traces, one example being provided in Listing \ref{list:trace_csv}.
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[frame=single, numbers=none, caption={Excerpt from the Alibaba-PAI trace}, label={list:trace_csv}, basicstyle=\ttfamily]
 arrival_time,   length,     cpus
 0.0,            6302.0,     1
@@ -161,6 +166,7 @@ arrival_time,   length,     cpus
 463.0,          1570.0,     3
 838.0,          23549.0,    1
 \end{lstlisting}
+\end{minipage}
 
 In the original GAIA implementation, jobs have an \verb|arrival_time|, which signify when the job is added to the simulation in seconds. 
 The \verb|length| of a job similarly encodes the seconds a job needs to fully execute. The \verb|cpu| column was not interesting for my work, as previously discussed.
@@ -173,6 +179,7 @@ Type \verb|phases| is the main way of creating a job with phases such as the one
 As this was just a string, we then use Python's \verb|eval()| to read it back into a python object.\todo{Check how and if I should visualize this}
 As an example, a simplified \verb|roberta.py|, the job that was measured in section \ref{sec:power_measurements}, could look like the code in listing \ref{list:roberta_model_definition}
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[frame=single, numbers=none, caption={Simplified definition for a job similar to the experiment}, label={list:roberta_model_definition}, basicstyle=\ttfamily]
 {
     'startup': [
@@ -188,6 +195,7 @@ As an example, a simplified \verb|roberta.py|, the job that was measured in sect
     ] * 5
 }
 \end{lstlisting}
+\end{minipage}
 
 Instead of supplying the phase information via \verb|.csv|, we also added a parameter to set a value for all jobs.
 
@@ -196,6 +204,7 @@ This was also used to create Figure \ref{fig:model_overlaid}.
 
 A generalizing helper type is \verb|ml|, which takes a dictionary of parameters and converts that to model parameters for the \verb|phases| type. A similar job as to the one above would be created with the following:
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[frame=single, numbers=none, caption={Generic model definition for machine learning jobs}, label={list:roberta_model_definition_generic}, basicstyle=\ttfamily]
 {
     'start_duration': 23.45
@@ -209,6 +218,7 @@ A generalizing helper type is \verb|ml|, which takes a dictionary of parameters 
     'epochs': 5
 }
 \end{lstlisting}
+\end{minipage}
 
 \subsection{Uninterrupted oracle scheduling} \label{sec:uninterrupted_oracle_scheduling}
 
@@ -216,6 +226,7 @@ There already was an existing version of this scheduling approach which assumed 
 Jobs is not able to suspend \& resume in this version.
 The algorithm for which is pseudocoded in Listing \ref{list:pseudocode_oracle}.
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[frame=single, numbers=left, caption={Pseudocode for the original non-interrupt oracle scheduler}, label={list:pseudocode_oracle}, basicstyle=\ttfamily]
 function schedule_job_no_checkpointing_resuming(job):
     possible_starts = []
@@ -233,6 +244,7 @@ function carbon_emissions_of_job(job, carbon_trace):
     
     return sum_of_emissions
 \end{lstlisting}
+\end{minipage}
 
 In order to adjust this to the new model where power is a function of time, only line 13 needed changes. 
 Thus, the previously mentioned time-to-power function replaced the Watt constant.
@@ -285,6 +297,7 @@ For the first constraint, the sum of all boolean variables (which are represente
 The necessary objective function is to be defined as each time slot-being-executed multiplied by the carbon-per-watt at that time slot.
 As an example, the code for this is shown in Listing \ref{fig:lp_work}.
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[frame=single, numbers=left, caption={LP Implementation for basic scheduling}, label={list:lp_work}, basicstyle=\ttfamily, breaklines]
 prob = LpProblem("CarbonAwareScheduling", pulp.LpMinimize)
 work = LpVariable.dicts("work", (t for t in range(DEADLINE)), cat="Binary")
@@ -295,6 +308,7 @@ prob += lpSum(work[t] for t in range(DEADLINE)) == WORK_LENGTH
 solver = pulp.Gurobi_CMD(timeLimit=timelimit)
 prob.solve(solver)
 \end{lstlisting}
+\end{minipage}
 
 \todo[inline]{Fix the stupid breaklines here}
 The first line creates an LP problem and defines the optimization goal to be a minimizing one. 
@@ -384,6 +398,7 @@ On the other hand, the progress for the productive work must not be reset betwee
 
 We add the following code to express this:
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[frame=single, numbers=left, caption={Progress Variables in LP}, label={list:lp_progress}, basicstyle=\ttfamily, breaklines]
 # define "work_time_progressed" and "startup_time_progressed" as 
 # DEADLINE-many integer variables
@@ -398,6 +413,7 @@ for t in range(DEADLINE-1):
     if (t > 0):
         prob += work_time_progressed[t] == work_time_progressed[t-1] + work[t]
 \end{lstlisting}
+\end{minipage}
 
 On a base level, the idea is to count up each progress variables by 1, if a time slot is being determined for work or startup respectively (see line 12 for this).
 
@@ -433,6 +449,7 @@ When such indicators exist, the formula for calculating a schedule's carbon emis
 
 With that goal in mind, we add the pseudocode in Listing \ref{list:lp_phases} to determine when a phase is active. 
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[frame=single, numbers=left, caption={Phase detection in LP}, label={list:lp_phases}, basicstyle=\ttfamily, breaklines]
 # for each phase
 # let phase_indicator, phase_indicator_upper, phase_indicator_lower be DEADLINE-many boolean variables
@@ -451,6 +468,7 @@ for t in range(DEADLINE):
     prob += phase_variable[t] <= phase_indicator_lower[t]
     prob += phase_variable[t] <= phase_indicator_upper[t]
 \end{lstlisting}
+\end{minipage}
 
 Unwrapping this, two helper variables are added per phase and each time slot. 
 A lower variable indicates that the previously established progress is above the threshold for a phase, while the upper variable indicates the opposite. 

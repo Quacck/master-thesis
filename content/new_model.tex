@@ -81,6 +81,7 @@ For example, \emph{Dynamic frequency and voltage scaling (DFVS)}, the OS techniq
 
 Thus, for the testing, any foreground apps are closed. We also used the Linux tool \verb|cpupower|, as shown in snippet below, to set the CPU frequency to a set value of 3.6 GHz, which is the maximum frequency:
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=bash, frame=single, numbers=none, caption={Used operating system information}, basicstyle=\ttfamily]
     MINFREQ=$(cpupower frequency-info --hwlimits | sed -n '1d;p' \
         | awk '{print $1}')
@@ -96,6 +97,7 @@ Thus, for the testing, any foreground apps are closed. We also used the Linux to
     cpupower frequency-set --max ${MAXFREQ} &>/dev/null
 \end{lstlisting}
 \label{listing:setting_cpu_frequency}
+\end{minipage}
 
 As machine learning makes use of available GPUs, the frequency should also be similarly set to a defined value. 
 NVIDIA provides guide on how to do so\footnote{\url{developer.nvidia.com/blog/advanced-api-performance-setstablepowerstate}}.
@@ -246,6 +248,7 @@ Summarizing the findings from the previous paragraphs; it was shown that
 
 The parameters for the improved job model are shown in form of the python implementation in Listing \ref{listing:model_python}.
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[language=python, frame=single, numbers=none, caption={Python Model definition}, basicstyle=\ttfamily, label={listing:model_python}]
 class ModelParameters(TypedDict):
     startup: List[Phase]
@@ -257,6 +260,7 @@ class Phase(TypedDict):
     power: float
     is_checkpoint: NotRequired[bool]   
 \end{lstlisting}
+\end{minipage}
 
 Some simplifications are made: the duration of each phase is well known and the power per phase is a constant. 
 Phases can also be named for later reference.

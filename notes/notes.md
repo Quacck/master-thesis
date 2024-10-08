@@ -1208,3 +1208,18 @@ STARTUP_LENGTH = 10 #int(mockPowerFunction.duration_startup)  # Startup time for
 + srun -A polze -p magic --container-image=python --container-name=test --container-writable --mem=16G --container-mounts=/hpi/fs00/home/vincent.opitz:/home/vincent.opitz --container-workdir=/home/vincent.opitz --pty bash
 
 + ![alt text](image-37.png)
+
++ titlecase besser
++ weniger paragraphen mehr section mehr fließtext perhaps
++ "attention should be paid" => special attention lies on..., in particular the repeated..., 
++ weniger passiv mehr aktiv
++ bei den power figures, compare to another figure
++ unstopped costs: gerne als tabelle
++ keine bullet lists
++ Klassendiagramm fonts größer
++ on a base level => the underlying idea
++ possessiv <> "of the" balancing 
++ new model
++ GAIA v2 als something related aus der grich. myth. benennen (oder was anderes)
++ github repo zur abgabe nen tag geben
++ 1.5 cites pro seitenanzahl, ~50 primärquellen 
