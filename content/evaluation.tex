@@ -7,15 +7,16 @@ This is done using the \verb|generate_evaluation_jobs.sh| script, the used param
 
 \begin{table}[h!]
     \centering
-    \begin{tabular}{|c|c|}
+    \begin{tabular}{|p{0.3\linewidth}|p{0.6\linewidth}|}
     \hline
         Parameter & Values \\ \hline
         Scheduling Stratey & suspend \& resume, non-interrupted \\ \hline
-        Phases & high- and low-powered phases of different lengths periodically \\ \hline
+        Phases & alternating high- and low-powered phases, each either 30 or 60 minutes long \\ \hline
         Startup length & no startup, 5 minutes, 10 minutes, 30 minutes \\ \hline
         Statup power level & 100 W, 200 W \\ \hline
         Waiting time & 4 hours, 12 hours, 1 day, 2 days \\ \hline
         Job length & 1, 2, and 3 hours \\ \hline
+        Carbon trace & Week from July 1. 2024 (see Figure \ref{fig:energy_mix}) \\ \hline
     \end{tabular}
     \caption{Overview of the parameters used for the evaluation}
     \label{tab:evaluation_parameters}
@@ -23,6 +24,7 @@ This is done using the \verb|generate_evaluation_jobs.sh| script, the used param
 
 Another dimension will be comparing these scenarios against having no information on phases, instead only having an averaged constant wattage of the otherwise existing phases.
 The latter represents the previous \verb|GAIA| implementation, where jobs had a constant amount of power at all points in time.
+Finding the LP solution will time-limited to 20 minutes and all jobs will be simulated to be submitted at the very first time in the trace.
 
 \todo[inline]{This needs some better explanation, the phases don't really make too much sense, perhaps just go with the generic ML-job setup I introduced earlier}
 
@@ -69,6 +71,9 @@ Restricting the nodes to be \verb|X86| nodes via line 10 is necessary as there a
 Without this line, Slurm can schedule our jobs on nodes incompatible to the containers' pre-compiled Python binary, resulting in an error on start\webcite{web_scoreslack}.
 
 \section{Results}
+
+\paragraph{Effect of Suspend-Resume Scheduling}
+
 
 \todo[inline]{First, make a cool graph showing each job, comparing between scheduling it with (-out) checkpoint \$ resume. HOPEFULLY, this will show that checkpointing \& resuming decreases carbon emissions for (some) jobs. 
 Then, compare this to the findings in the GAIA paper, perhaps confirming them.
