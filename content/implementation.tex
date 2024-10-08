@@ -16,7 +16,7 @@ One of the highlighted papers\cite{inigo_goiri_greenslot_2011} in the related wo
 \paragraph{Installing Slurm locally}
 
 For our purposes, a local installation suffices as we do not need to run heavy workloads but instead only need the scheduling part of Slurm. 
-While there is a Slurm \verb|apt get| package for Ubuntu, extending this with plugins i not possible as plugins need to be included during the Slurm compilation, meaning we will have to do the same.
+While there is a Slurm \verb|apt get| package for Ubuntu, extending this with plugins is not possible as plugins need to be included during the Slurm compilation, meaning we will have to do the same.
 
 Slurm's documentation provides some guidelines on how to install Slurm, which we followed. 
 We tried cloning the main branch, but the compilation process encountered an arror midway. However, using the predefined released versions worked.
@@ -93,7 +93,7 @@ The public documentation for developing on Slurm is scarce.
 There is a mailing list that can be searched, but it looks to be mostly aimed for administrating Slurm and not developing it.
 
 Other avenues that could be explored are Slurm's Lua plugins. 
-There is also a \emph{Slurm simulator}\webcite{web_slurmsim} which could potentially be used for carbon-aware scheduling simulation, but that I did not look into much for reasons of little documentation and seeming lack of continued support.
+There is also a \emph{Slurm simulator}\webcite{web_slurmsim} which could potentially be used for carbon-aware scheduling simulation, but that we did not look into much for reasons of little documentation and seeming lack of continued support.
 
 \subsection{Using a Simulation approach}
 
@@ -115,7 +115,7 @@ We first describe the existing testbed make it clear which part is our work and 
 \end{figure}
 
 The main part of GAIA is the scheduler. At program start, it takes parameters\todo{I should probably give an overview of which parameters are supported, so I have that terminology later} that determine the scheduling, such as whether tasks can be interrupted, how to use the carbon information (e.g. use a perfect-information / oracle approach or to use a running average), and how to balance the dollar cost for scheduling. 
-The latter I removed for simplicity, which is marked in the figure via the red color of the reserved and spot instances. In our case of carbon-aware scheduling, we did not need that feature.
+The latter we removed for simplicity, which is marked in the figure via the red color of the reserved and spot instances. In our case of carbon-aware scheduling, we did not need that feature.
 
 In the original implementation, the scheduler had multiple queues of tasks. 
 The paper presented an approach of a short queue (tasks under 2 hours) and long tasks (all other), short tasks are scheduled on spot instances. 
@@ -247,10 +247,11 @@ Under the constant-power, no startup-overhead assumption of the already existing
     \item execute the job on the first job-length many time slots
 \end{itemize}
 
-This would minimize the emitted carbon, as only the best time slots are used.
+This minimizes emitted carbon, as only the best time slots are used.
 Due to the diurnal nature of carbon emissions, this essentially uses each \emph{valley}, scheduling a job there. 
 With deadlines increasing, the amount of suspends \& resumes also increases accordingly.
-In order to implement a scheduler for the improved job model, I chose to use \emph{linear programming (LP)}.
+
+In order to implement a scheduler for the improved job model, we chose to use \emph{linear programming (LP)}.
 In a nutshell, LP is an optimization method, that given linear equations and constraints, finds a set of variables (or a vector) that minimize (or maximize) an optimization goal.
 Translating this to the context of carbon-aware scheduling, the resulting vector somehow decodes when a job should be executed.
 The optimization goal in this case is to minimize the emitted carbon. 
@@ -259,7 +260,7 @@ The big challenge is then to model all of this in the form of mathematical equat
 
 \paragraph{Reflections on Linear Programming}
 
-Linear programming is its own programming paradigm. Unlike, for example, imperative programming, where each instruction is coded explicitly, enabling classic debugging and such, in LP, a mathematical model would be written which is then solved by a \emph{solver}. 
+Linear programming is its own programming paradigm. Unlike, for example, imperative programming, where each instruction is coded explicitly, enabling classic debugging and such, in LP, a mathematical model is written which is then solved by a \emph{solver}. 
 Different implementations for these solvers exist, but atleast in our case, the result output by a solver will either be an error, or the result set. 
 As the solver uses the whole model simultaneously, \emph{debugging} individual parts of the model is not possible outside removing them from the overall model.
 
@@ -275,7 +276,7 @@ Some \emph{tricks} will be highlighted in the latter parts as well.
 \paragraph{Modelling carbon-aware scheduling in a linear program}
 
 In this part, we will preset the iterative steps taken to model the scheduler as an LP problem, highlight some implementation details and visualizing the results of each step.
-I used python's \verb|PuLP| library, which allows creating LP models to standard file types and also helps in calling external solvers as well as querying the results.
+We used python's \verb|PuLP| library, which allows creating LP models to standard file types and also helps in calling external solvers as well as querying the results.
 
 \subparagraph{Executing the job}
 
@@ -482,7 +483,7 @@ While the upper example of 250 time slots and a job length of 120 were found wit
 The gap value is an indicator of how close the solver is to finding the optimal solution, with 0\% representing the optimal solution.
 
 Solvers are able to take advantage of multiple CPU cores; however, in our case, the issue was likely a lack of memory. 
-Glancing into the system monitor utility on Ubuntu would show that all 8 GB of RAM are in use and that swap space is being utilized a lot.
+Glancing into the system monitor utility on Ubuntu then shows that all 8 GB of RAM are in use and that swap space is being utilized a lot.
 
 \subparagraph{Decreasing the Problem Size}
 
@@ -491,9 +492,9 @@ Going by the resolution of the carbon emissions, each data point describes the e
 In the original \verb|GAIA| implementation, job lengths are given in seconds, however. 
 The example workload used for measuring in Section \ref{sec:power_measurements} also showed that timescales in seconds are useful. 
 
-Using a 1:1 mapping between those would result in 3600 (60s * 60) time slots for each hour, resulting in very large problem sizes in turn needing long execution times and high amounts of memory.
+Using a 1:1 mapping between those results in 3600 (60s * 60) time slots for each hour, resulting in very large problem sizes in turn needing long execution times and high amounts of memory.
 
-In order to improve on the issues mentioned above, the following optimization is made: by calculating the \emph{greatest common divisor (gcd)} between all phase durations and the time resolution of the carbon-emissions (3600), all durations can be scaled down by the \verb|gcd|. Each time slot in the model would then represent \verb|gcd|-many seconds.
+In order to improve on the issues mentioned above, the following optimization is made: by calculating the \emph{greatest common divisor (gcd)} between all phase durations and the time resolution of the carbon-emissions (3600), all durations can be scaled down by the \verb|gcd|. Each time slot in the model then represents \verb|gcd|-many seconds.
 
 The effect of this optimization heavily depends on the input phases. 
 If there are very short phases, the \verb|gcd| is low likewise, resulting in minimal reduction of the problem size.
