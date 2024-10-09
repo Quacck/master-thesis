@@ -3,15 +3,25 @@
 
 In this chapter, we will introduce some basic terminology as well as provide further information surrounding carbon scheduling.
 
-\paragraph{The Composition of the Public Grid}
+\section{The Composition of the Public Grid}
 
-As outlined in the previous chapter, there is a diurnal rhythm to the renewable energy production.\todo{Add something about the "duck curve"}
+As outlined in the previous chapter, the energy production of the public grid is supplied by different producers.
+
+
+
+
+
+there is a diurnal rhythm to the carbon intensity.\todo{Add something about the "duck curve"} This is, for once, the result of solar production peaking during the midday, but there is also a human component to it. The phenomena of the \emph{duck curve}
+
+
+
+
 In addition to that, there is also a seasonal effect on the energy grid composition:
 As shown in Figure \ref{fig:energy_mix_year}, during warm seasons (e.g. July), more solar is produced than in colder seasons, and the share in renewables rises accordingly.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{agorameter/energy_production_year.pdf}
-    \caption[short]{Mix of energy production in Germany in 2023 \webcite{web_agora}. Seasonally, renewables will be highest during summer but may also spike during holidays.}
+    \caption[short]{Mix of energy production in Germany in 2023 \webcite{web_agora}. Seasonally, renewables will be highest during summer but may also spike during holidays. Thus, yearly time scopes can also be considered for carbon aware scheduling.}
     \label{fig:energy_mix_year}
 \end{figure}
 
@@ -26,7 +36,7 @@ Some countries may have less investment in renewables or may use nuclear power p
 
 Thus, national public grids have a certain affinity for carbon aware scheduling\cite{wiesner_lets_2021}. Generally, the higher the solar capacities, the higher the potential carbon saving from such an approach. 
 
-\paragraph{Power Grid Signals}
+\section{Power Grid Signals}
 Carbon-aware scheduling commonly uses one of two possible metrics or signals: the \emph{average emissions} are the metric describing the amount of carbon per unit of energy. These are calculated using the weighted average of all power supplies at a point in time.
 
 Another metric is the \emph{marginal emissions}, answering the question of "if more energy is used at this point in time, how much carbon does that cost?".
@@ -58,15 +68,7 @@ The last environment are \emph{real time} systems. There, deadlines and predicta
 
 For this work's topic, (temporal) carbon-aware scheduling, only batch systems will be looked at as they allow more freedom to the times of scheduled jobs.
 
-\paragraph{Power Consumption of a Computer}
-As there will be power measurements in \ref{sec:power_measurements}, some basic understanding of energy and power used for computation will be provided:
-\begin{itemize}
-    \item I could mostly borrow from the EBRH slides; there is some base power needed that is correlated to the hardware (dynamic and static energy)
-    \item this also depends on frequency (which is why later we set our CPU frequency to some hard coded value [or do not do that in the case of my GPU lol])
-    \item basically, use this paragraph to outline all things we take care of in my power measurements
-\end{itemize}
-
-\paragraph{Measuring Power}
+\section{Measuring Power}
 
 There are multiple options for measuring the power of a given computer. One way of classifying these options is categorizing them under \emph{logical measurements} or \emph{physical measurements}.
 
@@ -80,3 +82,11 @@ The point where a power measuring device is inserted dictates what could and cou
 
 Advantages of physical measurements are that they can give a more holistic measurement of a system as would be the case for a wall mounted measurement device. 
 Portability is an issue however, unlike operating-system supported tools such as perf, a measurement device needs more effort to be used on another system (or be entirely not useable, for example when such devices are only rated for a certain power level).
+
+% \paragraph{Power Consumption of a Computer}
+% As there will be power measurements in \ref{sec:power_measurements}, some basic understanding of energy and power used for computation will be provided:
+% \begin{itemize}
+%     \item I could mostly borrow from the EBRH slides; there is some base power needed that is correlated to the hardware (dynamic and static energy)
+%     \item this also depends on frequency (which is why later we set our CPU frequency to some hard coded value [or do not do that in the case of my GPU lol])
+%     \item basically, use this paragraph to outline all things we take care of in my power measurements
+% \end{itemize}
