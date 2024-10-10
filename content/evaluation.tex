@@ -109,14 +109,16 @@ With these findings, we will visualize jobs grouped by their length and waiting 
 In Figure \ref{fig:eval_different_schedulers}, all simulated jobs are plotted with their respective total carbon emissions. Blue indicates that both schedulers, with suspend \& resume and the other without, had the same emissions (within 0.01g). If the emissions are not equal, red and green dots indicate the respective scheduler performance.
 The remaining parameters are hashed into an integer, showing that they have little effect on the carbon emissions.
 
-By eye, it can be observed that the carbon savings between the schedulers are minimal for jobs of length up to atleast 8 hours and for jobs with waiting times up to 6 hours.
+By eye, it can be observed that the carbon savings between the schedulers are consistently minimal for jobs of length up to atleast 8 hours and for all jobs with waiting times up to 6 hours.
 There are however, exception to this: for example, 8-hour jobs with a waiting time of 2 days exhibit saving potential, but only for jobs with a startup time of less 30 minutes (these are hashed to around 20). This can also be observed for hours of 16 hours but only 6 hours of waiting time.
 
 The bottom right sub-plot, showing the maximum waiting time and job-length, does not follow the column trend of increased savings with increased waiting times. In a few cases, the suspend \& resume scheduler performs \emph{worse}, as can be seen by green dots being above all other dots.
-One explanation for this can be seen in Figure \ref
-
-
-
+One explanation for this can be seen in Figure \ref{fig:timelimited_gantt}, showing the scheduling for different job lengths, with a startup time of 5 minutes, a waiting time of 4 days.
+Checking the Slurm logs for the jobs highlighted in red shows that the LP scheduler stopped after hitting the time limit of 20 minutes, only finding a result that is within the constraints but not optimal.
+The gap value introduced in Section \ref{sec:checkpoint_resume_lp}, for these jobs is 100\%.
+In fact, counting the occurrences of \verb|"Time limit reached"| in the logs shows that out of all jobs, 209 timeouts occurred. 
+Since half of the 1200 jobs are LP-scheduled, about a third of them did not find an optimal solution in time.
+The cumulative distribution for the time limited solutions in Figure \ref{fig:ecdf_gap} shows a heavy skew towards bad solutions, if the time limit is not kept.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_schedulers.pdf}
@@ -124,7 +126,17 @@ One explanation for this can be seen in Figure \ref
     \label{fig:eval_different_schedulers}
 \end{figure}
 
-\todo[inline]{First, make a cool graph showing each job, comparing between scheduling it with (-out) checkpoint \$ resume. HOPEFULLY, this will show that checkpointing \& resuming decreases carbon emissions for (some) jobs. 
-Then, compare this to the findings in the GAIA paper, perhaps confirming them.
-}
-\todo[inline]{Secondly, compare each job with phase-information against a job without that information. If things go well, there'd be some gain from having dynamic phases. If not, maybe give some speculation on the reasons.}
+\begin{figure}
+    \includegraphics[width=\linewidth]{GAIA/notebooks/timelimited_gantt.pdf}
+    \caption[short]{Schedules of jobs with different lengths under different schedulers. All Jobs have a waiting time of 4 days and a startup time of 5 minutes. The red bars suboptimal schedules that are found upon being time limited.}
+    \label{fig:timelimited_gantt}
+\end{figure}
+
+\begin{figure}
+    \includegraphics[width=\linewidth]{GAIA/slurmlogs/gap_value_ecdf.pdf}
+    \caption[short]{Cumulative distribution plot of the gap value of time limited schedules. A higher gap indicates worse results. There is a heavy skew to 100\%, with half of the values being about 95\%}
+    \label{fig:ecdf_gap}
+\end{figure}
+
+\section{Effect of Phases}
+
