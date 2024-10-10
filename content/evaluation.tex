@@ -106,14 +106,14 @@ Waiting times being very significant as well, is consistent with existing litera
 \end{table}
 
 With these findings, we will visualize jobs grouped by their length and waiting time, as their p-values are effectively zero.
-
-For this, we will group all jobs by common parameters except their scheduling strategy.
-While exploring the results, we noticed that the length of a job and its deadline\footnote{The deadline is given implicitly by the \emph{waiting time} in GAIA and \programname{} The waiting time is the time the job is at maximum allowed to wait before execution must start.}, seem to have a high impact on the total carbon emissions, so we further distinguished those parameters. The phases of a job or their startup-costs d
 In Figure \ref{fig:eval_different_schedulers}, all simulated jobs are plotted with their respective total carbon emissions. Blue indicates that both schedulers, with suspend \& resume and the other without, had the same emissions (within 0.01g). If the emissions are not equal, red and green dots indicate the respective scheduler performance.
+The remaining parameters are hashed into an integer, showing that they have little effect on the carbon emissions.
 
 By eye, it can be observed that the carbon savings between the schedulers are minimal for jobs of length up to atleast 8 hours and for jobs with waiting times up to 6 hours.
-In order to confirm this, we will conduct a p-test for each group of job-lengths and waiting times (following the facets in Figure \ref{fig:eval_different_schedulers}).
-The 
+There are however, exception to this: for example, 8-hour jobs with a waiting time of 2 days exhibit saving potential, but only for jobs with a startup time of less 30 minutes (these are hashed to around 20). This can also be observed for hours of 16 hours but only 6 hours of waiting time.
+
+The bottom right sub-plot, showing the maximum waiting time and job-length, does not follow the column trend of increased savings with increased waiting times. In a few cases, the suspend \& resume scheduler performs \emph{worse}, as can be seen by green dots being above all other dots.
+One explanation for this can be seen in Figure \ref
 
 
 
