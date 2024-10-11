@@ -86,7 +86,7 @@ In order to answer this, we first calculate the total carbon emissions for each 
 
 With this, we first run an ANOVA to determine the axis under which to explore the data. Table \ref{tab:scheduler_anova}, shows that the length and phases of a job impact carbon emissions significantly.
 This is not unexpected, however, as these parameters increase the time and overall energy required to run the job, in turn also increasing overall carbon emissions.
-Waiting times being very significant as well, is consistent with existing literature\cite{wiesner_lets_2021}.
+Waiting times being very significant as well, is consistent with prior literature\cite{wiesner_lets_2021}.
 
 \begin{table}[h!]
     \centering
@@ -128,7 +128,7 @@ The cumulative distribution for the time limited solutions in Figure \ref{fig:ec
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/timelimited_gantt.pdf}
-    \caption[short]{Schedules of jobs with different lengths under different schedulers. All jobs have a waiting time of 4 days and a startup time of 5 minutes and an uneven phase configuration. The red bars are suboptimal schedules that are found upon being time limited.}
+    \caption[short]{Schedules of jobs sharing all parameters but length under different schedulers. All jobs have a waiting time of 4 days and a startup time of 5 minutes and an uneven phase configuration. The red bars are suboptimal schedules that are found upon being time limited.}
     \label{fig:timelimited_gantt}
 \end{figure}
 
@@ -138,13 +138,29 @@ The cumulative distribution for the time limited solutions in Figure \ref{fig:ec
     \label{fig:ecdf_gap}
 \end{figure}
 
+Despite this, the jobs with a constant power draw and startup costs were still being scheduled optimally according to the logs. 
+\todo[inline]{Perhaps evaluate only those jobs without phase information, as that has little impact on the carbon emissions anyway.}
+
+
 \todo[inline]{Write how the current evaluation is kinda not working too well for the given research question, and how a better experiment could be done.}
+\todo[inline]{Honestly, just put the phases part first, then justify excluding the jobs with phases.}
 
 \section{Effect of Phases}
 
+To determine whether the differences in power introduced by \modelname{} enables improvements in carbon aware scheduling, we will use a similar approach to before. We hypothesized that in suspend \& resume scheduling, high-powered phases could be scheduled to the best slots, so we suspect that savings could be different between the scheduling approaches. For Figure \ref{fig:different_phases_no_effect_lol}, we compare each parameter configuration between having a constant power and differing power. Taking the previous assumption of constant power as a baseline, the color of each data point presents the change in carbon in percent. As the scale of the figure suggests, most jobs did not exert any changes in emissions. 
+
+Opposite to our intention, some jobs had highly increased carbon emissions from gaining a more detailed power profile.
+One reason we suggest is the same as for the increased emissions in the scheduler comparison before; 16 hours jobs with a waiting time of 4 days ran out of computation time due to the increased complexity from having different phases. 
+For each such job, the same configuration with a constant assumption would be able to find an optimal schedule, while a non-constant assumption would not.
+
+Even for jobs that found an optimal schedule, the savings are minimal, if any. 
+This is likely due to the design of the evaluation: with a resolution of an hour for the carbon emissions and the phases sharing that resolution, as they are an hour or half an hour long, the averaged assumption is likely too close in this scale. Another reason could be that the chosen carbon trace exhibits a very \emph{wavy} pattern. Unlike the Australian trace used in Section \ref{sec:checkpoint_resume_lp}, the German trace used for this evaluation contains lessened shifts in carbon intensity, likely making scheduling according to phases less worthwhile.
+
+To summarize, effects of having heterogeneous power in simulated jobs could not be proven using the proposed evaluation.
+
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_phases.pdf}
-    \caption[short]{Difference carbon emissions from having heterogeneous phases instead of a constant average. For the majority of jobs, this had an effect of ±1\%. There are also some jobs for the suspend \& resume strategy, where this increased carbon emissions. These are however likely due to time-outs due to increased complexity}
+    \caption[short]{Difference carbon emissions from having heterogeneous phases instead of a constant average. For the majority of jobs, this had an effect of ±1\%. Red signifies jobs, where this increased carbon emissions. For suspend \& resume scheduling, some jobs had highly increased emissions. These are likely the result of to time-outs due to increased complexity}
 
     \label{fig:different_phases_no_effect_lol}
 \end{figure}
