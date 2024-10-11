@@ -4,7 +4,7 @@
 
 In order to evaluate the carbon savings made possible by the previously established dynamic power model, the following approach is proposed:
 As the already existing job traces hold no information regarding the power or their phases, some test cases will be presented and used for the models.
-In a rather explorative process, we use the following parameters and run the simulation on all possible permutations of them. 
+In a rather explorative process, we use the following parameters and simulate all possible permutations of them. 
 This is done using the \verb|generate_evaluation_jobs.sh| script, the used parameters are listed in the following table:
 
 \begin{table}[h!]
@@ -42,13 +42,13 @@ One problem arose in the licensing of the used \emph{Gurobi} solver.
 Under our academic license, only 2 \emph{sessions} are allowed simultaneously.
 A session is defined via the hostname of the executing machine, which is communicated to the solver's licensing servers live.
 As such, scheduling each experiment by itself lead to many sessions being started, as Slurm distributes the jobs on the available nodes.
-While there is some leeway in the amount of sessions, experiments crashed beyond the 5th instance as the solver did not start.
+While there is some leeway in the number of sessions, experiments crashed beyond the 5th instance as the solver did not start.
 
-We work under this restriction by distributing the experiments across two workers (via a script called \verb|evalute_dynamic_power.sh|); as each experiment has an index, one worker executes the even numbered jobs and the other executes the odd ones. 
+We work under this restriction by distributing the experiments across two workers (via a script called \verb|evalute_dynamic_power.sh|); as each experiment has an index, one worker executes the even-numbered jobs and the other executes the odd ones. 
 Using the even-odd strategy results in both workers having about the same amount of work.
 
-The workers in this case are python docker containers that were created with the help SCORE Lab's online knowledge base.\webcite{web_knowledgebase}
-The command for launching one example worker, in this case the one for even jobs, is given in Listing \ref{list:evaluation_slurm}.
+The workers in this case are Python docker containers that were created with the help SCORE Lab's online knowledge base.\webcite{web_knowledgebase}
+The command for launching one example worker, in this case, the one for even jobs, is given in Listing \ref{list:evaluation_slurm}.
 
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[language=bash, frame=single, numbers=left, caption={Executing the Evaluation inside the SCORE Lab's Slurm environment}, label={list:evaluation_slurm}, basicstyle=\ttfamily]
@@ -72,21 +72,21 @@ Now the simulation can be run with 128 GB RAM as specified in line 5.
 The \verb|-p magic| parameter results in us using a compute node. 
 Line 3, \verb|--container-writable|, means that the container will be reused if called again under the same name, this lets us conduct set up  (\verb|pip install|).
 Restricting the nodes to be \verb|X86| nodes via line 10 is necessary as there are other architectures available in the cluster. 
-Without this line, Slurm can schedule our jobs on nodes incompatible to the containers' pre-compiled Python binary, resulting in an error on start\webcite{web_scoreslack}.
+Without this line, Slurm can schedule our jobs on nodes incompatible with the containers' pre-compiled Python binary, resulting in an error on start.\webcite{web_scoreslack}
 
 \section{Results}
 
-Running the evaluation took a combined, and very carbon aware, processing time of 3 days and 16 hours split across two instances.
+Running the evaluation took a combined, and very carbon-aware, processing time of 3 days and 16 hours split across two instances.
 In sum, 2400 jobs were simulated with differing parameters. 
 
-\subsection{Effect of Suspend-Resume Scheduling}
+\paragraph{Effect of Suspend-Resume Scheduling}
 
 In the introductory research questions, we surmised that the effects of suspend-resume scheduling may be lessened under a model that contains startup costs for resuming. 
-In order to answer this, we first calculate the total carbon emissions for each job under different schedulers. The GAIA and \programname{} output includes multiple entries per job if they get paused, so they get aggregated into the total.
+To answer this, we first calculate the total carbon emissions for each job under different schedulers. The GAIA and \programname{} output includes multiple entries per job if they get paused, so they get aggregated into the total.
 
 With this, we first run an ANOVA to determine the axis under which to explore the data. Table \ref{tab:scheduler_anova}, shows that the length and phases of a job impact carbon emissions significantly.
 This is not unexpected, however, as these parameters increase the time and overall energy required to run the job, in turn also increasing overall carbon emissions.
-Waiting times being very significant as well, is consistent with prior literature\cite{wiesner_lets_2021}.
+Waiting times being very significant as well, is consistent with prior literature.\cite{wiesner_lets_2021}
 
 \begin{table}[h!]
     \centering
@@ -107,12 +107,12 @@ Waiting times being very significant as well, is consistent with prior literatur
 
 With these findings, we will visualize jobs grouped by their length and waiting time, as their p-values are effectively zero.
 In Figure \ref{fig:eval_different_schedulers}, all simulated jobs are plotted with their respective total carbon emissions. Blue indicates that both schedulers, with suspend \& resume and the other without, had the same emissions (within 0.01g). If the emissions are not equal, red and green dots indicate the respective scheduler performance.
-The remaining parameters are hashed into an integer, showing that they have little effect on the carbon emissions.
+The remaining parameters are hashed into an integer, showing that they have little effect on carbon emissions.
 
-By eye, it can be observed that the carbon savings between the schedulers are consistently minimal for jobs of length up to atleast 8 hours and for all jobs with waiting times up to 6 hours.
-There are however, exception to this: for example, 8-hour jobs with a waiting time of 2 days exhibit saving potential, but only for jobs with a startup time of less 30 minutes (these are hashed to around 20). This can also be observed for hours of 16 hours but only 6 hours of waiting time.
+By eye, it can be observed that the carbon savings between the schedulers are consistently minimal for jobs of length up to at least 8 hours and for all jobs with waiting times up to 6 hours.
+There are however, exceptions to this: for example, 8-hour jobs with a waiting time of 2 days exhibit saving potential, but only for jobs with a startup time of less 30 minutes (these are hashed to around 20). This can also be observed for hours of 16 hours but only 6 hours of waiting time.
 
-The bottom right sub-plot, showing the maximum waiting time and job-length, does not follow the column trend of increased savings with increased waiting times. In a few cases, the suspend \& resume scheduler performs \emph{worse}, as can be seen by green dots being above all other dots.
+The bottom right sub-plot, showing the maximum waiting time and job length, does not follow the column trend of increased savings with increased waiting times. In a few cases, the suspend \& resume scheduler performs \emph{worse}, as can be seen by green dots being above all other dots.
 One explanation for this can be seen in Figure \ref{fig:timelimited_gantt}, showing the scheduling for different job lengths, with a startup time of 5 minutes, a waiting time of 4 days.
 Checking the Slurm logs for the jobs highlighted in red shows that the LP scheduler stopped after hitting the time limit of 20 minutes, only finding a result that is within the constraints but not optimal.
 The gap value introduced in Section \ref{sec:checkpoint_resume_lp}, for these jobs is 100\%.
@@ -140,37 +140,49 @@ The cumulative distribution for the time limited solutions in Figure \ref{fig:ec
 
 Despite this, the jobs with a constant power draw and startup costs were still being scheduled optimally according to the logs. 
 \todo[inline]{Perhaps evaluate only those jobs without phase information, as that has little impact on the carbon emissions anyway.}
-
-
-\todo[inline]{Write how the current evaluation is kinda not working too well for the given research question, and how a better experiment could be done.}
 \todo[inline]{Honestly, just put the phases part first, then justify excluding the jobs with phases.}
 
-\section{Effect of Phases}
+\paragraph{Effect of Phases}
 
-To determine whether the differences in power introduced by \modelname{} enables improvements in carbon aware scheduling, we will use a similar approach to before. We hypothesized that in suspend \& resume scheduling, high-powered phases could be scheduled to the best slots, so we suspect that savings could be different between the scheduling approaches. For Figure \ref{fig:different_phases_no_effect_lol}, we compare each parameter configuration between having a constant power and differing power. Taking the previous assumption of constant power as a baseline, the color of each data point presents the change in carbon in percent. As the scale of the figure suggests, most jobs did not exert any changes in emissions. 
+To determine whether the differences in power introduced by \modelname{} enable improvements in carbon-aware scheduling, we will use a similar approach to before. We hypothesized that in suspend \& resume scheduling, high-powered phases could be scheduled to the best slots, so we suspect that savings could be different between the scheduling approaches. For Figure \ref{fig:different_phases_no_effect_lol}, we compare each parameter configuration between having a constant power and differing power. Taking the previous assumption of constant power as a baseline, the color of each data point presents the change in carbon in percent. As the scale of the figure suggests, most jobs did not exert any changes in emissions. 
 
 Opposite to our intention, some jobs had highly increased carbon emissions from gaining a more detailed power profile.
-One reason we suggest is the same as for the increased emissions in the scheduler comparison before; 16 hours jobs with a waiting time of 4 days ran out of computation time due to the increased complexity from having different phases. 
+One reason we suggest is the same as for the increased emissions in the scheduler comparison before; 16 hour jobs with a waiting time of 4 days ran out of computation time due to the increased complexity from having different phases. 
 For each such job, the same configuration with a constant assumption would be able to find an optimal schedule, while a non-constant assumption would not.
 
 Even for jobs that found an optimal schedule, the savings are minimal, if any. 
 This is likely due to the design of the evaluation: with a resolution of an hour for the carbon emissions and the phases sharing that resolution, as they are an hour or half an hour long, the averaged assumption is likely too close in this scale. Another reason could be that the chosen carbon trace exhibits a very \emph{wavy} pattern. Unlike the Australian trace used in Section \ref{sec:checkpoint_resume_lp}, the German trace used for this evaluation contains lessened shifts in carbon intensity, likely making scheduling according to phases less worthwhile.
 
-To summarize, effects of having heterogeneous power in simulated jobs could not be proven using the proposed evaluation.
+To summarize, the effects of having heterogeneous power in simulated jobs could not be proven using the proposed evaluation.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_phases.pdf}
-    \caption[short]{Difference carbon emissions from having heterogeneous phases instead of a constant average. For the majority of jobs, this had an effect of ±1\%. Red signifies jobs, where this increased carbon emissions. For suspend \& resume scheduling, some jobs had highly increased emissions. These are likely the result of to time-outs due to increased complexity}
+    \caption[short]{Difference in carbon emissions from having heterogeneous phases instead of a constant average. For the majority of jobs, this had an effect of ±1\%. Red signifies jobs, where this increased carbon emissions. For suspend \& resume scheduling, some jobs had highly increased emissions. These are likely the result of to time-outs due to increased complexity}
 
     \label{fig:different_phases_no_effect_lol}
 \end{figure}
 
-\section{Effect of Waiting Times}
+\paragraph{Effect of Waiting Times}
+
+Figure \ref{fig:eval_different_schedulers} and specifically Figure \ref{fig:eval_different_deadlines} show the effect allowing a job to be temporally shifted. 
+\todo[inline]{This plot sucks.} 
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_deadlines.pdf}
     \caption[short]{Carbon-costs of Jobs under different waiting times. Each Group shares all remaining parameters.
-    With increased waiting times, the carbon costs tend to go down. Each dot represents the lowest time a specific carbon-emission can be hit, so if two waiting times result in the same emissions, only the lower is plotted.}
+    With increased waiting times, the carbon costs tend to go down. Each dot represents the lowest time a specific carbon-emission can be hit, so if two waiting times result in the same emissions, only the lower is shown.}
+    \todo[inline]{Needs improvments if concept itself even makes sense, dots are overlapping}
 
     \label{fig:eval_different_deadlines}
 \end{figure}
+
+\paragraph{Summarizing the Results}
+
+As for our given research questions, answering them under the current evaluation cannot be done definitively. We found that, within a summer week in Germany, longer jobs have a higher potential for carbon savings using a suspend \& resume strategy, even if resuming a job carries overhead. Increasing the deadline for a given job also displays a trend of increasing carbon reduction.
+The effect of workload heterogeneity is unclear, as the chosen phase scenarios, of (short) alternating phases, likely do not have significant saving potential inherently.
+
+On the other side, we have gained insights into the limitations of suspend \& resume scheduling in \programname{}. Specifically, scheduling certain workloads - those with many alternating phases, long runtimes, and deadlines - has long runtimes.
+In Section \ref{sec:discussion}, we will give ideas for a better-suited evaluation.
+
+\todo[inline]{Write how the current evaluation is kinda not working too well for the given research question, and how a better experiment could be done.}
+

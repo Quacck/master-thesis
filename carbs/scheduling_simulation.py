@@ -230,7 +230,7 @@ class RandomJobSubmitter(JobSubmitter):
             runtime = round(rng.normal(loc=config.job_length_generator_mean, scale=config.job_length_generator_scale))
             if runtime < 5:
                     runtime = 5
-                # Assume, the job is atleast runnable
+                # Assume, the job is at least runnable
             deadline = runtime + rng.integers(0, 100)
             job = Job(env, id, 1, deadline, runtime)
             scheduler.submit_job(job)
