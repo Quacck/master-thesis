@@ -248,7 +248,7 @@ Evaluating this scheduling approach will take place in section \ref{sec:evaluate
 
 \section{{Suspend \& Resume Scheduling for Heterogeneous Jobs}} \label{sec:checkpoint_resume_lp}
 
-Under the constant-power, no startup-overhead assumption of the already existing implementation, the algorithm for this scheduler worked like the following:
+Under the constant-power, no startup-overhead assumption of GAIA, the algorithm worked like the following:
 
 \begin{enumerate}
     \item order all time slots until the deadline by their emissions ascending
@@ -286,7 +286,7 @@ Some \emph{tricks} will be highlighted in the latter parts as well.
 In this part, we will preset the iterative steps taken to model the scheduler as an LP problem, highlight some implementation details and visualizing the results of each step.
 We used python's \verb|PuLP| library, which allows creating LP models to standard file types and also helps in calling external solvers as well as querying the results.
 
-\subparagraph{Executing the job}
+\paragraph{Executing the job}
 
 Firstly, as the job has a certain length and a set deadline, we chose to use an array of time slot-variables as my result set. Each such variable is a boolean signifying whether the job is executed at that time.
 For the first constraint, the sum of all boolean variables (which are represented as 0 and 1) should add up to the job length, effectively executing the job for length-many time slots.
@@ -328,7 +328,7 @@ Looking at the figure, the results are not too surprising: the chosen time slots
     \todo[inline]{Fix Y-Label, Make smaller vertically}
 \end{figure}    
 
-\subparagraph{Adding Overhead via Startup Phases}
+\paragraph{Adding Overhead via Startup Phases}
 
 In order to add a cost to starting a job, the code following in listing \ref{list:lp_overhead} is complemented, some parts are excluded for brevity.
 
@@ -380,7 +380,7 @@ Doing a visual check, the job is also executed on seemingly the lowest carbon in
     \label{fig:lp_overhead}
 \end{figure}
 
-\subparagraph{Adding a Notion of Progress}
+\paragraph{Adding a Notion of Progress}
 
 So far, the assumption of constant power has been continued.
 Changing this assumption under the previous other scheduler using the greedy algorithm in section \ref{sec:uninterrupted_oracle_scheduling}, was relatively easy, as changing the constant expression to a python function of the model sufficed. 
@@ -425,7 +425,7 @@ In whole, this can expression be translated to "if a time slot is not used for s
 While line 9 defines the \verb|startup_progress| outside the startup phases, line 7 and 8 are needed to increase the progress by exactly 1. 
 Notice how depending on the type of inequality, \emph{M} is either added or subtracted to the equation, a conditional \emph{greater than} relation is relaxed by setting the constraint to zero.
 
-All in all, there is now a way to keep track of a job's progress inside the model, as shown in Figure \ref{fig:lp_progress}'s upper graph. Attention should be drawn to the \verb|work_progress| which keeps its value even when time slots are not used for work. 
+All in all, there is now a way to keep track of a job's progress inside the model, as shown in Figure \ref{fig:lp_progress}'s upper graph. Attention should be drawn to the \verb|work_progress| which keeps its value even when time slots are set to idle. 
 The schedule found by the solver is not different to the previous one which added overhead, as the optimization goal was not changed and the progress indicators have no impact on the scheduling (yet).
 
 \begin{figure}
@@ -434,10 +434,10 @@ The schedule found by the solver is not different to the previous one which adde
     \label{fig:lp_progress}
 \end{figure}
 
-\subparagraph{Adding Dynamic Power According to the \modelname}
+\paragraph{Adding Power According to \modelname}
 
 The goal of this part will be to have an LP variable for each phase, which indicates when the job is in that phase.
-When such indicators exist, the formula for calculating a schedule's carbon emissions can be changed to the following Formula (\ref{formula:total_carbon}):
+When such indicators exist, the formula for calculating a time slot's carbon emissions can be changed to Formula \ref{formula:total_carbon}:
 
 \begin{align}
     \label{formula:total_carbon}
@@ -488,7 +488,7 @@ Attention should be drawn to the circumstance that the high-powered phase (the g
     \label{fig:lp_states}
 \end{figure}
 
-\subparagraph{Issues of the implementation}
+\paragraph{Issues of the implementation}
 
 As of now, checkpointing may happen at any point in the scheduler, as the \verb|work_progress| is never reset. 
 Future work will focus on checkpointing at specific points, such as after specific phases like in the entry ML example in section.\todo{Add this to future work!}
@@ -500,7 +500,7 @@ The gap value is an indicator of how close the solver is to finding the optimal 
 Solvers are able to take advantage of multiple CPU cores; however, in our case, the issue was likely a lack of memory. 
 Glancing into the system monitor utility on Ubuntu then shows that all 8 GB of RAM are in use and that swap space is being utilized a lot.
 
-\subparagraph{Decreasing the Problem Size}
+\paragraph{Decreasing the Problem Size}
 
 In the previously shown Figures, each carbon emission data point corresponds to one time slot, which in turn corresponds to one unit of time in the job. 
 Going by the resolution of the carbon emissions, each data point describes the emissions for one hour. 

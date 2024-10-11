@@ -32,8 +32,9 @@ As the HPI has the \emph{Microchip MCP39F511N Power Monitor (henceforth called M
 The MCP is placed between the device to test and the wall mounted power supply. A picture of it can be found in figure \ref{fig:mcp}. It can report the current power consumption in 10 mW steps, each 5ms.
 
 \begin{figure}
-    \missingfigure{A figure of the MCP, ask Sven about this}
-    \caption[short]{The MCP}
+    \centering
+    \includegraphics[width=200px]{images/mcp_graphic_design_is_my_passion.jpg}
+    \caption[short]{The measurement tool we used. It can be inserted between a devices power supply and the wall socket. The encasing is not fully closed, so care needs to be taken not to touch any exposed contacts.}
     \label{fig:mcp}
 \end{figure}
 
@@ -114,9 +115,7 @@ The python process is also not kept between runs, forcing a uniform load of any 
 Each experiment was re-run 10 times. Between each run, there is a \verb|sleep| period of 10 seconds and one of two minutes in the partial executions. 
 Additionally, \verb|pinpoint|'s feature of measuring before and after the actual program-to-test would be used. 
 This leads to a period of 30 seconds being measured around the program execution. 
-Plotting these additional time frames gives a quick visual indicator whether experiments are sufficiently isolated from each other, ergo when the power draw is at the baseline as the actual program starts.
-
-As there is some data being downloaded and persisted during the execution of the ML, before each run, that data is removed,
+Plotting these additional time frames gives a quick visual indicator whether experiments are sufficiently isolated from each other, ergo when the power draw is at the baseline as the actual program starts. As there is some data being downloaded and persisted during the execution of the ML, before each run, that data is removed.
 
 \paragraph{Collected data}
 
@@ -126,16 +125,15 @@ On the way to the final measurements, we plot each experiment early and visually
 
 \paragraph{Determining the baseline power draw}
 
-Beginning with the most exiting experiment, determining the baseline and testing the amount of the underlying environment. 
-One sample run is shown in Figure \ref{fig:plot_baseline}.
+A sample run of the baseline experiment is shown in Figure \ref{fig:plot_baseline}.
 The blue dots in figure represent each data point. The red line is a smoothed Gaussian trend line with $\sigma = 2$. 
 Dark-green vertical lines are the logged or derived "events" for each run. In this case, nothing happens, so it is only the start and end of \verb|sleep 120|. 
 Notice how the trace starts 30 seconds before the start and continues for another 30 seconds because of the aforementioned \verb|pinpoint| feature.
 Going further, these additional measurements will be redacted for brevity.
 
 \begin{figure}
-    \includegraphics[width=\linewidth]{power-measurements/measurements_sleep_0714004033/plot.pdf}
-    \caption{Sample run of the baseline experiment. The dotted line is the global average. The red line is a smoothed Gaussian trend line.}
+    \includegraphics[width=\linewidth]{power-measurements/stacked_plots/sleep_0714.pdf}
+    \caption{In the baseline experiment of measuring the system at rest, the average power draw is about 50 W. The black lines are Gaussian smoothed trend lines with $\sigma = 2$.}
     \label{fig:plot_baseline}
 \end{figure}
 

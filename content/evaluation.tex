@@ -77,7 +77,7 @@ Without this line, Slurm can schedule our jobs on nodes incompatible to the cont
 \section{Results}
 
 Running the evaluation took a combined, and very carbon aware, processing time of 3 days and 16 hours split across two instances.
-In sum, 1200 jobs were simulated with differing parameters. 
+In sum, 2400 jobs were simulated with differing parameters. 
 
 \subsection{Effect of Suspend-Resume Scheduling}
 
@@ -122,21 +122,39 @@ The cumulative distribution for the time limited solutions in Figure \ref{fig:ec
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_schedulers.pdf}
-    \caption[short]{All simulated jobs and their total carbon emissions, compared between the two scheduling approaches. Blue indicates equal emissions, red and green differentiate the schedulers. Each \emph{group} of jobs are different phases configurations.}
+    \caption[short]{All simulated jobs and their total carbon emissions, compared between the two scheduling approaches. Blue indicates equal emissions, red and green differentiate the schedulers. The combination of startup length, startup power and phases is encoded on the x-axis. Savings from adopting a suspend \& resume strategy are only noticeable for very long jobs with long waiting times.}
     \label{fig:eval_different_schedulers}
 \end{figure}
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/timelimited_gantt.pdf}
-    \caption[short]{Schedules of jobs with different lengths under different schedulers. All Jobs have a waiting time of 4 days and a startup time of 5 minutes. The red bars suboptimal schedules that are found upon being time limited.}
+    \caption[short]{Schedules of jobs with different lengths under different schedulers. All jobs have a waiting time of 4 days and a startup time of 5 minutes and an uneven phase configuration. The red bars are suboptimal schedules that are found upon being time limited.}
     \label{fig:timelimited_gantt}
 \end{figure}
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/slurmlogs/gap_value_ecdf.pdf}
-    \caption[short]{Cumulative distribution plot of the gap value of time limited schedules. A higher gap indicates worse results. There is a heavy skew to 100\%, with half of the values being about 95\%}
+    \caption[short]{Cumulative distribution plot of the 209 gap values of time limited schedules. A higher gap indicates worse results. There is a heavy skew to 100\%, with half of the values being above 95\%}
     \label{fig:ecdf_gap}
 \end{figure}
 
+\todo[inline]{Write how the current evaluation is kinda not working too well for the given research question, and how a better experiment could be done.}
+
 \section{Effect of Phases}
 
+\begin{figure}
+    \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_phases.pdf}
+    \caption[short]{Difference carbon emissions from having heterogeneous phases instead of a constant average. For the majority of jobs, this had an effect of ±1\%. There are also some jobs for the suspend \& resume strategy, where this increased carbon emissions. These are however likely due to time-outs due to increased complexity}
+
+    \label{fig:different_phases_no_effect_lol}
+\end{figure}
+
+\section{Effect of Waiting Times}
+
+\begin{figure}
+    \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_deadlines.pdf}
+    \caption[short]{Carbon-costs of Jobs under different waiting times. Each Group shares all remaining parameters.
+    With increased waiting times, the carbon costs tend to go down. Each dot represents the lowest time a specific carbon-emission can be hit, so if two waiting times result in the same emissions, only the lower is plotted.}
+
+    \label{fig:eval_different_deadlines}
+\end{figure}
