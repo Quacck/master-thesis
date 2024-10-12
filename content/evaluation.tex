@@ -52,19 +52,19 @@ The command for launching one example worker, in this case, the one for even job
 
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[language=bash, frame=single, numbers=left, caption={Executing the Evaluation inside the SCORE Lab's Slurm environment}, label={list:evaluation_slurm}, basicstyle=\ttfamily]
-    sbatch -A polze -p magic \
-        --container-image=python \
-        --container-name=test \
-        --container-writable \
-        --mem=128G \
-        --cpus-per-task=128 \
-        --time=24:0:0 \
-        --output=slurmlogs/output_%j.txt \
-        --error=slurmlogs/error_%j.txt \
-        --constraint=ARCH:X86 \
-        --container-mounts=/hpi/fs00/home/vincent.opitz:/home/vincent.opitz \
-        --container-workdir=/home/vincent.opitz/master-thesis/GAIA \
-        run_all_even_jobs.sh
+sbatch -A polze -p magic \
+    --container-image=python \
+    --container-name=test \
+    --container-writable \
+    --mem=128G \
+    --cpus-per-task=128 \
+    --time=24:0:0 \
+    --output=slurmlogs/output_%j.txt \
+    --error=slurmlogs/error_%j.txt \
+    --constraint=ARCH:X86 \
+    --container-mounts=/hpi/fs00/home/vincent.opitz:/home/vincent.opitz \
+    --container-workdir=/home/vincent.opitz/master-thesis/carbs \
+    run_all_even_jobs.sh
         \end{lstlisting}    
 \end{minipage}
 
@@ -164,19 +164,26 @@ To summarize, the effects of having heterogeneous power in simulated jobs could 
 
 \paragraph{Effect of Waiting Times}
 
-Figure \ref{fig:eval_different_schedulers} and specifically Figure \ref{fig:eval_different_deadlines} show the effect allowing a job to be temporally shifted. 
-\todo[inline]{This plot sucks.} 
+Figure \ref{fig:different_deadlines_normalized} shows the carbon emissions for each job across different waiting times.
+We decided to remove the heterogeneous jobs from these plots, as the chosen parameters had little effect on emissions, instead only causing timeouts. 
+Across the remaining parameters, the relative carbon savings are very close, showing up as a single dot.
+In two instances, there were changes, however: for longer jobs with a waiting time of 2 days, having a startup time of half an hour decreased relative savings. 
+
+% \begin{figure}
+%     \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_deadlines.pdf}
+%     \caption[short]{Carbon-costs of all constant-power jobs in relation to the waiting time.}
+% 
+%     \label{fig:eval_different_deadlines}
+% \end{figure}
 
 \begin{figure}
-    \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_deadlines.pdf}
-    \caption[short]{Carbon-costs of Jobs under different waiting times. Each Group shares all remaining parameters.
-    With increased waiting times, the carbon costs tend to go down. Each dot represents the lowest time a specific carbon-emission can be hit, so if two waiting times result in the same emissions, only the lower is shown.}
-    \todo[inline]{Needs improvments if concept itself even makes sense, dots are overlapping}
+    \includegraphics[width=\linewidth]{GAIA/notebooks/normalized_deadlines.pdf}
+    \caption[short]{Normalized carbon emissions with the baseline being a wait time of 6 hours for each job. }
 
-    \label{fig:eval_different_deadlines}
+    \label{fig:different_deadlines_normalized}
 \end{figure}
 
-\paragraph{Summarizing the Results}
+\paragraph{Summary}
 
 As for our given research questions, answering them under the current evaluation cannot be done definitively. We found that, within a summer week in Germany, longer jobs have a higher potential for carbon savings using a suspend \& resume strategy, even if resuming a job carries overhead. Increasing the deadline for a given job also displays a trend of increasing carbon reduction.
 The effect of workload heterogeneity is unclear, as the chosen phase scenarios, of (short) alternating phases, likely do not have significant saving potential inherently.
