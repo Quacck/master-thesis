@@ -169,12 +169,10 @@ We decided to remove the heterogeneous jobs from these plots, as the chosen para
 Across the remaining parameters, the relative carbon savings are very close, showing up as a single dot.
 In two instances, there were changes, however: for longer jobs with a waiting time of 2 days, having a startup time of half an hour decreased relative savings. 
 
-% \begin{figure}
-%     \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_deadlines.pdf}
-%     \caption[short]{Carbon-costs of all constant-power jobs in relation to the waiting time.}
-% 
-%     \label{fig:eval_different_deadlines}
-% \end{figure}
+Jobs shorter than 16 hours, had stagnating savings beyond a waiting time of 12 hours. 
+It is likely, that this is a circumstance of the chosen carbon trace.
+The best period is around noon on July 1 (see the bottom graph of Figure \ref{sec:evaluate_scheduling}), which also fits shorter job lengths. 
+With a 4 days waiting time, shorter jobs could then again be scheduled on the new lowest carbon emissions period.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/normalized_deadlines.pdf}
@@ -185,11 +183,9 @@ In two instances, there were changes, however: for longer jobs with a waiting ti
 
 \paragraph{Summary}
 
-As for our given research questions, answering them under the current evaluation cannot be done definitively. We found that, within a summer week in Germany, longer jobs have a higher potential for carbon savings using a suspend \& resume strategy, even if resuming a job carries overhead. Increasing the deadline for a given job also displays a trend of increasing carbon reduction.
+As for our given research questions, answering them under the current evaluation cannot be done definitively. We found that, within a summer week in Germany, longer jobs have a higher potential for carbon savings using a suspend \& resume strategy, even if resuming a job carries overhead. Increasing the deadline for a given job also displays a trend of increasing carbon reduction. 
+Very long jobs, in this case 16 hours, exhibit higher saving potential from waiting times.
 The effect of workload heterogeneity is unclear, as the chosen phase scenarios, of (short) alternating phases, likely do not have significant saving potential inherently.
 
 On the other side, we have gained insights into the limitations of suspend \& resume scheduling in \programname{}. Specifically, scheduling certain workloads - those with many alternating phases, long runtimes, and deadlines - has long runtimes.
 In Section \ref{sec:discussion}, we will give ideas for a better-suited evaluation.
-
-\todo[inline]{Write how the current evaluation is kinda not working too well for the given research question, and how a better experiment could be done.}
-
