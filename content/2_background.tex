@@ -40,7 +40,7 @@ As shown in Figure \ref{fig:energy_mix_year}, during warm seasons (e.g. July), m
 
 The power demand also affects the overall composition. 
 During times of low demand, less conventional power needs to be produced and renewables have a higher share as well.
-This can be seen in the seasonal Figure: during the Christmas holidays in December, people spend more time at home, requiring less additional conventional energy (e.g. for industrial consumers, as people also work less).
+This can be seen in the seasonal Figure: during the Christmas holidays in December, people spend more time at home, requiring less overall energy and less conventional power needs to be produced.
 
 All of the above is a local or national view on the public grid. 
 When looking at energy production globally, a spatial dimension is added. 
@@ -50,36 +50,36 @@ Some countries may have less investment in renewables or use nuclear power plant
 Thus, national public grids have a certain affinity for carbon-aware scheduling\cite{wiesner_lets_2021}. Generally, the higher the solar capacities, the higher the potential carbon saving from such an approach. 
 
 \section{Power Grid Signals}
-Carbon-aware scheduling commonly uses one of two possible metrics or signals: the \emph{average emissions} are the metric describing the amount of carbon per unit of energy. These are calculated using the weighted average of all power supplies at a point.
+Carbon-aware scheduling commonly uses one of two possible metrics or signals: \emph{average emissions} are the metric describing the amount of carbon per unit of energy. These are calculated using the weighted average of all power supplies at a point.
 
-Another metric is the \emph{marginal emissions}, answering the question of "if more energy is used at this point, how much carbon does that cost?".
+Another metric is \emph{marginal emissions}, answering the question of "if more energy is used at this point, how much carbon does that cost?".
 \todo[inline]{Make a idealized graph on how the marginal emissions work}
 
 The marginal emissions are closely related to the way energy producers in- or decrease production.
-To reduce electricity prices, additional demand on the grid is dispatched to the cheapest power plant with remaining capacity. 
+To reduce electricity prices, additional demand on the grid is dispatched to the cheapest power plant with remaining capacity.
 These power plants, also called \emph{marginal power plants}, correlate with emissions.
 With the cheapest power coming from renewables, additional demand is supplied with more expensive, more carbon-intensive, conventional power plants.
 
 Two providers of signal data are \emph{Electricitymaps}\webcite{web_electricitymaps} and \emph{WattTime}\webcite{web_watttime}.
 Electricitymaps has a free access API for historical and current average emissions. Both providers only offer the marginal signal commercially, however. 
 
-Going further, the average signal will be used. 
+From here on, the average signal will be used. 
 Note that current literature is still split on which signal is best. 
-A recently released and aptly named paper by Sukprasert et al. \cite{sukprasert_limitations_2024} may be read for further information on grid signals and arguments for either signal.
+A recently released by Sukprasert et al. \cite{sukprasert_limitations_2024} may be read for further information on grid signals and arguments for either signal.
 
-Out of these, a reason for using the average signal is, for example, \emph{curtailment}. 
-Curtailment encompasses any methods that reduce the amount of produced renewable energy. As the power grid always needs to have a balance between demand and production, curtailment methods such as turning off wind turbines, selling power at a loss, or charging batteries may be used. 
-Carbon-aware scheduling via the average emissions signal lowers the amount of curtailment needed, as energy demand would increase at those times.
+One reason for using the average signal is \emph{curtailment}. 
+Curtailment encompasses any methods that reduce production of renewable energy. As the power grid always needs to have a balance between demand and production, curtailment methods such as turning off wind turbines, selling power at a loss, or charging batteries may be used. 
+Carbon-aware scheduling via the average emissions signal lowers the amount of curtailment needed, because otherwise left-over renewables get utilized due to better matching demand.
 Another argument made, for example by Fridgen et al. \cite{fridgen_not_2021}, is that by increasing power demand during times when renewable production is high, investments in renewables would be promoted. 
 Lastly, as renewable energy is generally cheaper in production than non-renewable energy\todo{Need a citation here!}, scheduling work on low carbon periods coincides with cheaper energy prices as well. While this would not reduce costs on most energy contracts, some contracts do use dynamic pricing.\webcite{web_tibber}
 
 \paragraph{Workloads in a Datacenter} According to Tanenbaum and Woodhull\cite{tanenbaum_operating_2006}, there are three environments in which scheduling may take place. \emph{Batch systems} describe environments in which there is no user interaction. 
-Scientific simulations and computations, machine learning workloads, and data processing tasks are examples of these workloads\cite{sukprasert_limitations_2024}.
+Scientific simulations and computations, machine learning workloads, and data processing tasks are examples of such workloads\cite{sukprasert_limitations_2024}. 
 A user may submit their job, and it would be executed according to the scheduler at some point in time. 
-On the contrary, in \emph{interactive} settings, a user interacts with the system and thus expects quick responses to their inputs. An example of an interactive job is web requests, which should be answered quickly inherently.
+On the contrary, in \emph{interactive} settings, a user interacts with the system and thus expects quick responses to their inputs. An example of interactive workloads are web requests. In a recent work by Souza et al. \cite{souza_casper_2024}, they can be answered carbon-awarely by using a spatially distributed cloud services, dispatching requests to regions with lower carbon intensity. Locally, the carbon-emissions of LLM inferences, which are used in chatbot applications, can be reduced as shown by Hoffmann and Majunkte\cite{hoffmann_improving_2024}. Regulations, such as the European GDPR\webcite{web_gdpr} play into this, however.
 The last environment is \emph{real-time} systems. There, deadlines and predictability dictate how a scheduler operates.
 
-For this work's topic, (temporal) carbon-aware scheduling, only batch systems will be looked at as they allow more freedom to the times of scheduled jobs.
+For this work's topic, (temporal) carbon-aware scheduling, only batch systems will be examined as they allow more freedom when scheduling workloads.
 
 \section{Measuring Power}
 
@@ -94,7 +94,7 @@ Physical measurements follow another route; measurement devices are put between 
 The point where a power measuring device is inserted dictates what could and could not be measured, a wall-mounted measurement device could only measure all power going into a computer and not differentiate between individual programs.
 
 The advantages of physical measurements are that they can give a more holistic measurement of a system as would be the case for a wall-mounted measurement device. 
-Portability is an issue however, unlike operating-system supported tools such as perf, a measurement device needs more effort to be used on another system (or be entirely not useable, for example when such devices are only rated for a certain power level).
+Portability is an issue: unlike operating-system supported tools such as perf, a measurement device needs more effort to be used on another system (or be entirely unusable, for example when such devices are only rated for a certain power level).
 
 % \paragraph{Power Consumption of a Computer}
 % As there will be power measurements in \ref{sec:power_measurements}, some basic understanding of energy and power used for computation will be provided:
