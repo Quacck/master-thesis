@@ -47,7 +47,7 @@ Out of those, the following are of particular interest.
 \section{State of the Art}
 
 \paragraph{Testbeds and Simulations}
-There are multiple implementations in recent literature. Wiesner et al. use a simulation approach to examine temporal shifting\cite{wiesner_lets_2021} via their \emph{WaitAWhile} algorithm. Their workload model consists of known length jobs with constant power, explicitly ruling out resumption costs. 
+There are multiple implementations in recent literature. Wiesner et al. \cite{wiesner_lets_2021} use a simulation approach to examine temporal shifting via their \emph{WaitAWhile} algorithm. Their workload model consists of known length jobs with constant power, explicitly ruling out resumption costs. 
 Jobs can then either use suspend \& resume or not, both scenarios are evaluated. 
 These are then tested under the assumption of different job deadlines, meaning that each job has to be completed by a certain timeframe, and also different regions of the world.
 Their main takeaways are that increased deadlines lead to reduced carbon emissions, but that this effect also has diminishing returns. 
@@ -69,8 +69,6 @@ In our work, the scheduler will take overhead into account.
 
 With many testbed implementations in literature, Wiesner et al. \cite{wiesner_vessim_2024} aim to generalize one for comparability. Their \emph{Vessim} is a simulation framework for carbon-aware testing aimed at extensibility and software architecture.
 
-
-
 \paragraph{Slurm Schedulers}
 
 Of the analyzed papers, the one made by Goiri et al. \cite{inigo_goiri_greenslot_2011} seems to be among first papers to deal with carbon-aware scheduling by implementing it as a \emph{Slurm} plugin (See section \ref{subsec:slurm_plugin} for further information on Slurm and such plugins) called \emph{GreenSlot}.
@@ -79,7 +77,10 @@ Using weather data, GreenSlot predicts when solar energy production is high, sch
 Under their workload model, jobs may also have deadlines.
 If those deadlines cannot be met using only renewables, \emph{Greenslot} will additionally schedule jobs on high-carbon times, based on electricity cost.
 
-In Section \label{subsec:slurm_plugin}, a plugin approach will be discussed. Springborg et al \cite{aaen_springborg_automatic_2023} propose an architecture for incorporating Python plugins into Slurm. 
+In Section \label{subsec:slurm_plugin}, a plugin approach will be discussed. Springborg et al. \cite{aaen_springborg_automatic_2023} propose an architecture for incorporating Python plugins into Slurm. 
 They implement an exemplary energy-efficiency plugin for a single-node cluster environment. 
 
 All of these techniques are then tested under various parameters. Our work will only make use of temporal shifting, and abstract away the other methods of further carbon savings.
+
+\paragraph{Summary}
+There are multiple approaches to testbeds for carbon-aware job scheduling. A common theme is to examine job lengths, arrival times, and deadlines for effects on carbon emissions. Overhead from resuming jobs is considered in some prior work but, atleast to our knowledge, none of them use a time-based overhead for scheduling as well. Power heterogeneity was not included in any of the examined papers.
