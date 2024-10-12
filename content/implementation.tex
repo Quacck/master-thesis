@@ -97,13 +97,6 @@ There is also a \emph{Slurm simulator}\webcite{web_slurmsim} which could potenti
 
 \section{Simulating with \programname{}}
 
-In a recently released paper by Hanafy et. al \cite{hanafy_going_2024}, a prototype tested for simulating job scheduling on cloud providers is implemented. 
-These Jobs are scheduled on \emph{spot} instances (cheap VMs that seek to increase cloud utilization), \emph{on-demand} instances (short-notices VMs that are thus more expensive) or \emph{pre-bought} VMs (medium cost, but may not get utilized), the paper then discussed balancing carbon- and dollar costs. 
-They included a small notion of hardware requirements in the form of required CPUs per job, but that was only used to scale the cost; all hardware requirements were abstracted away in the form of the cloud always having computing resources available - \emph{hyperscale} being the keyword for this assumption.
-
-The important part is that they also included an implementation of some schedulers used in the highlighted related works. Among that an implementation for WaitAWhile\cite{wiesner_lets_2021}.
-This meant that we may add the improved job model to that existing testbed and have something to compare against as well.
-
 \paragraph{Description of the GAIA Simulator}
 
 We first describe the existing testbed and make it clear which part is our work and which is not. A class diagram is provided in \ref{fig:class_diagram} which is heavily inspired by the existing architecture diagram in the original paper. 
