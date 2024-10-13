@@ -49,13 +49,25 @@ Thus, national public grids have a certain affinity for carbon-aware scheduling\
 \section{Power Grid Signals}
 Carbon-aware scheduling commonly uses one of two possible metrics or signals: \emph{average emissions} are the metric describing the amount of carbon per unit of energy. These are calculated using the weighted average of all power supplies at a point.
 
-Another metric is \emph{marginal emissions}, answering the question of "if more energy is used at this point, how much carbon does that cost?".
-\todo[inline]{Make a idealized graph on how the marginal emissions work}
-
-The marginal emissions are closely related to the way energy producers in- or decrease production.
+Another metric is \emph{marginal emissions}. 
+This uses a causal approach between deciding to use power and the carbon emissions associated with producing that power\webcite{web_elec_marginal}.
+Marginal emissions are closely related to the way energy producers in- or decrease production:
 To reduce electricity prices, additional demand on the grid is dispatched to the cheapest power plant with remaining capacity.
-These power plants, also called \emph{marginal power plants}, correlate with emissions.
+These power plants, also called \emph{marginal power plants}, correlate with emissions. 
+An example is provided in Figure \ref{fig:marginal_example}. 
 With the cheapest power coming from renewables, additional demand is supplied with more expensive, more carbon-intensive, conventional power plants.
+
+\begin{figure}
+    \includegraphics[width=\linewidth]{notebooks/marginal_emissions.pdf}
+    \caption[short]{
+        Idealized energy grid showcasing the mechanics of the marginal emissions signal. 
+        Additional demand is dispatched to the cheapest plant with remaining capacity. 
+        In this example, increased demand will be dispatched to a, not yet utilized, gas plant.
+        Thus, the individual decision to increase demand \emph{now} is reflected in high marginal emissions.
+        The costs and carbon emissions are loosely follow \webcite{web_costs_energy_production} and \webcite{web_ipcc_emissions} 
+        }
+    \label{fig:marginal_example}
+\end{figure}
 
 Two providers of signal data are \emph{Electricitymaps}\webcite{web_electricitymaps} and \emph{WattTime}\webcite{web_watttime}.
 Electricitymaps has a free access API for historical and current average emissions. Both providers only offer the marginal signal commercially, however. 
@@ -73,7 +85,10 @@ Lastly, as renewable energy is generally cheaper in production than non-renewabl
 \paragraph{Workloads in a Datacenter} According to Tanenbaum and Woodhull\cite{tanenbaum_operating_2006}, there are three environments in which scheduling may take place. \emph{Batch systems} describe environments in which there is no user interaction. 
 Scientific simulations and computations, machine learning workloads, and data processing tasks are examples of such workloads\cite{sukprasert_limitations_2024}. 
 A user may submit their job, and it would be executed according to the scheduler at some point in time. 
-On the contrary, in \emph{interactive} settings, a user interacts with the system and thus expects quick responses to their inputs. An example of interactive workloads are web requests. In a recent work by Souza et al. \cite{souza_casper_2024}, they can be answered carbon-awarely by using a spatially distributed cloud services, dispatching requests to regions with lower carbon intensity. Locally, the carbon-emissions of LLM inferences, which are used in chatbot applications, can be reduced as shown by Hoffmann and Majunkte\cite{hoffmann_improving_2024}. Regulations, such as the European GDPR\webcite{web_gdpr} play into this, however.
+On the contrary, in \emph{interactive} settings, a user interacts with the system and thus expects quick responses to their inputs. 
+An example of interactive workloads are web requests. In a recent work by Souza et al. \cite{souza_casper_2024}, they can be answered carbon-awarely by using a spatially distributed cloud services, dispatching requests to regions with lower carbon intensity. 
+Locally, the carbon-emissions of LLM inferences, which are used in chatbot applications, can be reduced as shown by Hoffmann and Majunkte\cite{hoffmann_improving_2024}.\todo{Bisschen random?}
+Regulations, such as the European GDPR \webcite{web_gdpr} play into this, however.
 The last environment is \emph{real-time} systems. There, deadlines and predictability dictate how a scheduler operates.
 
 For this work's topic, (temporal) carbon-aware scheduling, only batch systems will be examined as they allow more freedom when scheduling workloads.

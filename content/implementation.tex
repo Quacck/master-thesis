@@ -59,7 +59,7 @@ autoreconf: error: /usr/bin/autoconf failed with exit status: 1
 \end{lstlisting}
 \end{minipage}
 
-The solution, while not very obvious, was to install the \verb|libgtk2.0-dev| library\webcite{web_slurmsim}.
+The solution, while not very obvious, was to install the \verb|libgtk2.0-dev| library \webcite{web_slurmsim}.
 We then added a simple logging to the new plugin. Upon inspecting the logs after scheduling a hello-world-script, that log message showed up as well - confirming that our new scheduler plugin was running.
 
 \paragraph{Adding more logic to the scheduler plugin}
@@ -75,9 +75,9 @@ For testing, we read information on the incoming jobs such as set constraints or
 
 \paragraph{Problems of a scheduler plugin}
 
-One big problem manifested in that not all jobs \emph{showed up} inside the plugin's job queue. 
+One big problem manifested in that not all jobs \emph{showed~up} inside the plugin's job queue. 
 If we submitted 6 jobs, via Slurm's \verb|squeue| command, only a part, such as the last 3, logged inside the plugin.
-A possible explanation for this could be Slurms' scheduler architecture: while there is a scheduler plugin, there also is a scheduler inside Slurm's main loop. These both work in parallel\webcite{web_slurmsourcecode} and they use the same job queue.
+A possible explanation for this could be Slurms' scheduler architecture: while there is a scheduler plugin, there also is a scheduler inside Slurm's main loop. These both work in parallel \webcite{web_slurmsourcecode} and they use the same job queue.
 
 To hack around this, we tried disabling Slurm's main scheduling loop by setting \verb|sched_interval=-1| inside the Slurm configuration file. 
 While this had the effect of being able to access all incoming jobs inside the plugin, it also had the side effect of disabling all logic concerning starting the jobs.
@@ -212,7 +212,7 @@ A generalizing helper type is \verb|ml|, which takes a dictionary of parameters 
 \section{Uninterrupted oracle scheduling} \label{sec:uninterrupted_oracle_scheduling}
 
 There already was an existing version of this scheduling approach which assumed constant power and that the carbon trace is fully known ("oracle"). 
-Jobs is not able to suspend \& resume in this version.
+Jobs are not able to suspend \& resume in this version.
 The algorithm for which is pseudocoded in Listing \ref{list:pseudocode_oracle}.
 
 \begin{minipage}{\linewidth}

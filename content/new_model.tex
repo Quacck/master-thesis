@@ -7,8 +7,6 @@ In order to improve on the homogenous, no startup-cost, workload model used in r
 
 \paragraph{The test environment}
 
-The experiments were run on my personal computer, the components of that are listed via the \emph{hwlist} tool, with some columns and rows being redacted for brevity:
-
 The experiments are run on a personal computer, its specification being outlined in Table \ref{tab:measurement_environment}, the values being determined with the \verb|hwlist| and \verb|lshw| commands.
 
 \begin{table}[h!]
@@ -52,7 +50,7 @@ There is a vast amount of machine learning frameworks.
 For a high-level model, the feature set of the framework only needed to support checkpointing, resuming, and some basic form of logging. 
 A glance at the documentation of popular frameworks such as \emph{torch}, \emph{tensorflow}, and \emph{huggingface} shows that these features are commonly supported. 
 
-With not much bias towards any framework, huggingface was chosen.
+With little bias towards any framework, huggingface was chosen.
 The huggingface trainer supports callbacks, we modified a given ML script to also log timestamped events when a training iteration, for example, starts or ends. 
 These events are then saved into another \verb|.csv| file for each experiment.
 
@@ -63,8 +61,8 @@ On a high-level view, the following experiments were conducted:
 
 \begin{enumerate}
     \item \label{experiment:full}Run the whole program from start to finish
-    \item \label{experiment:partial_checkpointed}Run it partially, checkpointing after some step, sleeping, and resuming from that step
-    \item \label{experiment:partial_checkpointed_aborted}Run it partially, checkpointing after some step but aborting before the next checkpoint. Then resume as above.
+    \item \label{experiment:partial_checkpointed}Run it partially, checkpointing after some steps, sleeping, and resuming from that step
+    \item \label{experiment:partial_checkpointed_aborted}Run it partially, checkpointing after some steps but aborting before the next checkpoint. Then resume as above.
     \item \label{experiment:startup_only}Run only the startup phase up until the ML would start
     \item \label{experiment:baseline}Do nothing, measure the system at rest
 \end{enumerate}
@@ -101,7 +99,7 @@ Thus, for the testing, any foreground apps are closed. We also used the Linux to
 \end{minipage}
 
 As machine learning makes use of available GPUs, the frequency should also be similarly set to a defined value. 
-NVIDIA provides a guide on how to do so\footnote{\url{developer.nvidia.com/blog/advanced-api-performance-setstablepowerstate}}.
+NVIDIA provides a guide on how to do so \webcite{web_nvidiapower}.
 Our used GPU, the NVIDIA GTX 1070, is not capable of fixing the frequency as of the time of conducting these experiments. 
 While it is supposed to be possible, there seems to currently be driver issue preventing this.\webcite{web_powerlimitissue}
 Thus, the frequency of the GPU was not fixed. 
@@ -121,7 +119,7 @@ Plotting these additional time frames gives a quick visual indicator of whether 
 
 For each experiment, a named and timestamped folder is created in the \verb|/power-measurements| folder of my repository. Each folder then holds a \verb|.csv| with pinpoint's timestamped power measurements. 
 The added timestamped logging is saved into another \verb|.csv|. 
-On the way to the final measurements, we plot each experiment early and visually spot if there are any obvious errors or mistakes.
+On the way to the final measurements, we plotted each experiment early and visually checked if there were any obvious errors or mistakes.
 
 \paragraph{Determining the baseline power draw}
 
@@ -145,11 +143,12 @@ The baseline power draw will be less interesting going further but will put pers
 
 For the non-interrupted machine learning run, a sample run is provided in Figure \ref{fig:plot_full}. 
 Figure \ref{fig:plot_full_stacked} shows the stacked trend lines of the 10 different runs.
-For simplicity's sake, we refrained from doing a more elaborate statistical analysis of the different runs as the visual check of them being very similar seemed enough.
+The times of each event occurred within a standard deviation of less than 1 second.
+Thus, for simplicity's sake, we refrained from doing a more elaborate statistical analysis of the different runs as the visual check of them being very similar seemed enough.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{power-measurements/measurements_roberta_full_0714010405/plot.pdf}
-    \caption{Sample run of the full run experiment, the background indicates the phase as determined by the added logging}
+    \caption{Sample run of the full run experiment, the background indicates the average timing of each phase.}
     \label{fig:plot_full}
 \end{figure}
 
@@ -267,7 +266,7 @@ class Phase(TypedDict):
 \end{lstlisting}
 \end{minipage}
 
-Some simplifications are made: the duration of each phase is well known and the power per phase is a constant. 
+Some simplifications are made: the duration of each phase is well known and the power per phase is constant. 
 Phases can also be named for later reference.
 These phases essentially define a step function, i.e. piecewise constant function.
 Unlike a traditional step function, the start- and endpoints of each "piece" would be encoded implicitly by the previous phases.
