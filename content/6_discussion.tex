@@ -35,7 +35,7 @@ The reason being that our chosen scenarios:
 
 \begin{itemize}
     \item Had phases of relatively short length. It is likely that longer phases result in more pronounced results.
-    \item Used too many phases. We chose to repeat low and high phases until the given job length is met, meaning that the amount of phases increased linearly. As suspend \& resume scheduling works better for very long jobs, the expected effects could not be computed within a 20 minute scheduling time.
+    \item Used too many phases. We chose to repeat low and high phases until the given job length is met, meaning that the amount of phases increased linearly. As suspend \& resume scheduling works better for very long jobs, they could not be scheduled within a time limit of 20 minutes.
 \end{itemize}
 
 A drawback of the LP implementation is that computation time is dependent on the shortest phase in \modelname{} (see Section \ref{sec:checkpoint_resume_lp}). Thus, if startup times are short, they may need to be removed in favor of runtimes. The OPR approach described in Section \ref{sec:state_of_the_art}, which assumes startup to have a cost but no length, does not have this problem.

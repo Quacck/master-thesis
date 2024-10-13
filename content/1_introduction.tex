@@ -7,26 +7,26 @@ These include high-carbon intensive technologies such as coal and gas but also i
 The latter, follows a diurnal rhythm over the day as shown in Figure \ref{fig:energy_mix}.
 
 As the sun shines more during the day, a bigger part of the total power production comes from solar, reducing the overall carbon intensity of the grid.
-This can be used for \emph{carbon-aware scheduling}. 
-By planning work in data centers to be executed during such low-intensity times, the overall carbon can be reduced.
+This can be used for \emph{temporal carbon-aware scheduling}. 
+By planning work in data centers to be executed during such low-intensity times, the emissions for a given workload can be reduced.
 
 \begin{figure}[H] % holy moly, did he just H this?
     \includegraphics[width=\linewidth]{agorameter/energy_production_week.pdf}
-    \caption[short]{Mix of energy production in Germany for the first week of July 2024 with the resulting hourly average carbon emissions per kWh\webcite{web_agora}. Solar production peaks at noon, reducing carbon intensity, creating times, where jobs may be scheduled more carbon efficiently.}
+    \caption[short]{Mix of energy production in Germany for the first week of July 2024 with the resulting hourly average carbon emissions per kWh \webcite{web_agora}. Solar production peaks at noon, reducing carbon intensity, creating times, where jobs may be scheduled more carbon efficiently.}
     \label{fig:energy_mix}
 \end{figure}
 
-Data centers are currently projected to experience exponential growth in their power requirements, largely fueled by pushes in AI.\cite{schwartz_green_2019}
+Data centers are currently projected to experience exponential growth in their power requirements, largely fueled by pushes in AI~\cite{schwartz_green_2019}.
 \todo[inline]{Needs to be included better}
 
 Current work on carbon-aware scheduling includes shifting jobs temporally and spatially. 
 One common theme among them, however, is that the workload models do not include program heterogeneity: while real-world programs may include high-powered times for computation and low-powered times e.g. I/O, this is not reflected in literature. 
 Another common strategy for executing jobs during low-carbon timeframes is to \emph{suspend \& resume}: a job may be, for example, stopped as carbon intensity is increasing and resumed when a certain threshold is reached. 
-This generally assumes, that resuming a job carries no overhead. 
+This generally assumes that resuming a job carries no overhead. 
 
 In this work, we will improve upon the homogeneous, no-overhead workload model used in literature, by conducting power measurements on a machine learning workload and deducing a new model.
 
-The research question will be the following:
+The research question will be the following:\todo{Improve Wording}
 
 \begin{enumerate}
     \item Are there carbon savings under a workload model including resume-overhead and power-heterogeneity?
