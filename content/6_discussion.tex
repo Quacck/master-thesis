@@ -4,13 +4,51 @@ For this, we will discuss each contribution, and draw a conclusion in the end.
 
 \section{\modelname{}}
 
-With \modelname{}, we propose a high-level time-to-power model of workloads.
-Power heterogeneity is not new, there is prior work that uses this in other contexts.
-A drawback of \modelname{} is that it does not capture overhead for suspending a job. 
-For example, during the power measurements, power intake would remain high for a few seconds despite the program itself being stopped.
-The reason for this were the power settings on my GPU keeping a high profile.
+With \modelname{}, we propose a high-level time-to-power model for workloads.
+In essence, it models a workload as having startup phases and a work phases. 
+Each of these then have a constant power attached to it. 
+This presents a superset of the workload models used in prior literature in this field.
+Using a constant per phase is a big simplification, however. 
+The main motivation for this was to reduce complexity in the LP suspend \& resume scheduler.
+We also argue that in the context of the carbon-emissions resolution being low, this is appropriate.
+
+A drawback of \modelname{} is that power used outside the job is not captured at all.
+In a real-world cloud scenario, there will be e.g. be VM startup times \cite{zheng_benchmarking_2019}.
+Also, we assume workloads to be executed in an isolated matter. 
+Thus, each workload under \modelname{} increases power and carbon emissions linearly.
+On real-world hardware however, servers have a baseline energy demand. 
+Sharing resources and increasing utilization of a server increases energy efficiency \cite{barroso_case_2007}.
+
+In the context of long workloads and parallel execution, the clean-cut phases we observed on a single machine and a short job may 
+not hold in HPC environments.
 
 \section{\programname{}}
+
+Through an iteration on an existing testbed, GAIA, our implementation of \programname{} enables simulating workloads in the context of minimal carbon-emissions.
+In comparison to prior work, workloads now have heterogeneous phases and their startup times are part of the scheduling.
+We have tried to evaluate this changed assumption for different startup costs, different phases, waiting times, and job lengths. 
+The trend that allowing resumeable jobs to be deferred for longer increases carbon savings \cite{wiesner_lets_2021,hanafy_going_2024, hanafy_war_2023}, appeared in our results as well. 
+We were also able to observe the findings by Sukprasert et al. \cite{sukprasert_limitations_2024} that a suspend \& resume strategy benefits very long jobs more.
+
+Wholly unexplored are the effects job heterogeneity that we added.
+The reason being that our chosen scenarios:
+
+\begin{itemize}
+    \item Had phases of relatively short length. It is likely that longer phases result in more pronounced results.
+    \item Used too many phases. We chose to repeat low and high phases until the given job length is met, meaning that the amount of phases increased linearly. As suspend \& resume scheduling works better for very long jobs, the expected effects could not be computed within a 20 minute scheduling time.
+\end{itemize}
+
+A drawback of the LP implementation is that computation time is dependent on the shortest phase in \modelname{} (see Section \ref{sec:checkpoint_resume_lp}). Thus, if startup times are short, they may need to be removed in favor of runtimes. The OPR approach described in Section \ref{sec:state_of_the_art}, which assumes startup to have a cost but no length, does not have this problem.
+
+We want to propose a more fit approach to the evaluation:
+First, a literature review of long-running workloads with long phases is necessary. Additionally, the power measurement capabilities of cluster nodes we described in Section \ref{sec:power_measurements} could be used to measure larger ML models than we were able to execute on our private hardware.
+Given these workloads, the evaluation is then done under different carbon traces to remove bias.
+In our evaluation, the days 4 and following had an influx of wind power which dominated the carbon savings for the longest waiting time. 
+
+In our case, due to the way each job was generated and indexed, the hardest problems were executed last. 
+A better approach would be to compute the complex problems first to check whether time limits are hit.
+Running a sample evaluation for select parameters should also have been done.
+
 \section{Future Work} \label{sec:future_work}
 
 
