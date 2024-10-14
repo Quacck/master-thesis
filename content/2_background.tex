@@ -24,7 +24,14 @@ Renewables create orders of magnitudes less emissions than conventional technolo
 \end{table}
 
 As supply and demand in power need to be balanced, the composition of the grid changes according to demand.
-On the day scale, there are at least two dimensions to this. For once, there is the aforementioned diurnal rhythm of solar production.\todo{I also wanted to mention the duck curve, or how there are changes to demand from human patterns.}
+On the daily scale, there are at least two dimensions to this. 
+
+For once, there is the aforementioned diurnal rhythm of solar production.
+Zooming into one day, there is a mismatch between demand and renewable supply.
+During the morning hours, additional power needs to be generated as people wake up, prepare coffee and commute to work.
+The same happens during the evening when they return home (minus the coffee).
+Those two times, however, are when solar is not yet produced at full capacity so that additional demand is answered with conventional power generation.
+This is called the \emph{duck~curve}.
 
 In addition to that, there are also seasonal effects:
 As shown in Figure \ref{fig:energy_mix_year}, during warm seasons (e.g. July), more solar is produced than in colder seasons and the share in renewables rises accordingly.
@@ -42,7 +49,7 @@ During times of low demand, less conventional power needs to be produced and ren
 All the above is a local or national view on the public grid. 
 When looking at energy production globally, a spatial dimension is added. 
 This takes effect in the form of different countries having peak solar production at different times (following the earth's rotation) but also takes effect in the composition of production capabilities.
-Some countries may have less investment in renewables or use nuclear power plants, which are also deemed low-carbon are largely\footnote{that said, during heatwaves, cooling water can be missing \webcite{noauthor_heatwave_2023}} independent of the weather.
+Some countries may have less investment in renewables or use nuclear power plants, which are also deemed low-carbon are largely\footnote{that said, atleast in the last 3 years, France needed to throttle nuclear power plants during heatwaves.  The reason for that being that cooling water was either too hot or missing. \webcite{web_breeden_most_2022,noauthor_heatwave_2023,web_edf_nodate}} independent of the weather.
 
 Thus, national public grids have a certain affinity for carbon-aware scheduling\cite{wiesner_lets_2021}. Generally, the higher the renewable capacities, the higher the potential carbon savings from such an approach. 
 
@@ -73,7 +80,7 @@ The bottom line is that the marginal emissions use a \emph{direct causal approac
 
 Two providers of signal data are \emph{Electricitymaps} \webcite{web_electricitymaps} and \emph{WattTime} \webcite{web_watttime}.
 Electricitymaps has a free access API for historical and current average emissions. Both providers only offer the marginal signal commercially, however. 
-Thus, from here on, the average signal will be used. 
+In the scope of this thesis, the average signal will be used. 
 Note that current literature is still split on which signal is best. 
 A recently released paper by Sukprasert et al. \cite{sukprasert_limitations_2024} may be read for further information on signals and arguments for either signal.
 
@@ -93,7 +100,7 @@ An example of interactive workloads are web requests. In a recent work by Souza 
 Regulations, such as the European GDPR \webcite{web_gdpr} play into this, however.
 The last environment is \emph{real-time} systems. There, deadlines and predictability dictate how a scheduler operates.
 
-For this work's topic, (temporal) carbon-aware scheduling, only batch systems will be examined as they allow more freedom when scheduling workloads.
+For this work's topic, (temporal) carbon-aware scheduling, only batch systems will be considered as they allow more freedom when scheduling workloads.
 
 \section{Measuring Power}
 
@@ -108,12 +115,7 @@ Physical measurements follow another route; measurement devices are put between 
 The point where a power measuring device is inserted dictates what could and could not be measured, a wall-mounted measurement device could only measure all power going into a computer and not differentiate between individual programs.
 
 The advantages of physical measurements are that they can give a more holistic measurement of a system as would be the case for a wall-mounted measurement device. 
-Portability is an issue: unlike operating-system supported tools such as perf, a measurement device needs more effort to be used on another system (or be entirely unusable, for example when such devices are only rated for a certain power level).
-
-% \paragraph{Power Consumption of a Computer}
-% As there will be power measurements in \ref{sec:power_measurements}, some basic understanding of energy and power used for computation will be provided:
-% \begin{itemize}
-%     \item I could mostly borrow from the EBRH slides; there is some base power needed that is correlated to the hardware (dynamic and static energy)
-%     \item this also depends on frequency (which is why later we set our CPU frequency to some hard coded value [or do not do that in the case of my GPU lol])
-%     \item basically, use this paragraph to outline all things we take care of in my power measurements
-% \end{itemize}
+Performance counters inform only about parts of an overall system.
+By measuring all ingoing power, side effects such as increased fan speeds can also be captured.
+Portability can be an issue, though. 
+Measurement devices could be limited to specific vendors, require specific interfaces, or may only be rated up to a specific power level. 

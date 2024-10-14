@@ -1,10 +1,10 @@
 \chapter{Related Work}
 
-This chapter will outline the current state-of-the-art research surrounding carbon-aware (temporal) scheduling, as well as the approach taken for determining that.
-
+In this chapter, we will present the prior work that we build upon.
+Our approach to finding that related work will be subject of the first section.
 \section{Systematic Approach}
 
-We used the following system for finding related work to our topic.
+We conducted a structured literature review to get an overview of the current state of carbon-aware scheduling:
 First, two groups of keywords are brainstormed for use in querying academic search engines, one group corresponds to carbon-awareness, and the other deals with computing environments.
 The specific keywords used for each group are listed in Table \ref{tab:lit_study_keywords}.
 
@@ -26,8 +26,8 @@ For each query, we then read the abstracts of, on average, the first  5 results.
 Depending on if their titles seemed subjectively unfit, some results were skipped. 
 
 These are then entered into a spreadsheet. 
-Additionally, we further explored papers through \emph{connected papers}\webcite{web_connectedpapers} or looked up individual authors on a subjective basis. 
-The papers from the HotCarbon Workshops \webcite{web_hotcarbon} also proved to be related.
+With this initial basis, we further explored papers through \emph{connected~papers}~\webcite{web_connectedpapers} or looked up individual authors on a subjective basis. 
+Some papers from the HotCarbon Workshops \webcite{web_hotcarbon} also proved to be related.
 We then sort each paper into one of the following categories:
 
 \begin{enumerate}
@@ -44,7 +44,7 @@ Using the above categorization, 99 are marked red, 31 orange, and 15 green.
 
 \section{State of the Art} \label{sec:state_of_the_art}
 
-Overall, through this approach, a lot of unrelated papers were found.
+Overall, through this approach, multiple unrelated papers were found and excluded.
 Nevertheless, with the green ones, the current state of carbon-aware scheduling can be outlined.
 Out of those, the following are of particular interest.
 
@@ -99,3 +99,6 @@ There are multiple approaches to testbeds for carbon-aware job scheduling.
 A common theme is to examine job lengths, arrival times, and deadlines for effects on carbon emissions. 
 Overhead from resuming jobs is considered in some prior work but, atleast to our knowledge, none of them use a time-based overhead for scheduling as well. 
 Power heterogeneity was not included in any of the examined papers.
+
+
+\todo[inline]{Mention GAIA again here}
