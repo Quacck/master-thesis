@@ -1,6 +1,9 @@
 \chapter{Defining a New Workload Model}
 
-In order to improve on the homogenous, no startup-cost, workload model used in related work, we will first conduct power measurements on a sample program, and then use that information for the new model.
+We believe that the workload model using constant-power used in prior work is too big of a simplification.
+In a workload model that supports different phases, high-powered phases could, for example, be matched to carbon-intensity valleys.
+Through this chapter, we will first conduct power measurements on a machine learning workload.
+By that, we will infer a new model, \modelname{}, that can represent our findings of different power levels and the cost associated with resuming said workload.
 
 \section{Power Measurements on Machine Learning Jobs}
 \label{sec:power_measurements}
@@ -36,7 +39,7 @@ In our case, pinpoint us run on the device-to-test.
 \begin{figure}
     \centering
     \includegraphics[width=200px]{images/mcp_graphic_design_is_my_passion.jpg}
-    \caption[short]{The measurement tool we used. It can be inserted between a devices power supply and the wall socket. The encasing is not fully closed, so care needs to be taken not to touch any exposed contacts.}
+    \caption[short]{The \emph{Microchip MCP39F511N Power Monitor}. It can be inserted between a devices power supply and the wall socket. Data is output via USB, which can be read by an external device or the device-to-test.}
     \label{fig:mcp}
 \end{figure}
 
@@ -46,8 +49,8 @@ In our case, pinpoint us run on the device-to-test.
 Machine learning (ML) was used as the main motivation for suspend \& resume scheduling in prior works \cite {wiesner_lets_2021} and thus was also chosen by us to be measured and modeled. 
 
 The concrete model and framework are secondary to our measurement. 
-In our case, a small model \webcite{web_distilbertdistilroberta-base_2024} is chosen.
-It generates fewer data points for processing, and allows faster iterations for the measurement script. 
+In our case, a small model, RoBERTa \webcite{web_distilbertdistilroberta-base_2024}, is chosen.
+It is a natural language model, that due to its size generates fewer data points for processing, and allows faster iterations for the measurement script. 
 
 There is a vast amount of machine learning frameworks. 
 For our high-level model, the feature set of the framework only needed to support checkpointing, resuming, and some basic form of logging. 
@@ -65,13 +68,13 @@ On a high-level view, the following experiments were conducted:
     \item \label{experiment:full}Run the whole program from start to finish
     \item \label{experiment:partial_checkpointed}Run it partially, checkpointing after some steps, sleeping, and resuming from that step
     \item \label{experiment:partial_checkpointed_aborted}Run it partially, checkpointing after some steps but aborting before the next checkpoint. Then resume as above.
-    \item \label{experiment:startup_only}Run only the startup phase up until the ML would start
+    \item \label{experiment:startup_only}Run only the startup phase up until the ML starts
     \item \label{experiment:baseline}Do nothing, measure the system at rest
 \end{enumerate}
 
 Experiment \ref{experiment:full} gives a baseline for what the job looks like without suspending. 
-Numbers \ref{experiment:partial_checkpointed} and \ref{experiment:partial_checkpointed_aborted} would be used to determine the overhead of checkpointing the job. 
-Experiment \ref{experiment:startup_only} would be used to validate the other ones, as it is a subset of the others. 
+Numbers \ref{experiment:partial_checkpointed} and \ref{experiment:partial_checkpointed_aborted} will be used to determine the overhead of checkpointing the job. 
+Experiment \ref{experiment:startup_only} is used to validate the other ones, as it is a subset of the others. 
 The last experiment is necessary to determine the baseline energy consumption of the environment.
 
 To execute these experiments inside a repeatable bash script, additional command line parameters were added to the program. 
@@ -81,9 +84,9 @@ The way of conducting experiment \ref{experiment:startup_only} was to copy the s
 \paragraph{Creating Repeatable Measurements}
 
 As this is being run on standard hardware on a standard operating system, all experiments are subject to noise. 
-For example, \emph{Dynamic frequency and voltage scaling (DFVS)}, the OS technique of increasing CPU speed according to usage, adds power in an uncontrolled way. 
+For example, \emph{Dynamic frequency and voltage scaling (DFVS)}, the OS technique of increasing CPU frequency for performance needs, adds power in an uncontrolled way. 
 Also, background tasks may happen \emph{randomly}, increasing power usage. 
-Closing all foreground apps before testing reduced noise as well.
+To reduce noise, we reduced the number of processes to a minimum.
 We also used the Linux tool \verb|cpupower|, as shown in the snippet below, to set the CPU frequency to a set value of 3.6 GHz, which is the maximum frequency:
 
 \begin{minipage}{\linewidth}
@@ -105,7 +108,7 @@ We also used the Linux tool \verb|cpupower|, as shown in the snippet below, to s
 \end{minipage}
 
 As machine learning makes use of available GPUs, its frequency should also be similarly set to a defined value. 
-NVIDIA provides a guide on how to do so \webcite{web_nvidiapower}.
+NVIDIA provides a guide on how to conduct power measurements on GPUs~\webcite{web_nvidiapower}.
 Our used GPU, the NVIDIA GTX 1070, is not capable of fixing the frequency as of the time of conducting these experiments. 
 While it is supposed to be possible, there seems to currently be driver issue preventing this \webcite{web_powerlimitissue}.
 Thus, the frequency of the GPU was not fixed. 
@@ -116,12 +119,13 @@ The Python process is also not kept between runs, forcing a reload of any librar
 
 \paragraph{Conducting each Experiment}
 
-Each experiment was repeated 10 times. 
+Each experiment was repeated ten times to be able to average out noise later.
 Between each run, there is a \verb|sleep| period of 10 seconds and one of two minutes in the partial executions. 
 Additionally, \verb|pinpoint|'s feature of measuring before and after the actual program-to-test was used. 
 This leads to a period of 30 seconds being measured around the program execution. 
 Plotting these additional time frames gives a quick visual indicator of whether experiments are sufficiently isolated from each other, ergo when the power draw is at the baseline as the actual program starts.
 
+\newpage
 \paragraph{Collected Data}
 
 For each experiment, a named and timestamped folder is created in the \verb|/power-measurements| folder of our repository. 
@@ -140,7 +144,7 @@ The blue dots represent each data point. The red line is a smoothed Gaussian tre
     \label{fig:plot_baseline}
 \end{figure}
 
-Across all 10 runs, the average baseline power draw is calculated via the mean of all data points. This comes out as an average of 49.8 W with a standard deviation of 4.4 W.
+Across all ten runs, the average baseline power draw is calculated via the mean of all data points. This comes out as an average of 49.8 W with a standard deviation of 4.4 W.
 
 The baseline power draw will be less interesting going further but will put perspective on the other experiments. 
 The standard deviation gives a broad idea of the environment noise.
@@ -154,26 +158,23 @@ Thus, for simplicity's sake, we refrained from doing a more elaborate statistica
 
 \begin{figure}[H]
     \includegraphics[width=\linewidth]{power-measurements/stacked_plots/roberta_full_0714.pdf}
-    \caption{All full-run trend lines stacked. }
+    \caption{Each black line is a Gaussian-smoothed trend line of a run. We stack all 10 measurements into one time series, showing that each is similar to the others. The background represents our derived phases. Their borders are when our manually added events occurred on average. The timestamp of each event had a standard deviation of less than 1 second, meaning that there was little variation.}
     \label{fig:plot_full_stacked}
 \end{figure}
 
-\newpage
 The main takeaways from these measurements are:
 \begin{enumerate}
     \item There is a long (about 25\%) start-up phase, which is spent in starting Python, loading libraries, and setting up the training data.
-    \item There are periodical work phases; a high-power training phase would be followed by low-power evaluation phase and a low-power checkpointing.
+    \item There are periodical work phases; a high-power training phase is followed by low-power evaluation phase and a low-power checkpointing.
     \item A higher variance in measurements occurs during the training phases in comparison to the others.
 \end{enumerate}
 
 This already shows, that improvements upon the constant-power model used in \cite{wiesner_lets_2021} are possible. 
 For example, in this case, the start-up phase has a much lower power-draw than the work-phase.
-\todo[inline]{Discuss that there is a spike in power at the end?}
-\todo[inline]{The Download phase basically returns to the baseline}
 
 \begin{figure}[H]
     \includegraphics[width=\linewidth]{power-measurements/measurements_roberta_full_0714010405/plot.pdf}
-    \caption{Sample run of the full run experiment, the background indicates the average timing of each phase.}
+    \caption{Sample run of the full run experiment, the background indicates each phase. These phases are derived from our manually added logging.}
     \label{fig:plot_full}
 \end{figure}
 
@@ -246,11 +247,9 @@ Showing that there indeed is an overhead created from suspending at different pa
         \ref{experiment:partial_checkpointed}, suspend after checkpoint and resume &  13.94  kJ & 0.1 \\ \hline
         \ref{experiment:partial_checkpointed_aborted}, abort early and resume &  15.72 kJ & 0.07 \\ \hline
     \end{tabular}
-    \caption{Environment parameters of the power measurements}
+    \caption{Energy costs of the different experiments. Unlike the no-overhead assumption in prior work, we can show that suspending a workload does carry overhead.}
 \label{tab:experiment_overhead}
 \end{table}
-
-\todo[inline]{Add the startup experiment}
 
 \section{Introduction of \modelname} \label{sec:improving_the_model}
 
@@ -288,21 +287,32 @@ With this, a simple time-to-power function can be defined, that looks up the inp
 Initially, we considered allowing any expression instead of a constant value for power and then using Python's \verb|evaluate()| to e.g. allow a function-per-phase model.
 In Section \ref{sec:checkpoint_resume_lp}, having a rather restrictive step function will be of advantage, however.
 
-\newpage
-The measurements that have been taken can now be fit into this new model. 
-As each measurement point can be associated with a phase via the aforementioned added logging, the average of each phase-associated measurement is used to determine the model parameters. 
+\paragraph{Fitting \modelname to RoBERTa}
+
+We use the following pseudocode: 
+
+\begin{minipage}{\linewidth}
+    \begin{lstlisting}[frame=single, numbers=left, caption={Pseudocode for turning RoBERTa's power measurements into \modelname}, basicstyle=\ttfamily, label={listing:fitting_swap}]
+phases = []
+iterate with event_1 and event_2 pairwise through the events:
+        # do this in respect to each run:
+        phase_measurements = measurements between pair of events
+        phase_power = average of phase_measurements
+        phase_duration = 
+            average time of all event_2
+            - average time of all event_1
+        phases += {phase_duration, phase_power, name of event_2}
+        
+manually reorder phases into startup and work
+    \end{lstlisting}
+\end{minipage}
+
+In line 4 we query each run for phase-associated measurements based on that runs event timings. 
 The durations of the phases are calculated similarly by taking the average time the logging occurred during the measurements.
 
-Using this strategy on the 10 complete runs results in Figure \ref{fig:model_overlaid}, which shows the derived model in black with the previous Figure \ref{fig:plot_full} in less opacity. 
+Using this strategy on the ten complete runs results in Figure \ref{fig:model_overlaid}, which shows the derived model in black with the previous Figure \ref{fig:plot_full_stacked} in less opacity. 
 The startup phase looks well approximated, visually however there is some error during the work phases.
 The training phases each have a high variance, which is not captured by the constant power approximation. After each training  phase, the power goes down seemingly linearly, which is also approximated by the constant.
-
-\begin{figure}[H]
-    \includegraphics[width=\linewidth]{power-measurements/model_overlaid.pdf}
-    \caption{Model of roberta.py (black) vs. the measured runs}
-    \label{fig:model_overlaid}
-\end{figure}
-
 One notable point: this model is a superset of the previous constant-no-overhead model used in the related work.
 Previous jobs can be modeled with just one phase of work, resulting in constant power over its execution. Leaving the startup phases empty creates no overhead on resuming.
 
@@ -311,7 +321,7 @@ Previous jobs can be modeled with just one phase of work, resulting in constant 
 To analyze the error of this model, we cross-validated the power's RMSE and the total energy using \verb|scikit-learn|'s \verb|LeaveOneOut| strategy. 
 The first one gives a measure of the model's accuracy on a short-time (sub-second) scale, the latter tells the long-time (whole job) scale accuracy of the model.
 
-Each of the 10 runs is taken as the ground truth while the other 9 are used to create the model. 
+Each of the ten runs is taken as the ground truth while the other nine are used to create the model. 
 The results are the following: the power between the prediction and remainder has an RSME of 39.3 W while the difference in total energy is calculated as -0.1 kJ. 
 
 Interpreting this, it seems that the model performs poorly as a predictor of the exact power used at some time point as the RMSE is rather large (think of the maximum power drawn being about 250W). 
@@ -320,3 +330,9 @@ For example, Electricitymaps has a resolution of 1 hour for carbon emissions int
 The high error likely comes from the high variance during the training phases which is not captured in the model.
 
 The total energy predicted by the model is very close to the actual real-life experiment, this should mean that the total carbon calculated on the model should also be close to the carbon emitted by the real program.
+
+\begin{figure}
+    \includegraphics[width=\linewidth]{power-measurements/model_overlaid.pdf}
+    \caption{\modelname{} vs RoBERTa. The black line is the new model we propose and the others lines are individual runs. Each of \modelname{}'s phases is the result of averaging the runs measurements between two events. The length of a phase is similarly derived from the average time of each event.}
+    \label{fig:model_overlaid}
+\end{figure}
