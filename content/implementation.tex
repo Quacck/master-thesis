@@ -1,5 +1,8 @@
 \chapter{Choosing an Implementation Approach}
 
+At the start of our work, the choice between a testbed or a concrete cluster scheduler was not decided. 
+In this chapter, we will outline our difficulties with the latter and then introduce our testbed \programname{}.
+
 \section{Viability of a Slurm Plugin}
 \label{subsec:slurm_plugin}
 
@@ -168,7 +171,7 @@ A jobs' \verb|arrival_time| signifies when it is added to the simulation in seco
 The \verb|length| of a job similarly encodes the seconds a job needs to fully execute. The \verb|cpu| column was not interesting for our work, as previously discussed.
 
 The chosen way of supplying the model information was to add two new columns to the trace files, which entail the type of job and a column for arguments. 
-As of now, the following types are supported: \verb|constant|, \verb|constant-from-stawp|, \verb|stawp|\todo{Use this in the implementation}, and \verb|ml|. 
+As of now, the following types are supported: \verb|constant|, \verb|constant-from-stawp|, \verb|stawp|, and \verb|ml|. 
 The first two \verb|constant| types are for backward compatibility with GAIA, and are for the evaluation later.
 
 Type \verb|stawp| is the main way of creating a job with phases such as the one used in the experiment. The supplied argument in that case would entail a Python-readable \verb|dict|, essentially a \verb|JSON|-like definition of the model as described in Listing \ref{listing:model_python}.
