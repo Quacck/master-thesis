@@ -58,13 +58,18 @@ A runtime analysis on \programname{}' LP scheduler could be a guide on what can 
 
 \section{Future Work} \label{sec:future_work}
 
-\begin{itemize}
-    \item Expand the implementation to only support checkpointing at some points in time, right now work can be suspended anytime
-    \item The runtimes for the LP implementation are very bad, there may be other algorithms or further improvements
-    \item The testbed should also output the phases, right now these are "hidden" in the scheduler and not really exposed to the outside. Perhaps enabling better debugging support
-    \item further research into real-world workloads and their heterogeneity should be done. Using those as a ground-truth for modelling phases -> are there jobs that can better take advantage? Non-perdiodic phases could perhaps better take advantage of the carbon curve
-    \item As the scheduling of the suspend resume approach takes very long, a time-efficiency study could be conducted. Especially for the 4 day-deadline jobs, the gab value would be above 95\% indicating a suboptimal solution \@ 20 minutes.
-    \item Given that the scheduler is executed on beefy hardware, where is the breakeven point in carbon savings?
-\end{itemize}
+There are several avenues for future work.
+Regarding \programname{}, our suspend \& resume implementation is not yet able to make use of \modelname{}'s checkpoint annotations. Future work includes evaluating carbon-aware scheduling when jobs can only be checkpoint at some points.
 
-\section{Conclusion} \label{sec:conclusion}
+Our LP scheduler showed long runtimes for more complex scheduling problems.
+Future work could deal with either improving model performance \webcite{web_gurobi_threads,web_gurobi_optimization} or evaluating whether a break-even point in scheduling-time and carbon-saving exists.
+
+We found that suspend \& resume scheduling works best for long jobs.
+Future work could investigate which real-world workloads exhibit power heterogeneity.
+Their saving potential our workload model could then be analyzed.
+
+Instead of only testing predefined workloads, our LP scheduler could be combined with current research in the field of workload analysis. 
+Köhler et al. \cite{kohler_recognizing_2021} classify workloads based on power signatures. 
+On live systems, such an approach could be used to opt-in to a suspend \& resume strategy. 
+We found that short jobs exhibit little potential carbon savings. 
+If a workload then runs longer, classifying them as \emph{suspendable} could lead to hybrid scheduling strategies.  
