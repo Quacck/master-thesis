@@ -123,50 +123,53 @@ Checking the Slurm logs for the jobs highlighted in red shows that the LP schedu
 A result was found that is within the constraints but is not optimal.
 The gap value introduced in Section \ref{sec:checkpoint_resume_lp}, for these jobs is 100\%.
 In fact, counting the occurrences of \verb|"Time limit reached"| in the logs shows that out of all jobs, 209 timeouts occurred. 
-Since half of the 2400 jobs are LP-scheduled, about a fifth of them did not find an optimal solution in time.
-The cumulative distribution for the time limited solutions in Figure \ref{fig:ecdf_gap} shows a heavy skew towards bad solutions, if the time limit is not kept.
 
-\begin{figure}
+\begin{figure}[H]
     \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_schedulers.pdf}
     \caption[short]{All simulated jobs and their total carbon emissions, compared between the two scheduling approaches. Blue indicates equal emissions, red and green differentiate the schedulers. The combination of startup length, startup power and phases is encoded on the x-axis. Savings from adopting a suspend \& resume strategy are only noticeable for very long jobs with long waiting times.}
     \label{fig:eval_different_schedulers}
 \end{figure}
 
-\begin{figure}
+Since half of the 2400 jobs are LP-scheduled, about a fifth of them did not find an optimal solution in time.
+
+\begin{figure}[H]
     \includegraphics[width=\linewidth]{GAIA/notebooks/timelimited_gantt.pdf}
     \caption[short]{Schedules of jobs sharing all parameters but length under different schedulers. All jobs have a waiting time of 4 days and a startup time of 5 minutes and an uneven phase configuration. The red bars are suboptimal schedules that are found upon being time limited.}
     \label{fig:timelimited_gantt}
 \end{figure}
 
-\begin{figure}
+The cumulative distribution for the time limited solutions in Figure \ref{fig:ecdf_gap} shows a heavy skew towards bad solutions, if the time limit is not kept.
+
+\begin{figure}[H]
     \includegraphics[width=\linewidth]{GAIA/slurmlogs/gap_value_ecdf.pdf}
     \caption[short]{Cumulative distribution plot of the 209 gap values of time limited schedules. A higher gap indicates worse results. There is a heavy skew to 100\%, with half of the values being above 95\%}
     \label{fig:ecdf_gap}
 \end{figure}
 
 Despite this, the jobs with a constant power draw and startup costs were still being scheduled optimally according to the logs. 
-\todo[inline]{Perhaps evaluate only those jobs without phase information, as that has little impact on the carbon emissions anyway.}
-\todo[inline]{Honestly, just put the phases part first, then justify excluding the jobs with phases.}
 
 \paragraph{Effect of Phases}
 
-To determine whether the differences in power introduced by \modelname{} enable improvements in carbon-aware scheduling, we will use a similar approach to before. We hypothesized that in suspend \& resume scheduling, high-powered phases could be scheduled to the best slots, so we suspect that savings could be different between the scheduling approaches. For Figure \ref{fig:different_phases_no_effect_lol}, we compare each parameter configuration between having a constant power and differing power. Taking the previous assumption of constant power as a baseline, the color of each data point represents the change in carbon in percent. As the scale of the figure suggests, most jobs did not exert meaningful changes in emissions. 
+To determine whether the differences in power introduced by \modelname{} enable improvements in carbon-aware scheduling, we will use a similar approach to before. We hypothesized that in suspend \& resume scheduling, high-powered phases could be scheduled to the best slots, so we suspect that savings could be different between the scheduling approaches. 
 
-Opposite to our intention, some jobs had highly increased carbon emissions from gaining a more detailed power profile.
-One explanation we suggest is the same as for the increased emissions in the scheduler comparison before: 16 hour jobs with a waiting time of 4 days ran out of computation time due to the increased complexity from having different phases. 
-For each such job, the same configuration with a constant assumption would be able to find an optimal schedule, while a non-constant assumption would not.
+\newpage
+For Figure \ref{fig:different_phases_no_effect_lol}, we compare each parameter configuration between having a constant power and differing power. Taking the previous assumption of constant power as a baseline, the color of each data point represents the change in carbon in percent. As the scale of the figure suggests, most jobs did not exert meaningful changes in emissions. 
 
-Even for jobs that found an optimal schedule, the savings are minimal, if any. 
-This is likely due to the design of the evaluation: with a resolution of an hour for the carbon emissions and the phases sharing that resolution, the averaged power is likely too close on this scale. Another reason could be that the chosen carbon trace exhibits a very \emph{wavy} pattern. Unlike the Australian trace used in Section \ref{sec:checkpoint_resume_lp}, the German trace used for this evaluation fewer sudden shifts in carbon intensity, likely making scheduling according to phases less worthwhile.
-
-To summarize, the effects of having heterogeneous power in simulated jobs could not be proven using the proposed evaluation.
-
-\begin{figure}
+\begin{figure}[H]
     \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_phases.pdf}
     \caption[short]{Difference in carbon emissions from having heterogeneous phases instead of a constant average. For the majority of jobs, this had an effect of ±1\%. Red signifies jobs, where this increased carbon emissions. For suspend \& resume scheduling, some jobs had highly increased emissions. These are likely the result of to time-outs due to increased complexity}
 
     \label{fig:different_phases_no_effect_lol}
 \end{figure}
+
+Opposite to our intention, some jobs had highly increased carbon emissions from gaining a more detailed power profile.
+One explanation we suggest is the same as for the increased emissions in the scheduler comparison before: scheduling long jobs with long deadlines lead to timeout due to the increased complexity from having different phases. 
+For each such job, the same configuration with a constant assumption would be able to find an optimal schedule, while a non-constant assumption would not.
+
+Even for jobs that found an optimal schedule, the savings are minimal, if any. 
+This is likely due to the design of the evaluation: with a resolution of an hour for the carbon emissions and the phases sharing that resolution, the averaged power is likely too close on this scale. Another reason could be that the chosen carbon trace exhibits a very \emph{wavy} pattern. Unlike the Australian trace used in Section \ref{sec:checkpoint_resume_lp}, the German trace used for this evaluation had fewer sudden shifts in carbon intensity, likely making scheduling according to phases less worthwhile.
+
+To summarize, the effects of having heterogeneous power in simulated jobs could not be proven using the proposed evaluation.
 
 \paragraph{Effect of Waiting Times}
 
@@ -176,12 +179,7 @@ Across the remaining parameters, the relative carbon savings are very close, sho
 In two instances, there were changes, however.
 For longer jobs with a waiting time of 2 days, having a startup time of half an hour decreased relative savings. 
 
-Jobs shorter than 16 hours had stagnating savings beyond a waiting time of 12 hours. 
-It is likely, that this is a circumstance of the chosen carbon trace.
-The best period is around noon on July 1 (see the bottom graph of Figure \ref{fig:timelimited_gantt}), which also fits shorter job lengths. 
-With a 4 days waiting time, shorter jobs could then again be scheduled on the new lowest carbon emissions period.
-
-\begin{figure}
+\begin{figure}[H]
     \includegraphics[width=\linewidth]{GAIA/notebooks/normalized_deadlines.pdf}
     \caption[short]{
         Normalized carbon emissions with the baseline being a wait time of 6 hours for each constant-power job. 
@@ -190,6 +188,11 @@ With a 4 days waiting time, shorter jobs could then again be scheduled on the ne
 
     \label{fig:different_deadlines_normalized}
 \end{figure}
+
+Jobs shorter than 16 hours had stagnating savings beyond a waiting time of 12 hours. 
+It is likely, that this is a circumstance of the chosen carbon trace.
+The best period is around noon on July 1 (see the bottom graph of Figure \ref{fig:timelimited_gantt}), which also fits shorter job lengths. 
+With a 4 days waiting time, shorter jobs could then again be scheduled on the new lowest carbon emissions period.
 
 \paragraph{Summary}
 
