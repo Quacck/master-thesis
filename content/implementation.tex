@@ -300,7 +300,8 @@ The code for this is shown in Listing~\ref{fig:lp_work}.
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[frame=single, numbers=left, caption={LP Implementation for basic scheduling}, label={list:lp_work}, basicstyle=\ttfamily, breaklines]
 prob = LpProblem("CarbonAwareScheduling", pulp.LpMinimize)
-work = LpVariable.dicts("work", (t for t in range(DEADLINE)), cat="Binary")
+work = LpVariable.dicts("work", 
+    (t for t in range(DEADLINE)), cat="Binary")
 
 prob += lpSum([work[t] * carbon_cost[t] for t in range(DEADLINE)]) 
 prob += lpSum(work[t] for t in range(DEADLINE)) == WORK_LENGTH 
@@ -310,14 +311,14 @@ prob.solve(solver)
 \end{lstlisting}
 \end{minipage}
 
-\todo[inline]{Fix the stupid breaklines here}
 The first line creates an LP problem and defines the optimization goal to be a minimizing one. 
 Then, a variable "work" is defined as being \verb|DEADLINE|-many integer-indexed boolean variables. 
-These will be modeled as the time slots.
-Line 4 defines the optimization goal; each time slot will be multiplied by the carbon emitted there. As one factor is a boolean, this will only increase the sum if the time slot is scheduled. The dictionary \verb|carbon_cost| contains a constant factor for each time slot.
-The last two lines start the solving library. 
+These will be modeled as the time slots. 
+We add linear equations via \verb|prob +=|.
+Line 5 defines the optimization goal; each time slot will be multiplied by the carbon emitted there. As one factor is a boolean, this will only increase the sum if the time slot is scheduled. The dictionary \verb|carbon_cost| contains a constant factor for each time slot.
+The last two lines start the solver. 
 \verb|PuLP| offers an open-source solver by default, but during development this proved to be very slow and also did not offer features such as time limits and retrieving intermediate results.
-We thus chose the \emph{Gurobi} solver, a commercial solver that also offers academic licenses.\todo{Add cite}
+We thus chose the \emph{Gurobi} solver \webcite{web_gurobi}, a commercial solver that also offers academic licenses.
 That one supported the previously lamented features and increased development time by a lot. 
 
 The running example will be a deadline of 250 time slots, the job has a startup phase of 20 units and has 100 work units. 
@@ -330,9 +331,10 @@ Looking at the figure, the results are not too surprising: the chosen time slots
     \label{fig:lp_work}
 \end{figure}    
 
+\newpage
 \paragraph{Adding Overhead via Startup Phases}
 
-In order to add a cost to starting a job, the code following in listing \ref{list:lp_overhead} is complemented, some parts are excluded for brevity.
+In order to add a cost to starting a job, the code following in Listing \ref{list:lp_overhead} is complemented, some parts are excluded for brevity.
 
 \begin{minipage}{\linewidth} % holy moly, hat er nicht gemacht 😏 tex.stackexchange.com/questions/73231/avoid-page-breaks-in-lstlistings
 \begin{lstlisting}[frame=single, numbers=left, caption={LP Implementation for overhead}, label={list:lp_overhead}, basicstyle=\ttfamily]
@@ -349,7 +351,7 @@ for i in range(STARTUP_LENGTH - 1, DEADLINE):
 
 
 In this snippet, two extra dictionary variables are introduced, \verb|startup| and \verb|startup_finished|.
-For every time slot (line 1), set \verb|startup_finished| to true if and only if there is a 0 to 1 transition along the \verb|work| dictionary (line 2). This becomes apparent when looking at Table \ref{tab:truth_table_startup_finished}.
+For every time slot (line 1), set \verb|startup_finished| to true if and only if there is a 0~to~1 transition along the \verb|work| dictionary (line 2). This becomes apparent when looking at Table \ref{tab:truth_table_startup_finished}.
 Notice how the numerical booleans help in this case, as negative integers get mapped to \verb|0|, or \verb|false| respectively.
 
 \begin{table}[h!]
@@ -369,11 +371,12 @@ Notice how the numerical booleans help in this case, as negative integers get ma
 Line 3 and 4 ensure that \emph{working} time slots and \emph{startup} time slots are mutually exclusive.
 The last loop defines that if (\verb|* startup_finsihed[i]|) a startup must be finished by some time slot, the previous \verb|STARTUP_LENGTH|-many time slots must be used for starting the job.
 
-At this point, sometimes, the solver scheduled jobs are set up at the very first time slots, as no startup could happen before time slot $0$, thus minimizing carbon but obviously producing a bogus result.
+At this point, sometimes, the result scheduled jobs in the very first time slots.
+There, if the first two slots are set to work, the \verb|startup_finished| would not be set, skipping the startup phase.
+This minimizes carbon but is obviously a bogus result.
 To fix this, we add an extra constraint that work may only be scheduled after the length of the startup phase.
-The emitted carbon goal is changed to also include these new startup time slot, similarly to the previous Listing \ref{list:lp_overhead}.
-With this step, the result already looks more like a reasonable schedule, as shown in Figure \ref{fig:lp_overhead}. 
-This time, the optimal schedule includes executing the job in one go.
+The emitted carbon goal is changed to also include these new startup time slots, similarly to the previous Listing \ref{list:lp_overhead}. 
+This time, the optimal schedule includes executing the job in one go, as shown in Figure \ref{fig:lp_overhead}.
 Doing a visual check, the job is also executed on seemingly the lowest carbon intensities.
 
 \begin{figure}
@@ -382,46 +385,53 @@ Doing a visual check, the job is also executed on seemingly the lowest carbon in
     \label{fig:lp_overhead}
 \end{figure}
 
+\newpage
 \paragraph{Adding a Notion of Progress}
 
 So far, the assumption of constant power has been continued.
-Changing this assumption under the previous scheduler using the greedy algorithm in section \ref{sec:uninterrupted_oracle_scheduling}, was relatively easy, as changing the constant expression to a Python function of the model sufficed. 
+Changing this assumption under the previous scheduler using the greedy algorithm in Section \ref{sec:uninterrupted_oracle_scheduling}, was relatively easy, as changing the constant expression to a Python function of \modelname{} sufficed. 
 This cannot be reused in LP, however, as the problem definition may only include linear equations, which a generic function is not. 
-To add dynamic power into the linear program, we decided to \emph{linearize} the function, meaning the model needed to be split up into multiple linear approximations.
+To add dynamic power into the linear program, we decided to \emph{linearize} the function, meaning \modelname{} needed to be split up into multiple linear approximations.
 
-As the model already is essentially a step function of time to power, each phase being one step, the mapping is inherently pretty close. 
-As such, \emph{a lot} of equations were needed that each express "if the progress in the job is $t$, set power to $model(t)$". 
-For that, a notion of progress and time is needed in the model.
+As it is essentially a step function of time to power, each phase being one step, the mapping is inherently close. 
+As such, \emph{a lot} of equations were needed that express "if the progress in the job is $t$, set power to $stawp(t)$" for each time slot. 
+For that, a notion of said progress and time is needed in our problem model.
 The progress inside each startup-phase needs to reset, as that can happen multiple times during the schedule. 
 On the other hand, the progress for the productive work must not be reset between execution blocks. 
-
 We add the following code to express this:
 
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[frame=single, numbers=left, caption={Progress Variables in LP}, label={list:lp_progress}, basicstyle=\ttfamily, breaklines]
-# define "work_time_progressed" and "startup_time_progressed" as 
+# define "work_progress" and "startup_progress" as 
 # DEADLINE-many integer variables
 
 M = DEADLINE * 2
 for t in range(DEADLINE-1):
     if (t>0):
-        prob += startup_time_progressed[t] >= startup_time_progressed[t-1] + 1 - (1 - starting[t]) * M 
-        prob += startup_time_progressed[t] <= startup_time_progressed[t-1] + 1 + (1 - starting[t]) * M
-    prob += startup_time_progressed[t] <= starting[t] * M 
-    prob += work_time_progressed[0] == 0
+        prob += startup_progress[t] >= startup_progress[t-1] + 1 - (1 - starting[t]) * M 
+        prob += startup_progress[t] <= startup_progress[t-1] + 1 + (1 - starting[t]) * M
+    prob += startup_progress[t] <= starting[t] * M 
+    prob += work_progress[0] == 0
     if (t > 0):
-        prob += work_time_progressed[t] == work_time_progressed[t-1] + work[t]
+        prob += work_progress[t] == work_progress[t-1] + work[t]
 \end{lstlisting}
 \end{minipage}
 
 Basically, the idea is to count up each progress variables by 1, if a time slot is being determined for work or startup respectively (see line 12 for this).
 
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{GAIA/notebooks/lp_progress.pdf}
+    \caption{Visualisation of the result set after adding progress indicators. For either starting up or working, count up a respective integer variable. These do no yet impact the schedule itself, compared to Figure \ref{fig:lp_overhead}. Progress is kept even when idling.}
+    \label{fig:lp_progress}
+\end{figure}
+
 This snippet also includes an LP "trick", namely the \emph{Big M Method}. 
-In line 4, a constant \verb|M| is defined as "a \emph{large} integer, that cannot otherwise occur in the result set", , "large" being twice the amount of time slots, although it could also be any other arbitrarily chosen large number.
+In line 4, a constant \verb|M| is defined as "a \emph{large} integer, that cannot otherwise occur in the result set", "large" being twice the amount of time slots. 
+M can also be any other arbitrarily chosen large number.
 
 Take line 9 as an example: 
-remember that \verb|starting[t]| is either $0$ or $1$, multiplying this by a large number means the right side is either $0$ or "\emph{large}". 
-Constraining a variable to be less than \verb|M| effectively does nothing (is "\emph{relaxed}"), as every value of that variable is less than \verb|M| by definition of \verb|M|. 
+remember that \verb|starting[t]| is either $0$ or $1$, multiplying this by a large number means the right side is either $0$ or \emph{large}. 
+Constraining a variable to be less than \verb|M| effectively does nothing, called \emph{relaxing a constraint}, as every value of that variable is less than \verb|M| by definition of \verb|M|. 
 On the whole, this can expression be translated to "if a time slot is not used for starting the job, set the progress to 0, otherwise ignore this constraint", the Big M Method enables a way to add conditional constraints to a model!
 
 While line 9 defines the \verb|startup_progress| outside the startup phases, lines 7 and 8 are needed to increase the progress by exactly 1. 
@@ -430,16 +440,11 @@ Notice how depending on the type of inequality, \emph{M} is either added or subt
 All in all, there is now a way to keep track of a job's progress inside the model, as shown in Figure \ref{fig:lp_progress}'s upper graph. Attention should be drawn to the \verb|work_progress| which keeps its value even when time slots are set to idle. 
 The schedule found by the solver is not different from the previous one which added overhead, as the optimization goal was not changed and the progress indicators have no impact on the scheduling (yet).
 
-\begin{figure}
-    \includegraphics[width=\linewidth]{GAIA/notebooks/lp_progress.pdf}
-    \caption{Visualisation of the result set after adding progress indicators. For either starting up or working, count up a respective integer variable. These do no yet impact the schedule itself, compared to Figure \ref{fig:lp_overhead}. Progress is kept even when idling.}
-    \label{fig:lp_progress}
-\end{figure}
-
+\newpage
 \paragraph{Adding Power According to \modelname}
 
 The goal of this part will be to have an LP variable for each phase, which indicates when the job is in that phase.
-When such indicators exist, the formula for calculating a time slot's carbon emissions can be changed to Formula \ref{formula:total_carbon}:
+When such indicators exist, the formula for calculating a time slot \verb|t|'s carbon emissions can be changed to Formula \ref{formula:total_carbon}:
 
 \begin{align}
     \label{formula:total_carbon}
@@ -463,15 +468,15 @@ for t in range(DEADLINE):
     prob += upper_bound - progress[t] <= M*phase_indicator_upper[t]
     prob += progress[t] - upper_bound <= M*(1-phase_indicator_upper[t])
 
-    prob += phase_variable[t] >= phase_indicator_lower[t] + phase_indicator_upper[t] - 1
-    prob += phase_variable[t] <= phase_indicator_lower[t]
-    prob += phase_variable[t] <= phase_indicator_upper[t]
+    prob += phase_active[t] >= phase_indicator_lower[t] + phase_indicator_upper[t] - 1
+    prob += phase_active[t] <= phase_indicator_lower[t]
+    prob += phase_active[t] <= phase_indicator_upper[t]
 \end{lstlisting}
 \end{minipage}
 
 Unwrapping this, two helper variables are added per phase and each time slot. 
 A lower variable indicates that the previously established progress is above the threshold for a phase, while the upper variable indicates the opposite. 
-The \verb|phase_variabel| is then \emph{active} where these two overlap (lines 14 to 17 define a logical \emph{AND}).
+The \verb|phase_active| is then \emph{active} where these two overlap (lines 14 to 17 define a logical \emph{AND}).
 
 The constraint of line 8 is only applied if the indicator is \verb|false|.
 If it is false, the progress at the time slot must be below the lower bound (as negative numbers are equal to zero).
@@ -482,7 +487,7 @@ The upper bound is formulated in the following two lines similarly.
 
 Using this addition, the schedule now looks like the one shown in Figure \ref{fig:lp_states}. 
 Unlike the previous times, splitting the job up into two parts is now the optimal solution. 
-Attention should be drawn to the circumstance that the high-powered phase (the green one) is scheduled on the lowest carbon emissions while the low-powered one is scheduled on the higher emission time slots.
+Attention should be drawn to the circumstance that the purple high-powered phase is scheduled on the lowest carbon emissions while the low-powered one is scheduled on the higher emission time slots.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{GAIA/notebooks/lp_states.pdf}
@@ -506,7 +511,7 @@ Glancing into the system monitor utility on Ubuntu then shows that all 8 GB of R
 
 In the previously shown Figures, each carbon emission data point corresponds to one time slot, which in turn corresponds to one unit of time in the job. 
 Going by the resolution of the carbon emissions, each data point describes the emissions for one hour. 
-In the original \verb|GAIA| implementation, job lengths are given in seconds, however. 
+In \programname{}, job lengths are given in seconds, however. 
 The example workload used for measuring in Section \ref{sec:power_measurements} also showed that timescales in seconds are useful. 
 
 Using a 1:1 mapping between those results in 3600 (60s * 60) time slots for each hour, resulting in very large problem sizes in turn needing long execution times and high amounts of memory.
