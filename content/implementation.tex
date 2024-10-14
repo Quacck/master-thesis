@@ -507,6 +507,10 @@ The gap value is an indicator of how close the solver is to finding the optimal 
 Solvers are able to take advantage of multiple CPU cores; however, in our case, the issue was likely a lack of memory. 
 Glancing into the system monitor utility on Ubuntu then shows that all 8 GB of RAM are in use and that swap space is being utilized a lot.
 
+We integrated this scheduler into \programname{} using the existing suspend \& resume scheduler interface GAIA used.
+Previously, a binary decision whether a job ran had to be made for each time slot.
+This means that phase information is not yet exported into the output traces.
+
 \paragraph{Decreasing the Problem Size}
 
 In the previously shown Figures, each carbon emission data point corresponds to one time slot, which in turn corresponds to one unit of time in the job. 

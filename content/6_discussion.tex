@@ -5,27 +5,28 @@ For this, we will discuss each contribution, and draw a conclusion in the end.
 \section{\modelname{}}
 
 With \modelname{}, we propose a high-level time-to-power model for workloads.
-In essence, it models a workload as having startup phases and a work phases. 
+In essence, it models a workload as having startup phases and work phases. 
 Each of these then have a constant power attached to it. 
 This presents a superset of the workload models used in prior literature in this field.
 Using a constant per phase is a big simplification, however. 
 The main motivation for this was to reduce complexity in the LP suspend \& resume scheduler.
-We also argue that in the context of the carbon-emissions resolution being low, this is appropriate.
+We also argue that in the context of the low carbon-emission resolutions, this is appropriate.
 
 A drawback of \modelname{} is that power used outside the job is not captured at all.
 In a real-world cloud scenario, there will be e.g. be VM startup times \cite{zheng_benchmarking_2019}.
 Also, we assume workloads to be executed in an isolated matter. 
 Thus, each workload under \modelname{} increases power and carbon emissions linearly.
 On real-world hardware however, servers have a baseline energy demand. 
-Sharing resources and increasing utilization of a server increases energy efficiency \cite{barroso_case_2007}.
+Sharing resources and increasing utilization of a server increases energy efficiency \cite{barroso_case_2007}. 
+Performance impacts due to shared hardware is also not part of \modelname{}.
 
 In the context of long workloads and parallel execution, the clean-cut phases we observed on a single machine and a short job may 
 not hold in HPC environments.
 
 \section{\programname{}}
 
-Through an iteration on an existing testbed, GAIA, our implementation of \programname{} enables simulating workloads in the context of minimal carbon-emissions.
-In comparison to prior work, workloads now have heterogeneous phases and their startup times are part of the scheduling.
+We iterated on an existing testbed, GAIA.
+In comparison to prior work, workloads in \programname{} now have heterogeneous phases and their startup times are part of the scheduling.
 We have tried to evaluate this changed assumption for different startup costs, different phases, waiting times, and job lengths. 
 The trend that allowing resumeable jobs to be deferred for longer increases carbon savings \cite{wiesner_lets_2021,hanafy_going_2024, hanafy_war_2023}, appeared in our results as well. 
 We were also able to observe the findings by Sukprasert et al. \cite{sukprasert_limitations_2024} that a suspend \& resume strategy benefits very long jobs more.
@@ -46,10 +47,24 @@ Given these workloads, the evaluation is then done under different carbon traces
 In our evaluation, the days 4 and following had an influx of wind power which dominated the carbon savings for the longest waiting time. 
 
 In our case, due to the way each job was generated and indexed, the hardest problems were executed last. 
-A better approach would be to compute the complex problems first to check whether time limits are hit.
+A better approach would be to compute the complex problems first to check whether time limits are hit, or to run them in a random order.
 Running a sample evaluation for select parameters should also have been done.
+As of now, the impact of our used parameters on the resulting LP complexity is not entirely clear.
+A runtime analysis on \programname{}' LP scheduler could be a guide on what can be scheduled.
+
+\section{Conclusion}
+
+
 
 \section{Future Work} \label{sec:future_work}
 
+\begin{itemize}
+    \item Expand the implementation to only support checkpointing at some points in time, right now work can be suspended anytime
+    \item The runtimes for the LP implementation are very bad, there may be other algorithms or further improvements
+    \item The testbed should also output the phases, right now these are "hidden" in the scheduler and not really exposed to the outside. Perhaps enabling better debugging support
+    \item further research into real-world workloads and their heterogeneity should be done. Using those as a ground-truth for modelling phases -> are there jobs that can better take advantage? Non-perdiodic phases could perhaps better take advantage of the carbon curve
+    \item As the scheduling of the suspend resume approach takes very long, a time-efficiency study could be conducted. Especially for the 4 day-deadline jobs, the gab value would be above 95\% indicating a suboptimal solution \@ 20 minutes.
+    \item Given that the scheduler is executed on beefy hardware, where is the breakeven point in carbon savings?
+\end{itemize}
 
-\todo[inline]{Discuss some stuff!}
+\section{Conclusion} \label{sec:conclusion}
