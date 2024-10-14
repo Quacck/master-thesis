@@ -2,8 +2,9 @@
 
 \section{Parameter Description}
 
-In order to evaluate the carbon savings made possible by the previously established dynamic power model, the following approach is proposed:
-As the already existing job traces hold no information regarding the power or their phases, some test cases will be presented and used for the models.
+We want to evaluate the carbon savings under \modelname{}, a model containing startup overhead and heterogeneous phases, against the constant-power model used in prior work.
+The following approach is proposed:
+As the already existing job traces hold no information regarding the power or their phases, some test cases will be presented.
 In a rather explorative process, we use the following parameters and simulate all possible permutations of them. 
 This is done using the \verb|generate_evaluation_jobs.sh| script, the used parameters are listed in the following table:
 
@@ -13,11 +14,11 @@ This is done using the \verb|generate_evaluation_jobs.sh| script, the used param
     \hline
         Parameter & Values \\ \hline
         Scheduling Strategy & suspend \& resume, non-interrupted \\ \hline
-        Phases & alternating high- and low-powered phases, each either 30 or 60 minutes long \\ \hline
+        Phases & alternating high- and low-powered phases, each either 30 or 60 minutes long. 200 W and 100 W respectively \\ \hline
         Startup length & no startup, 5 minutes, 10 minutes, 30 minutes \\ \hline
         Startup power level & 100 W, 200 W \\ \hline
-        Waiting time & 4 hours, 12 hours, 1 day, 2 days \\ \hline
-        Job length & 1, 2, and 3 hours \\ \hline
+        Waiting time & 4 hours, 12 hours, 1 day, 2 days, 4 days \\ \hline
+        Job length & 1, 2, 4, 8, and 16 hours \\ \hline
         Carbon trace & Week from July 1. 2024 (see Figure \ref{fig:energy_mix}) \\ \hline
     \end{tabular}
     \caption{Overview of the parameters used for the evaluation}
@@ -26,13 +27,11 @@ This is done using the \verb|generate_evaluation_jobs.sh| script, the used param
 
 Another dimension will be comparing these scenarios against having no information on phases, instead only having an averaged constant wattage of the otherwise existing phases.
 The latter represents the previous \verb|GAIA| implementation, where jobs had a constant amount of power at all points in time.
-Finding the LP solution will time-limited to 20 minutes and all jobs will be simulated to be submitted at the very first time in the trace.
-
-\todo[inline]{This needs some better explanation, the phases don't really make too much sense, perhaps just go with the generic ML-job setup I introduced earlier}
+Finding the LP solution will time-limited to 20 minutes and all jobs will be simulated to be submitted at the very first time, midnight, in the trace.
 
 \section{Running the Evaluation on a Cluster}
 
-As previously discussed in Section \ref{sec:checkpoint_resume_lp}, calculating suspend \& resume scheduling tends to have high runtime and memory requirements. 
+As previously discussed in Section \ref{sec:checkpoint_resume_lp}, LP scheduling tends to have high runtime and memory requirements. 
 For that reason, the simulation was executed on the \emph{SCORE Lab}, short for \emph{scientific compute resources}, of HPI.
 
 After requesting and gaining access, \verb|rsync| was used to transfer the simulation to the cluster. 
@@ -44,14 +43,17 @@ A session is defined via the hostname of the executing machine, which is communi
 As such, scheduling each experiment by itself lead to many sessions being started, as Slurm distributes the jobs on the available nodes.
 While there is some leeway in the number of sessions, experiments crashed beyond the 5th instance as the solver did not start.
 
-We work under this restriction by distributing the experiments across two workers (via a script called \verb|evalute_dynamic_power.sh|); as each experiment has an index, one worker executes the even-numbered jobs and the other executes the odd ones. 
-Using the even-odd strategy results in both workers having about the same amount of work.
+We work under this restriction by distributing the experiments across two workers via a script \verb|run_evaluation.sh|.
+Each experiment has an index.
+One worker executes the even-numbered jobs and the other executes the odd ones. 
+Using this even-odd strategy results in both workers having about the same amount of work.
 
-The workers in this case are Python docker containers that were created with the help SCORE Lab's online knowledge base.\webcite{web_knowledgebase}
-The command for launching one example worker, in this case, the one for even jobs, is given in Listing \ref{list:evaluation_slurm}.
+The workers in this case are Python docker containers that were created with the help SCORE Lab's online knowledge base \webcite{web_knowledgebase}.
+The command for launching one example worker, in this case, the one for even jobs, is given in Listing \ref{list:evaluation_slurm}. 
+Along the workload categorization in Chapter \ref{chap:backgroud}, \verb|sbatch| is used to submit batch workloads.
 
 \begin{minipage}{\linewidth}
-\begin{lstlisting}[language=bash, frame=single, numbers=left, caption={Executing the Evaluation inside the SCORE Lab's Slurm environment}, label={list:evaluation_slurm}, basicstyle=\ttfamily]
+\begin{lstlisting}[language=bash, frame=single, numbers=left, caption={Submitting the evaluation to SCORE Lab's Slurm}, label={list:evaluation_slurm}, basicstyle=\ttfamily]
 sbatch -A polze -p magic \
     --container-image=python \
     --container-name=test \
@@ -68,11 +70,12 @@ sbatch -A polze -p magic \
         \end{lstlisting}    
 \end{minipage}
 
-Now the simulation can be run with 128 GB RAM as specified in line 5. 
-The \verb|-p magic| parameter results in us using a compute node. 
-Line 3, \verb|--container-writable|, means that the container will be reused if called again under the same name, this lets us conduct set up  (\verb|pip install|).
-Restricting the nodes to be \verb|X86| nodes via line 10 is necessary as there are other architectures available in the cluster. 
-Without this line, Slurm can schedule our jobs on nodes incompatible with the containers' pre-compiled Python binary, resulting in an error on start.\webcite{web_scoreslack}
+Now the simulation can be run with 128~GB RAM as specified in line 5. 
+The \verb|-p magic|~parameter results in us using a compute node. 
+Before submitting all jobs, we used \verb|srun| to get an interactive session to that container, allowing us to \verb|pip install| the requirements.
+Line 4, \verb|--container-writable|, means that the named container will be reused.
+Restricting the nodes to be \verb|X86|~nodes via line 10 is necessary as there are other architectures available in the cluster. 
+Without this line, Slurm can schedule our jobs on nodes incompatible to the containers' pre-compiled Python binary, resulting in an error on start \webcite{web_scoreslack}.
 
 \section{Results}
 
@@ -86,7 +89,8 @@ To answer this, we first calculate the total carbon emissions for each job under
 
 With this, we first run an ANOVA to determine the axis under which to explore the data. Table \ref{tab:scheduler_anova}, shows that the length and phases of a job impact carbon emissions significantly.
 This is not unexpected, however, as these parameters increase the time and overall energy required to run the job, in turn also increasing overall carbon emissions.
-Waiting times being very significant as well, is consistent with prior literature.\cite{wiesner_lets_2021}
+The phases have a high impact as there are 3 configurations: more high-powered, more low-powered, and balanced.
+Waiting times being very significant as well, is consistent with prior literature~\cite{wiesner_lets_2021}.
 
 \begin{table}[h!]
     \centering
@@ -106,18 +110,20 @@ Waiting times being very significant as well, is consistent with prior literatur
 \end{table}
 
 With these findings, we will visualize jobs grouped by their length and waiting time, as their p-values are effectively zero.
-In Figure \ref{fig:eval_different_schedulers}, all simulated jobs are plotted with their respective total carbon emissions. Blue indicates that both schedulers, with suspend \& resume and the other without, had the same emissions (within 0.01g). If the emissions are not equal, red and green dots indicate the respective scheduler performance.
-The remaining parameters are hashed into an integer, showing that they have little effect on carbon emissions.
+In Figure \ref{fig:eval_different_schedulers}, all simulated jobs are plotted with their respective total carbon emissions. Blue indicates that both schedulers, with suspend \& resume and the other without, had similar emissions within 1\%. 
+If the emissions are not equal, red and green dots indicate the respective scheduler performance.
+The remaining parameters are hashed into an integer, as that they had little effect on carbon emissions.
 
 By eye, it can be observed that the carbon savings between the schedulers are consistently minimal for jobs of length up to at least 8 hours and for all jobs with waiting times up to 6 hours.
-There are however, exceptions to this: for example, 8-hour jobs with a waiting time of 2 days exhibit saving potential, but only for jobs with a startup time of less 30 minutes (these are hashed to around 20). This can also be observed for hours of 16 hours but only 6 hours of waiting time.
+There are however, exceptions to this: for example, 8-hour jobs with a waiting time of 2 days exhibit saving potential, but only for jobs with a startup time of less 30 minutes.
 
 The bottom right sub-plot, showing the maximum waiting time and job length, does not follow the column trend of increased savings with increased waiting times. In a few cases, the suspend \& resume scheduler performs \emph{worse}, as can be seen by green dots being above all other dots.
-One explanation for this can be seen in Figure \ref{fig:timelimited_gantt}, showing the scheduling for different job lengths, with a startup time of 5 minutes, a waiting time of 4 days.
-Checking the Slurm logs for the jobs highlighted in red shows that the LP scheduler stopped after hitting the time limit of 20 minutes, only finding a result that is within the constraints but not optimal.
+One explanation for this can be seen in Figure \ref{fig:timelimited_gantt}, showing the scheduling for different job lengths, with a startup time of 5 minutes, and a waiting time of 4 days.
+Checking the Slurm logs for the jobs highlighted in red shows that the LP scheduler stopped after hitting the time limit of 20 minutes.
+A result was found that is within the constraints but is not optimal.
 The gap value introduced in Section \ref{sec:checkpoint_resume_lp}, for these jobs is 100\%.
 In fact, counting the occurrences of \verb|"Time limit reached"| in the logs shows that out of all jobs, 209 timeouts occurred. 
-Since half of the 1200 jobs are LP-scheduled, about a third of them did not find an optimal solution in time.
+Since half of the 2400 jobs are LP-scheduled, about a fifth of them did not find an optimal solution in time.
 The cumulative distribution for the time limited solutions in Figure \ref{fig:ecdf_gap} shows a heavy skew towards bad solutions, if the time limit is not kept.
 
 \begin{figure}
@@ -144,14 +150,14 @@ Despite this, the jobs with a constant power draw and startup costs were still b
 
 \paragraph{Effect of Phases}
 
-To determine whether the differences in power introduced by \modelname{} enable improvements in carbon-aware scheduling, we will use a similar approach to before. We hypothesized that in suspend \& resume scheduling, high-powered phases could be scheduled to the best slots, so we suspect that savings could be different between the scheduling approaches. For Figure \ref{fig:different_phases_no_effect_lol}, we compare each parameter configuration between having a constant power and differing power. Taking the previous assumption of constant power as a baseline, the color of each data point presents the change in carbon in percent. As the scale of the figure suggests, most jobs did not exert any changes in emissions. 
+To determine whether the differences in power introduced by \modelname{} enable improvements in carbon-aware scheduling, we will use a similar approach to before. We hypothesized that in suspend \& resume scheduling, high-powered phases could be scheduled to the best slots, so we suspect that savings could be different between the scheduling approaches. For Figure \ref{fig:different_phases_no_effect_lol}, we compare each parameter configuration between having a constant power and differing power. Taking the previous assumption of constant power as a baseline, the color of each data point represents the change in carbon in percent. As the scale of the figure suggests, most jobs did not exert meaningful changes in emissions. 
 
 Opposite to our intention, some jobs had highly increased carbon emissions from gaining a more detailed power profile.
-One reason we suggest is the same as for the increased emissions in the scheduler comparison before; 16 hour jobs with a waiting time of 4 days ran out of computation time due to the increased complexity from having different phases. 
+One explanation we suggest is the same as for the increased emissions in the scheduler comparison before: 16 hour jobs with a waiting time of 4 days ran out of computation time due to the increased complexity from having different phases. 
 For each such job, the same configuration with a constant assumption would be able to find an optimal schedule, while a non-constant assumption would not.
 
 Even for jobs that found an optimal schedule, the savings are minimal, if any. 
-This is likely due to the design of the evaluation: with a resolution of an hour for the carbon emissions and the phases sharing that resolution, as they are an hour or half an hour long, the averaged assumption is likely too close in this scale. Another reason could be that the chosen carbon trace exhibits a very \emph{wavy} pattern. Unlike the Australian trace used in Section \ref{sec:checkpoint_resume_lp}, the German trace used for this evaluation contains lessened shifts in carbon intensity, likely making scheduling according to phases less worthwhile.
+This is likely due to the design of the evaluation: with a resolution of an hour for the carbon emissions and the phases sharing that resolution, the averaged power is likely too close on this scale. Another reason could be that the chosen carbon trace exhibits a very \emph{wavy} pattern. Unlike the Australian trace used in Section \ref{sec:checkpoint_resume_lp}, the German trace used for this evaluation fewer sudden shifts in carbon intensity, likely making scheduling according to phases less worthwhile.
 
 To summarize, the effects of having heterogeneous power in simulated jobs could not be proven using the proposed evaluation.
 
@@ -167,11 +173,12 @@ To summarize, the effects of having heterogeneous power in simulated jobs could 
 Figure \ref{fig:different_deadlines_normalized} shows the carbon emissions for each job across different waiting times.
 We decided to remove the heterogeneous jobs from these plots, as the chosen parameters had little effect on emissions, instead only causing timeouts. 
 Across the remaining parameters, the relative carbon savings are very close, showing up as a single dot.
-In two instances, there were changes, however: for longer jobs with a waiting time of 2 days, having a startup time of half an hour decreased relative savings. 
+In two instances, there were changes, however.
+For longer jobs with a waiting time of 2 days, having a startup time of half an hour decreased relative savings. 
 
-Jobs shorter than 16 hours, had stagnating savings beyond a waiting time of 12 hours. 
+Jobs shorter than 16 hours had stagnating savings beyond a waiting time of 12 hours. 
 It is likely, that this is a circumstance of the chosen carbon trace.
-The best period is around noon on July 1 (see the bottom graph of Figure \ref{sec:evaluate_scheduling}), which also fits shorter job lengths. 
+The best period is around noon on July 1 (see the bottom graph of Figure \ref{fig:timelimited_gantt}), which also fits shorter job lengths. 
 With a 4 days waiting time, shorter jobs could then again be scheduled on the new lowest carbon emissions period.
 
 \begin{figure}
