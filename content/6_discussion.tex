@@ -79,4 +79,13 @@ If a workload then runs longer, classifying them as suspendible could lead to hy
 
 \section{Conclusion}
 
-paste tense, 
+In our work, we conducted a structured literature review to outline state-of-the-art work on carbon-aware scheduling.
+By conducting power measurements on a machine learning workload, we highlighted shortcomings in the workload model that is used in prior work and inferred our own model.
+Namely, we proposed \modelname{}. 
+It includes startup and work phases with differing power levels.
+We then showcased how \modelname{} can be used in our testbed \programname for two distinct carbon-aware schedulers:
+one simulated the execution of non-suspendible workloads and the other uses linear programming for suspend \& resume scheduling.
+We evaluated the effect of \modelname{} against the state-of-the-art model throughout different parameters.
+We found that, prior findings, such as increased carbon savings through longer workload deadlines in suspend \& resume scheduling, still hold under \modelname{} even under different startup costs.
+The effects of workload phases on carbon emissions will be part of future work. 
+However, with \programname{}, such research can be conducted.

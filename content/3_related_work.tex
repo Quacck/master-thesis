@@ -27,7 +27,7 @@ Depending on if their titles seemed subjectively unfit, some results were skippe
 
 These are then entered into a spreadsheet. 
 With this initial basis, we further explored papers through \emph{connected~papers}~\webcite{web_connectedpapers} or looked up individual authors on a subjective basis. 
-Some papers from the HotCarbon Workshops \webcite{web_hotcarbon} also proved to be related.
+Some papers \cite{hoffmann_improving_2024,jackson_evaluating_2023,hanafy_going_2024} from the HotCarbon Workshops \webcite{web_hotcarbon} also proved to be related.
 We then sort each paper into one of the following categories:
 
 \begin{enumerate}
@@ -36,6 +36,7 @@ We then sort each paper into one of the following categories:
     \item Red, the paper is either irrelevant or has some other flaw. These will not be used again in the course of our work
 \end{enumerate}
 
+\newpage
 \paragraph{Results}
 
 The results are exported as \verb|literature_study.csv| via the appendix \ref{appendix:literature_review_results}. 
@@ -99,6 +100,4 @@ There are multiple approaches to testbeds for carbon-aware job scheduling.
 A common theme is to examine job lengths, arrival times, and deadlines for effects on carbon emissions. 
 Overhead from resuming jobs is considered in some prior work but, atleast to our knowledge, none of them use a time-based overhead for scheduling as well. 
 Power heterogeneity was not included in any of the examined papers.
-
-
-\todo[inline]{Mention GAIA again here}
+Due to this, we will build upon the work of Sukprasert et al. \cite{sukprasert_limitations_2024} and iterate on their GAIA testbed.

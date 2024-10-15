@@ -49,7 +49,7 @@ In our case, pinpoint us run on the device-to-test.
 Machine learning (ML) was used as the main motivation for suspend \& resume scheduling in prior works \cite {wiesner_lets_2021} and thus was also chosen by us to be measured and modeled. 
 
 The concrete model and framework are secondary to our measurement. 
-In our case, a small model, RoBERTa \webcite{web_distilbertdistilroberta-base_2024}, is chosen.
+In our case, a small model, RoBERTa \webcite{web_distilbertdistilroberta-base_2024}\cite{liu2019robertarobustlyoptimizedbert}, is chosen.
 It is a natural language model, that due to its size generates fewer data points for processing, and allows faster iterations for the measurement script. 
 
 There is a vast amount of machine learning frameworks. 
@@ -333,6 +333,6 @@ The total energy predicted by the model is very close to the actual real-life ex
 
 \begin{figure}
     \includegraphics[width=\linewidth]{power-measurements/model_overlaid.pdf}
-    \caption{\modelname{} vs RoBERTa. The black line is the new model we propose and the others lines are individual runs. Each of \modelname{}'s phases is the result of averaging the runs measurements between two events. The length of a phase is similarly derived from the average time of each event.}
+    \caption{Our \modelname{} workload model fit to RoBERTa. The black line is our model workload and the others lines are individual runs of the real program. Each of \modelname{}'s phases is the result of averaging the runs measurements between two events. The length of a phase is similarly derived from the average time of each event.}
     \label{fig:model_overlaid}
 \end{figure}

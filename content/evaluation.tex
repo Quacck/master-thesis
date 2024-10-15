@@ -94,22 +94,22 @@ Waiting times being very significant as well, is consistent with prior literatur
 
 \begin{table}[h!]
     \centering
-    \begin{tabular}{|c|c|c|}
+    \begin{tabular}{|c|c|}
     \hline
-        Parameter & p\_value & p\_value (rounded) \\ \hline
-        Job length & $0.000000e+00$ & $0.00$ \\ \hline
-        Waiting time &  $1.008635e-23$ & $0.00$ \\ \hline
-        Phases &  $1.910669e-04$ & $0.00$ \\ \hline
-        Scheduling Algorithm &  $1.827666e-01$ & $0.18$ \\ \hline
-        Startup power level &  $6.641101e-01$ & $0.66$ \\ \hline
-        Phases averaged or not &  $7.436032e-01$ & $0.74$ \\ \hline
-        Startup length &  $9.885010e-01$ & $0.99$ \\ \hline
+        Parameter & $p$ value\\ \hline
+        Job length & $0.00$ \\ \hline
+        Waiting time  & $0.00$ \\ \hline
+        Phases  & $0.0001$ \\ \hline
+        Scheduling Algorithm  & $0.18$ \\ \hline
+        Startup power level & $0.66$ \\ \hline
+        Phases averaged or not & $0.74$ \\ \hline
+        Startup length & $0.99$ \\ \hline
     \end{tabular}
     \caption{Results of the ANOVA for total carbon emissions per scheduler. The lower the p-value, the higher the impact on carbon emissions.}
 \label{tab:scheduler_anova}
 \end{table}
 
-With these findings, we will visualize jobs grouped by their length and waiting time, as their p-values are effectively zero.
+With these findings, we will visualize jobs grouped by their length and waiting time, as their p-values are effectively zero. 
 In Figure \ref{fig:eval_different_schedulers}, all simulated jobs are plotted with their respective total carbon emissions. Blue indicates that both schedulers, with suspend \& resume and the other without, had similar emissions within 1\%. 
 If the emissions are not equal, red and green dots indicate the respective scheduler performance.
 The remaining parameters are hashed into an integer, as that they had little effect on carbon emissions.
