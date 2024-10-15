@@ -243,9 +243,9 @@ Showing that there indeed is an overhead created from suspending at different pa
     \begin{tabular}{|c|c|c|}
     \hline
         Experiment & average energy cost & standard deviation \\ \hline
-        \ref{experiment:full}, whole run &  12.97 kJ & 0.04 \\ \hline
-        \ref{experiment:partial_checkpointed}, suspend after checkpoint and resume &  13.94  kJ & 0.1 \\ \hline
-        \ref{experiment:partial_checkpointed_aborted}, abort early and resume &  15.72 kJ & 0.07 \\ \hline
+        \ref{experiment:full}, whole run &  12.97 kJ & 0.04~kJ \\ \hline
+        \ref{experiment:partial_checkpointed}, suspend after checkpoint and resume &  13.94  kJ & 0.1~kJ \\ \hline
+        \ref{experiment:partial_checkpointed_aborted}, abort early and resume &  15.72 kJ & 0.07~kJ \\ \hline
     \end{tabular}
     \caption{Energy costs of the different experiments. Unlike the no-overhead assumption in prior work, we can show that suspending a workload does carry overhead.}
 \label{tab:experiment_overhead}
@@ -298,9 +298,8 @@ iterate with event_1 and event_2 pairwise through the events:
         # do this in respect to each run:
         phase_measurements = measurements between pair of events
         phase_power = average of phase_measurements
-        phase_duration = 
-            average time of all event_2
-            - average time of all event_1
+        phase_duration = average time of all event_2
+                        -average time of all event_1
         phases += {phase_duration, phase_power, name of event_2}
         
 manually reorder phases into startup and work
@@ -328,8 +327,9 @@ Interpreting this, it seems that the model performs poorly as a predictor of the
 However, in the context of carbon-aware scheduling, this should not be too big of an issue as the time frames for carbon emissions are orders of magnitudes larger. 
 For example, Electricitymaps has a resolution of 1 hour for carbon emissions intensities. 
 The high error likely comes from the high variance during the training phases which is not captured in the model.
+Slightly faster or slower jobs cause the phases to mismatch as well, introducing error.
 
-The total energy predicted by the model is very close to the actual real-life experiment, this should mean that the total carbon calculated on the model should also be close to the carbon emitted by the real program.
+The total energy predicted by the model is very close to the actual real-life experiment, this means that the total carbon calculated on the model is also close to the carbon emitted by the real program.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{power-measurements/model_overlaid.pdf}

@@ -19,7 +19,7 @@ While there is a Slurm \verb|apt get| package for Ubuntu, extending this with pl
 Plugins need to be included during the Slurm compilation, meaning we had to do the same.
 
 Slurm's documentation provides some guidelines on how to install Slurm, which we followed. 
-We tried cloning the main branch, but the compilation process encountered an error midway. However, using the predefined released versions worked.
+We tried cloning the main branch, but the compilation process encountered an error midway. However, using the release version 23.11 worked.
 Installing \verb|munge| \webcite{web_munge} is also necessary, which is used for authentication in Slurm.
 
 One problem arose as we tried to start the \verb|Slurmd|- and \verb|Slurmctld| services. The first one is the worker service that later executes jobs submitted to Slurm. The latter is the main controller that, for example, schedules jobs on workers. While the command to start them did not fail, when inspecting all nodes via Slurm's \verb|scontrol| command, it showed that all nodes were \verb|DOWN| instantly.
@@ -89,7 +89,7 @@ While this had the effect of being able to access all incoming jobs inside the p
 So by choosing this route, the plugin needs to re-implement a lot of extra logic, which conventionally is not inside the scheduler plugin. 
 
 We also looked into whether there were any API hooks that are exposed to the plugin. 
-Up until Slurm version 20.11, scheduler plugins had callbacks\webcite{web_slurm_plugin_old} such as a job just getting submitted. 
+Up until Slurm version 20.11, scheduler plugins had callbacks \webcite{web_slurm_plugin_old} such as a job just getting submitted. 
 There also was support for \emph{passive} schedulers that were invoked when determined by Slurm.
 The version we used, however,  23.11, removed all such functionality and documentation \webcite{web_slurm_plugin_current}.  
 Now, all plugins are implemented via threads that only have callbacks for when they are started and stopped.
@@ -162,7 +162,7 @@ The first step to be taken was to add the described model to the jobs as outline
 In GAIA, jobs were generated from \verb|csv|-formatted traces, one example being provided in Listing~\ref{list:trace_csv}.
 
 \begin{minipage}{\linewidth}
-\begin{lstlisting}[frame=single, numbers=none, caption={Excerpt from the Alibaba-PAI cluster trace}, label={list:trace_csv}, basicstyle=\ttfamily]
+\begin{lstlisting}[frame=single, numbers=none, caption={Excerpt from GAIA's Alibaba-PAI cluster trace}, label={list:trace_csv}, basicstyle=\ttfamily]
 arrival_time,   length,     cpus
 0.0,            6302.0,     1
 68.0,           1000.0,     1
@@ -301,7 +301,7 @@ We used Python's \verb|PuLP| library, which allows creating LP models to standar
 Firstly, as the job has a certain length and a set deadline, we chose to use an array of time slot variables for the result set. Each such variable is a boolean signifying whether the job is executed at that time.
 For the first constraint, the sum of all boolean variables (which are represented as 0 and 1) should add up to the job length, effectively executing the job for length-many time slots.
 The necessary objective function is to be defined as each time slot being executed multiplied by the carbon-per-watt at that time slot.
-The code for this is shown in Listing~\ref{fig:lp_work}.
+The code for this is shown in Listing~\ref{list:lp_work}.
 
 \begin{minipage}{\linewidth}
 \begin{lstlisting}[frame=single, numbers=left, caption={LP Implementation for basic scheduling}, label={list:lp_work}, basicstyle=\ttfamily, breaklines]
