@@ -125,7 +125,7 @@ The gap value introduced in Section \ref{sec:checkpoint_resume_lp}, for these jo
 In fact, counting the occurrences of \verb|"Time limit reached"| in the logs shows that out of all jobs, 209 timeouts occurred. 
 
 \begin{figure}[H]
-    \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_schedulers.pdf}
+    \includegraphics[width=\linewidth]{carbs/notebooks/eval_same_job_different_schedulers.pdf}
     \caption[short]{All simulated jobs and their total carbon emissions, compared between the two scheduling approaches. Blue indicates equal emissions, red and green differentiate the schedulers. The combination of startup length, startup power and phases is encoded on the x-axis. Savings from adopting a suspend \& resume strategy are only noticeable for very long jobs with long waiting times.}
     \label{fig:eval_different_schedulers}
 \end{figure}
@@ -133,7 +133,7 @@ In fact, counting the occurrences of \verb|"Time limit reached"| in the logs sho
 Since half of the 2400 jobs are LP-scheduled, about a sixth of them did not find an optimal solution in time.
 
 \begin{figure}[H]
-    \includegraphics[width=\linewidth]{GAIA/notebooks/timelimited_gantt.pdf}
+    \includegraphics[width=\linewidth]{carbs/notebooks/timelimited_gantt.pdf}
     \caption[short]{Schedules of jobs sharing all parameters but length under different schedulers. All jobs have a waiting time of 4 days and a startup time of 5 minutes and an uneven phase configuration. The red bars are suboptimal schedules that are found upon being time limited.}
     \label{fig:timelimited_gantt}
 \end{figure}
@@ -141,7 +141,7 @@ Since half of the 2400 jobs are LP-scheduled, about a sixth of them did not find
 The cumulative distribution for the time limited solutions in Figure \ref{fig:ecdf_gap} shows a heavy skew towards bad solutions, if the time limit is not kept.
 
 \begin{figure}[H]
-    \includegraphics[width=\linewidth]{GAIA/slurmlogs/gap_value_ecdf.pdf}
+    \includegraphics[width=\linewidth]{carbs/slurmlogs/gap_value_ecdf.pdf}
     \caption[short]{Cumulative distribution plot of the 209 gap values of time limited schedules. A higher gap indicates worse results. There is a heavy skew to 100\%, with half of the values being above 95\%}
     \label{fig:ecdf_gap}
 \end{figure}
@@ -156,7 +156,7 @@ To determine whether the differences in power introduced by \modelname{} enable 
 For Figure \ref{fig:different_phases_no_effect_lol}, we compare each parameter configuration between having a constant power and differing power. Taking the previous assumption of constant power as a baseline, the color of each data point represents the change in carbon in percent. As the scale of the figure suggests, most jobs did not exert meaningful changes in emissions. 
 
 \begin{figure}[H]
-    \includegraphics[width=\linewidth]{GAIA/notebooks/eval_same_job_different_phases.pdf}
+    \includegraphics[width=\linewidth]{carbs/notebooks/eval_same_job_different_phases.pdf}
     \caption[short]{Difference in carbon emissions from having heterogeneous phases instead of a constant average. For the majority of jobs, this had an effect of ±1\%. Red signifies jobs, where this increased carbon emissions. For suspend \& resume scheduling, some jobs had highly increased emissions. These are likely the result of to time-outs due to increased complexity}
 
     \label{fig:different_phases_no_effect_lol}
@@ -180,7 +180,7 @@ In two instances, there were changes, however.
 For longer jobs with a waiting time of 2 days, having a startup time of half an hour decreased relative savings. 
 
 \begin{figure}[H]
-    \includegraphics[width=\linewidth]{GAIA/notebooks/normalized_deadlines.pdf}
+    \includegraphics[width=\linewidth]{carbs/notebooks/normalized_deadlines.pdf}
     \caption[short]{
         Normalized carbon emissions with the baseline being a wait time of 6 hours for each constant-power job. 
         There are small difference for jobs with a startup length of 30 minutes but for the most part, there is no difference across the remaining parameters.

@@ -23,6 +23,13 @@ Performance impacts due to shared hardware is also not part of \modelname{}.
 In the context of long workloads and parallel execution, the clean-cut phases we observed on a single machine and a short job may 
 not hold in HPC environments.
 
+The effects of a baseline power in \modelname{} need further examination as well.
+In our evaluation, we have decided not to exclude a baseline power. There, the startup costs where either 100 W or 300 W. As we observed for \verb|RoBERTa| in Section~\ref{sec:power_measurements}, the increase in power during startup was minimal. 
+We argue that by using an unrestricted power-per-phase model, different use cases could be explored:
+Including the baseline inside \modelname{} could be used to simulate settings where a machine would otherwise be turned off. 
+Excluding the baseline could be used to simulate scheduling workloads on otherwise idling machines.
+
+
 \section{\programname{}}
 
 We iterated on an existing testbed, GAIA.
@@ -52,10 +59,6 @@ Running a sample evaluation for select parameters should also have been done.
 As of now, the impact of our used parameters on the resulting LP complexity is not entirely clear.
 A runtime analysis on \programname{}' LP scheduler could be a guide on what can be scheduled.
 
-\section{Conclusion}
-
-
-
 \section{Future Work} \label{sec:future_work}
 
 There are several avenues for future work.
@@ -73,3 +76,5 @@ Köhler et al. \cite{kohler_recognizing_2021} classify workloads based on power 
 On live systems, such an approach could be used to opt-in to a suspend \& resume strategy. 
 We found that short jobs exhibit little potential carbon savings. 
 If a workload then runs longer, classifying them as suspendible could lead to hybrid scheduling strategies.  
+
+\section{Conclusion}

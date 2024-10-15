@@ -70,7 +70,7 @@ We then added a \emph{hello~world} logging to the new plugin. Upon inspecting th
 \paragraph{Adding More Logic to the Scheduler Plugin}
 
 One very helpful step for developing inside Slurm is to enable the debugging flags.
-This must be decided before compilation by using the \verb|--enable-developer| and \verb|--disable-optimizations| flags during the \verb|configure| step. 
+This must be decided before compilation by using the \verb|--enable-developer| and \verb|--disable-optimizations| flags during the \verb|./configure| step. 
 With that, debug symbols are added to the outgoing binaries. 
 As we were using VS Code, we could then attach its debugger to the running Slurm thread with full functionality.
 
@@ -329,7 +329,7 @@ The above code leads to a result set that is visualized in Figure \ref{fig:lp_wo
 Looking at the figure, the results are not too surprising: the chosen time slots are just the points where emissions are lowest, essentially being equal to the result of the WaitAWhile-Algorithm.
 
 \begin{figure}[H]
-    \includegraphics[width=\linewidth]{GAIA/notebooks/lp_work.pdf}
+    \includegraphics[width=\linewidth]{carbs/notebooks/lp_work.pdf}
     \caption{Resulting schedule using the first iteration of the LP scheduler. Each time slot, with its corresponding carbon intensity, is assigned to be worked or not. As this iteration has no notion of startup-costs, only the lowest time slots are used with many suspends in between.}
     \label{fig:lp_work}
 \end{figure}    
@@ -383,7 +383,7 @@ This time, the optimal schedule includes executing the job in one go, as shown i
 Doing a visual check, the job is also executed on seemingly the lowest carbon intensities.
 
 \begin{figure}
-    \includegraphics[width=\linewidth]{GAIA/notebooks/lp_overhead.pdf}
+    \includegraphics[width=\linewidth]{carbs/notebooks/lp_overhead.pdf}
     \caption{The schedule of the second iteration. In addition to time slots being assigned for work, a startup phase must also be scheduled before work can begin. The light-green mark indicates a helper variable, used for this mechanic. In comparison to the previous figure, there is now one long, connected, block where the job is worked on, as resuming a job carries an extra cost.}
     \label{fig:lp_overhead}
 \end{figure}
@@ -423,7 +423,7 @@ for t in range(DEADLINE-1):
 Basically, the idea is to count up each progress variables by 1, if a time slot is being determined for work or startup respectively (see line 12 for this).
 
 \begin{figure}[H]
-    \includegraphics[width=\linewidth]{GAIA/notebooks/lp_progress.pdf}
+    \includegraphics[width=\linewidth]{carbs/notebooks/lp_progress.pdf}
     \caption{Visualisation of the result set after adding progress indicators. For either starting up or working, count up a respective integer variable. These do no yet impact the schedule itself, compared to Figure \ref{fig:lp_overhead}. Progress is kept even when idling.}
     \label{fig:lp_progress}
 \end{figure}
@@ -493,7 +493,7 @@ Unlike the previous times, splitting the job up into two parts is now the optima
 Attention should be drawn to the circumstance that the purple high-powered phase is scheduled on the lowest carbon emissions while the low-powered one is scheduled on the higher emission time slots.
 
 \begin{figure}
-    \includegraphics[width=\linewidth]{GAIA/notebooks/lp_states.pdf}
+    \includegraphics[width=\linewidth]{carbs/notebooks/lp_states.pdf}
     \caption{The final scheduling including differing power levels according to phases. In this example, there is a high-powered phase at 230 W and a low powered phase at 100 W. Unlike before, it is now optimal to suspend \& resume the job to schedule the high-powered phase on the least carbon intensive time slots (170 to 200)}
     \label{fig:lp_states}
 \end{figure}

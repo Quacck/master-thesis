@@ -1,0 +1,146 @@
+keyword1,keyword2,title,category
+,,On the Limitations of Carbon-Aware Temporal and Spatial Workload Shifting in the Cloud,green
+energy consumption,datacenter,Green energy efficient scheduling management,green
+energy consumption,datacenter,Smartly Handling Renewable Energy Instability in Supporting A Cloud Datacenter,green
+energy consumption,job management,Towards Energy Budget Control in HPC,green
+carbon impact,job management,Sustainability in HPC: Vision and Opportunities,green
+carbon impact,load balancing,iSwitch: coordinating and optimizing renewable energy powered server clusters,green
+carbon impact,load balancing,GEECO: Green Data Centers for Energy Optimization and Carbon Footprint Reduction,green
+carbon impact,load balancing,The Sky is Not the Limit: Untapped Opportunities for Green Computing,green
+carbon impact,datacenter,Treehouse: A Case For Carbon-Aware Datacenter Software,green
+energy efficiency,job shop,Energy-Efficient Scheduling in Job Shop Manufacturing Systems: A Literature Review,green
+hotcarbon,2023,The War of the Efficiencies: Understanding the Tension between Carbon and Energy Optimization,green
+energy efficiency,compute cluster,"Energy efficient computing, clusters, grids and clouds: A taxonomy and survey",green
+energy consumption,slurm,Automatic Energy-Efficient Job Scheduling in HPC: A Novel SLURM Plugin Approach,green
+energy efficiency,scheduling,A review of energy-efficient scheduling in intelligent production systems,green
+,,Let’s Wait Awhile: How Temporal Workload Shifting Can Reduce Carbon Emissions in the Cloud.,green
+carbon impact,datacenter,Zero-carbon Compute Project,orange
+carbon impact,datacenter,Carbon Emissions and Large Neural Network Training,orange
+energy consumption,slurm,HDEEM: High Definition Energy Efficiency Monitoring,orange
+carbon impact,scheduling,Chasing Carbon: The Elusive Environmental Footprint of Computing,orange
+energy consumption,slurm,Energy Accounting and Control with SLURM Resource and Job Management System,orange
+hotcarbon,2023,When Does Saving Power Save the Planet?,orange
+carbon impact,cloud,A systematic review on effective energy utilization management strategies in cloud data centers,orange
+carbon impact,cloud,Measuring the Carbon Intensity of AI in Cloud Instances,orange
+energy consumption,hpc,Modeling CPU Energy Consumption of HPC Applications on the IBM POWER7,orange
+carbon impact,load balancing,"Improving Carbon, Cost, and Energy Efficiency of Large Scale Systems via Workload Analysis",orange
+,,Ecovisor: A Virtual Energy System for Carbon-Efficient Applications,orange
+energy consumption,job management,Adaptive Resource and Job Management for Limited Power Consumption,orange
+,,Introduction to energy-efficient resource management with SLURM and plugin development,orange
+carbon impact,hpc,On the environmental impact of High Performance Computing,orange
+,,FedZero: Leveraging Renewable Excess Energy in Federated Learning,orange
+energy consumption,load balancing,Cloud Load Balancing Techniques : A Step Towards Green Computing,orange
+,,A Testbed for Carbon-Aware Applications and Systems,orange
+,,Not All Doom and Gloom: How Energy-Intensive and Temporally Flexible Data Center Applications May Actually Promote Renewable Energy Sources,orange
+,,Renewable energy certificates threaten the integrity of corporate science-based targets,orange
+energy consumption,compute cluster,Towards Energy Aware Scheduling for Precedence Constrained Parallel Tasks in a Cluster with DVFS,orange
+energy consumption,scheduling,A Predictive Energy Consumption Scheduling Algorithm for Multiprocessor Heterogeneous System,orange
+energy consumption,slurm,ScSF: A Scheduling Simulation Framework,orange
+energy consumption,compute cluster,Scheduling Batch and Heterogeneous Jobs with Runtime Elasticity in a Parallel Processing Environment,orange
+energy efficiency,job management,A Survey and Taxonomy of Energy Efficiency Relevant Surveys in Cloud-Related Environments,orange
+green energy,job shop,Green scheduling to achieve green manufacturing: Pursuing a research agenda by mapping science,orange
+energy efficiency,job management,"Data Center, a Cyber-Physical System: Improving Energy Efficiency Through the Power Management",orange
+energy efficiency,job management,Contributions for Resource and Job Management in High Performance Computing,orange
+energy efficiency,job shop,Energy-Efficient Job-Shop Dynamic Scheduling System Based on the Cyber-Physical Energy-Monitoring System,orange
+energy efficiency,job shop,Energy- and labor-aware flexible job shop scheduling under dynamic electricity pricing: A many-objective optimization investigation,orange
+hotcarbon,2023,Myths and Misconceptions Around Reducing Carbon Embedded in Cloud Platforms,orange
+energy efficiency,job shop,Dynamic Load Scheduling for Energy Efficiency in a Job Shop with On-site Wind Mill for Energy Generation,orange
+energy consumption,cloud,Optimizing Energy Consumption for Cloud Internet of Things,red
+energy consumption,load balancing,Load Balancing and Unbalancing for Power and Performance in Cluster-Based Systems,red
+energy consumption,load balancing,Load balancing techniques: Major challenge in Cloud Computing - a systematic review,red
+hotcarbon,2023,Peeling Back the Carbon Curtain: Carbon Optimization Challenges in Cloud Computing,red
+hotcarbon,2023,Does rate adaptation at daily timescales make sense?,red
+energy consumption,load balancing,COMPARISON OF ACO AND PSO ALGORITHM USING ENERGY CONSUMPTION AND LOAD BALANCING IN EMERGING MANET AND VANET INFRASTRUCTURE,red
+energy consumption,compute cluster,Energy-aware parallel task scheduling in a cluster,red
+energy consumption,load balancing,Energy-Efficient Web Server Load Balancing,red
+hotcarbon,2023,Bringing Carbon Awareness to Multi-cloud Application Delivery,red
+energy consumption,job management,Spatio-temporal thermal-aware job scheduling to minimize energy consumption in virtualized heterogeneous data centers,red
+,,Carbon-Aware Computing for Datacenters,red
+hotcarbon,2023,EnergAt: Fine-Grained Energy Attribution for Multi-Tenancy,red
+energy consumption,job management,A green scheduling algorithm for flexible job shop with energy-saving measures,red
+hotcarbon,2023,An Agile Pathway Towards Carbon-aware Clouds,red
+energy consumption,job shop,A shuffled frog-leaping algorithm for flexible job shop scheduling with the consideration of energy consumption,red
+,,Optimal Algorithms and An Application to Carbon-Aware Load Shifting.,red
+energy consumption,job management,Energy-Aware Job Management Approaches for Workflow in Cloud,red
+energy efficiency,job shop,"Energy efficiency, robustness, and makespan optimality in job-shop scheduling problems",red
+,,How Temporal Workload Shifting Can Reduce Carbon Emissions in the Cloud.,red
+energy efficiency,job shop,A metaheuristic technique for energy-efficiency in job-shop scheduling,red
+energy efficiency,job shop,"A fuzzy bi-objective flexible cell scheduling optimization model under green and energy-efficient strategy using Pareto-based algorithms: SATPSPGA, SANRGA, and NSGA-II",red
+energy efficiency,job shop,A New Energy-Aware Flexible Job Shop Scheduling Method Using Modified Biogeography-Based Optimization,red
+energy consumption,job shop,An Agent-based Approach for Manufacturing Production Scheduling with Emission Consideration,red
+energy consumption,placement,Modulo Based Data Placement Algorithm for Energy Consumption Optimization of MapReduce System,red
+energy consumption,job shop,Energy-efficient approach to minimizing the energy consumption in an extended job-shop scheduling problem,red
+energy consumption,placement,Energy-Efficient Virtual Machine Placement in Data Centers by Genetic Algorithm,red
+energy consumption,job shop,An Improved Scheduling Approach for Minimizing Total Energy Consumption and Makespan in a Flexible Job Shop Environment,red
+energy consumption,job shop,Optimizing the Low-Carbon Flexible Job Shop Scheduling Problem Considering Energy Consumption,red
+energy consumption,hpc,Modeling Power and Energy Usage of HPC Kernels,red
+energy consumption,hpc,Prediction of Energy Consumption by Checkpoint/Restart in HPC,red
+energy consumption,hpc,Predicting the Energy and Power Consumption of Strong and Weak Scaling HPC Applications,red
+,,Sustainable Computing -- Without the Hot Air,red
+energy consumption,hpc,Energy-Efficient Scheduling of HPC Applications in Cloud Computing Environments,red
+energy consumption,placement,Intra-Balance Virtual Machine Placement for Effective Reduction in Energy Consumption and SLA Violation,red
+energy consumption,placement,A solution of dynamic VMs placement problem for energy consumption optimization based on evolutionary game theory,red
+energy efficiency,datacenter,Beyond Energy-Efficiency: Evaluating Green Datacenter Applications for Energy-Agility,red
+energy consumption,scheduling,Load Scheduling for Household Energy Consumption Optimization,red
+energy efficiency,hpc,FPGA-based HPC accelerators: An evaluation on performance and energy efficiency,red
+energy efficiency,hpc,"HPC Performance and Energy-Efficiency of Xen, KVM and VMware Hypervisors",red
+energy efficiency,hpc,HPC Performance and Energy-Efficiency of the OpenStack Cloud Middleware,red
+energy efficiency,hpc,"Performance Evaluation and Energy Efficiency of High-Density HPC Platforms Based on Intel, AMD and ARM Processors",red
+energy efficiency,hpc,"A Survey into Performance and Energy Efficiency in HPC, Cloud and Big Data Environments",red
+energy efficiency,job management,Energy-Aware Job Management Approaches for Workflow in Cloud,red
+energy efficiency,load balancing,An adaptive clustering approach to dynamic load balancing and energy efficiency in wireless sensor networks,red
+energy efficiency,load balancing,A heuristic technique to improve energy efficiency with dynamic load balancing,red
+energy efficiency,load balancing,Energy Efficiency and Load Balancing in MANET: A Survey,red
+energy efficiency,load balancing,Energy efficiency of load balancing for data-parallel applications in heterogeneous systems,red
+energy efficiency,cloud,Energy efficiency in cloud computing data centers: a survey on software technologies,red
+energy efficiency,cloud,A review of energy efficiency evaluation technologies in cloud data centers,red
+energy efficiency,cloud,Adaptive Computational Solutions to Energy Efficiency in Cloud Computing Environment Using VM Consolidation,red
+energy efficiency,cloud,Energy Efficiency for Cloud Computing Applications: A Survey on the Recent Trends and Future Scopes,red
+energy efficiency,cloud,Managing overloaded hosts for energy-efficiency in cloud data centers,red
+energy efficiency,compute cluster,An Empirical Study of Hadoop's Energy Efficiency on a HPC Cluster,red
+energy efficiency,compute cluster,eeClust: Energy-Efficient Cluster Computing,red
+energy efficiency,compute cluster,An Energy Efficiency Optimization and Control Model for Hadoop Clusters,red
+energy efficiency,compute cluster,"GreenHDFS: Towards An Energy-Conserving, Storage-Efﬁcient, Hybrid Hadoop Compute Cluster",red
+energy efficiency,scheduling,Optimal Scheduling of Demand Side Load Management of Smart Grid Considering Energy Efficiency,red
+energy efficiency,scheduling,A genetic algorithm for energy-efficiency in job-shop scheduling,red
+energy efficiency,scheduling,Integrating process optimization with energy-efficiency scheduling to save energy for paper mills,red
+energy efficiency,scheduling,Resource-conscious scheduling for energy efficiency on multicore processors,red
+energy efficiency,datacenter,Viability of datacenter cooling systems for energy efficiency in temperate or subtropical regions: Case study,red
+energy efficiency,datacenter,Evaluation of the Heat and Energy Performance of a Datacenter Using a New Efficiency Index: Energy Usage Effectiveness Design – EUED.,red
+energy efficiency,datacenter,Energy Efficiency for Data Center and Cloud Computing: A Literature Review,red
+energy efficiency,datacenter,Energy Efficiency Dilemma: P2P-cloud vs. Datacenter,red
+energy efficiency,placement,Dynamic VMs placement for energy efficiency by PSO in cloud computing,red
+energy consumption,scheduling,Incentive-Based Energy Consumption Scheduling Algorithms for the Smart Grid,red
+energy efficiency,placement,Energy Aware Grid: Global Workload Placement Based on Energy Efficiency,red
+energy efficiency,placement,Improved energy-efficiency in cloud datacenters with interference-aware virtual machine placement,red
+energy consumption,scheduling,Dynamic Pricing and Energy Consumption Scheduling With Reinforcement Learning,red
+energy consumption,scheduling,Tackling the Load Uncertainty Challenges for Energy Consumption Scheduling in Smart Grid,red
+energy consumption,datacenter,Energy-aware and revenue-enhancing Combinatorial Scheduling in Virtualized of Cloud Datacenter,red
+energy consumption,datacenter,Structure-aware online virtual machine consolidation for datacenter energy improvement in cloud computing,red
+energy consumption,datacenter,EQVMP: Energy-efficient and QoS-aware virtual machine placement for software defined datacenter networks,red
+energy consumption,datacenter,Energy- and locality-efficient multi-job scheduling based on MapReduce for heterogeneous datacenter,red
+carbon impact,placement,Increasing Distribution Network Capacity using Automation to Reduce Carbon Impact,red
+carbon impact,placement,Increasing the Consumption of Environmentally Friendly Foods in a University Dining Hall Using Menu Item Placement,red
+carbon impact,placement,Carbon-Aware Memory Placement,red
+carbon impact,hpc,Evaluating Total Environmental Impact for a Computing Infrastructure,red
+carbon impact,job management,Operating policies for energy efficient large scale computing,red
+carbon impact,job management,DISTRIBUTED FPGA-BASED ACCELERATION OF BIG DATA ANALYTICS IN THE DATA CENTER ENVIRONMENT,red
+carbon impact,load balancing,Cost-Effective and Energy-Aware Resource Allocation in Cloud Data Centers,red
+carbon impact,load balancing,Using geographic load shifting to reduce carbon emissions,red
+carbon impact,load balancing,Increased Traffic Efficiency in Green Communication by using a New Load Balancing Technique,red
+carbon impact,cloud,The carbon impact of artificial intelligence,red
+carbon impact,cloud,"DELIVERING EARLY, CONTEXTUALIZED GUIDANCE REGARDING CLOUD CARBON FOOTPRINT",red
+carbon impact,cloud,Optimal sizing of a globally distributed low carbon cloud federation,red
+carbon impact,compute cluster,alt,red
+carbon impact,compute cluster,Power Hungry Processing: Watts Driving the Cost of AI Deployment?,red
+carbon impact,scheduling,Green Cloud Computing: A Review on Adoption of Green-Computing attributes and Vendor Specific Implementations,red
+carbon impact,scheduling,Location selection of agricultural Machinery sheds for improved scheduling and efficiency under sustainability goals,red
+carbon impact,scheduling,Assessing the carbon impact of a data centre server for video streaming,red
+carbon impact,scheduling,Robust energy systems scheduling considering uncertainties and demand side emission impacts,red
+carbon impact,datacenter,New consumer-dependent energy management system to reduce cost and carbon impact in smart buildings,red
+carbon impact,datacenter,Reducing the Carbon Impact of Generative AI Inference (today and in 2035),red
+energy efficiency,placement,EnaCloud: An Energy-Saving Application Live Placement Approach for Cloud Computing Environments,red
+energy efficiency,placement,Optimal Placement of Relay Nodes for Energy Efficiency in Sensor Networks,red
+energy consumption,datacenter,Energy-Efficient virtual machine allocation technique using interior search algorithm for cloud datacenter,red
+carbon impact,compute cluster,A Short History of Cloud Computing,
+carbon impact,compute cluster,The Green and Virtual Data Center,
