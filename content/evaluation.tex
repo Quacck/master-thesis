@@ -35,7 +35,7 @@ As previously discussed in Section \ref{sec:checkpoint_resume_lp}, LP scheduling
 For that reason, the simulation was executed on the \emph{SCORE Lab}, short for \emph{scientific compute resources}, of HPI.
 
 After requesting and gaining access, \verb|rsync| was used to transfer the simulation to the cluster. 
-Slurm could then be used to schedule all experiments individually (that were generated using the mentioned \verb|generate_all_jobs.sh| script), which would parallelize the evaluation, leading to faster results.
+We intended to schedule all experiments individually (that were generated using the mentioned \verb|generate_all_jobs.sh| script), which parallelizes the evaluation, leading to faster results.
 
 One problem arose in the licensing of the used \emph{Gurobi} solver. 
 Under our academic license, only 2 \emph{sessions} are allowed simultaneously.
@@ -84,7 +84,7 @@ In sum, 2400 jobs were simulated with differing parameters.
 
 \paragraph{Effect of Suspend-Resume Scheduling}
 
-In the introductory research questions, we surmised that the effects of suspend-resume scheduling may be lessened under a model that contains startup costs for resuming. 
+In the introductory research questions, we hypothesized that the effects of suspend-resume scheduling may be lessened under a model that contains startup costs for resuming. 
 To answer this, we first calculate the total carbon emissions for each job under different schedulers. The GAIA and \programname{} output includes multiple entries per job if they get paused, so they get aggregated into the total.
 
 With this, we first run an ANOVA to determine the axis under which to explore the data. Table \ref{tab:scheduler_anova}, shows that the length and phases of a job impact carbon emissions significantly.
@@ -114,19 +114,19 @@ In Figure \ref{fig:eval_different_schedulers}, all simulated jobs are plotted wi
 If the emissions are not equal, red and green dots indicate the respective scheduler performance.
 The remaining parameters are hashed into an integer, as that they had little effect on carbon emissions.
 
-By eye, it can be observed that the carbon savings between the schedulers are consistently minimal for jobs of length up to at least 8 hours and for all jobs with waiting times up to 6 hours.
+It can be observed that the carbon savings between the schedulers are consistently minimal for jobs of length up to at least 8 hours and for all jobs with waiting times up to 6 hours.
 There are however, exceptions to this: for example, 8-hour jobs with a waiting time of 2 days exhibit saving potential, but only for jobs with a startup time of less 30 minutes.
 
 The bottom right sub-plot, showing the maximum waiting time and job length, does not follow the column trend of increased savings with increased waiting times. In a few cases, the suspend \& resume scheduler performs \emph{worse}, as can be seen by green dots being above all other dots.
 One explanation for this can be seen in Figure \ref{fig:timelimited_gantt}, showing the scheduling for different job lengths, with a startup time of 5 minutes, and a waiting time of 4 days.
-Checking the Slurm logs for the jobs highlighted in red shows that the LP scheduler stopped after hitting the time limit of 20 minutes.
+Checking the Slurm logs for the jobs highlighted in red shows that the LP scheduler stopped after reaching the time limit of 20 minutes.
 A result was found that is within the constraints but is not optimal.
 The gap value introduced in Section \ref{sec:checkpoint_resume_lp}, for these jobs is 100\%.
 In fact, counting the occurrences of \verb|"Time limit reached"| in the logs shows that out of all jobs, 209 timeouts occurred. 
 
 \begin{figure}[H]
     \includegraphics[width=\linewidth]{carbs/notebooks/eval_same_job_different_schedulers.pdf}
-    \caption[short]{All simulated jobs and their total carbon emissions, compared between the two scheduling approaches. Blue indicates equal emissions, red and green differentiate the schedulers. The combination of startup length, startup power and phases is encoded on the x-axis. Savings from adopting a suspend \& resume strategy are only noticeable for very long jobs with long waiting times.}
+    \caption[short]{All simulated jobs and their total carbon emissions, compared between the two scheduling approaches. Blue indicates equal emissions, red and green differentiate the schedulers. The combination of startup length, startup power and phases is encoded on the horizontal axis. Savings from adopting a suspend \& resume strategy are only noticeable for very long jobs with long waiting times.}
     \label{fig:eval_different_schedulers}
 \end{figure}
 
@@ -150,14 +150,14 @@ Despite this, the jobs with a constant power draw and startup costs were still b
 
 \paragraph{Effect of Phases}
 
-To determine whether the differences in power introduced by \modelname{} enable improvements in carbon-aware scheduling, we will use a similar approach to before. We hypothesized that in suspend \& resume scheduling, high-powered phases could be scheduled to the best slots, so we suspect that savings could be different between the scheduling approaches. 
+To determine whether the differences in power introduced by \modelname{} enable improvements in carbon-aware scheduling, we will use a similar approach to before. We hypothesized that in suspend \& resume scheduling, high-powered phases could be scheduled to the best slots.
 
 \newpage
 For Figure \ref{fig:different_phases_no_effect_lol}, we compare each parameter configuration between having a constant power and differing power. Taking the previous assumption of constant power as a baseline, the color of each data point represents the change in carbon in percent. As the scale of the figure suggests, most jobs did not exert meaningful changes in emissions. 
 
 \begin{figure}[H]
     \includegraphics[width=\linewidth]{carbs/notebooks/eval_same_job_different_phases.pdf}
-    \caption[short]{Difference in carbon emissions from having heterogeneous phases instead of a constant average. For the majority of jobs, this had an effect of ±1\%. Red signifies jobs, where this increased carbon emissions. For suspend \& resume scheduling, some jobs had highly increased emissions. These are likely the result of to time-outs due to increased complexity}
+    \caption[short]{Difference in carbon emissions from having heterogeneous phases instead of a constant average. For the majority of jobs, this had an effect of ±1\%. Red signifies jobs, where this increased carbon emissions. For suspend \& resume scheduling, some jobs had highly increased emissions. These are likely the result of to time-outs due to increased complexity. The scale starts at 95\% because that was the best reduction.}
 
     \label{fig:different_phases_no_effect_lol}
 \end{figure}
@@ -168,8 +168,6 @@ For each such job, the same configuration with a constant assumption would be ab
 
 Even for jobs that found an optimal schedule, the savings are minimal, if any. 
 This is likely due to the design of the evaluation: with a resolution of an hour for the carbon emissions and the phases sharing that resolution, the averaged power is likely too close on this scale. Another reason could be that the chosen carbon trace exhibits a very \emph{wavy} pattern. Unlike the Australian trace used in Section \ref{sec:checkpoint_resume_lp}, the German trace used for this evaluation had fewer sudden shifts in carbon intensity, likely making scheduling according to phases less worthwhile.
-
-To summarize, the effects of having heterogeneous power in simulated jobs could not be proven using the proposed evaluation.
 
 \paragraph{Effect of Waiting Times}
 
