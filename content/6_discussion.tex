@@ -12,23 +12,19 @@ Using a constant per phase is a big simplification, however.
 The main motivation for this was to reduce complexity in the LP suspend \& resume scheduler.
 We also argue that in the context of the low carbon-emission resolutions, this is appropriate.
 
-A drawback of \modelname{} is that power used outside the job is not captured at all.
-In a real-world cloud scenario, there will be e.g. be VM startup times \cite{zheng_benchmarking_2019}.
-Also, we assume workloads to be executed in an isolated matter. 
+A drawback of \modelname{} is our assumption that workloads are executed in an isolated matter. 
 Thus, each workload under \modelname{} increases power and carbon emissions linearly.
 On real-world hardware however, servers have a baseline energy demand. 
 Sharing resources and increasing utilization of a server increases energy efficiency \cite{barroso_case_2007}. 
 Performance impacts due to shared hardware is also not part of \modelname{}.
 
-In the context of long workloads and parallel execution, the clean-cut phases we observed on a single machine and a short job may 
-not hold in HPC environments.
+In the context of long workloads and parallel execution, the clean-cut phases we observed on a single machine and a short job may not appear in HPC environments.
 
-The effects of a baseline power in \modelname{} need further examination as well.
+The effects of the baseline power in \modelname{} need further examination as well.
 In our evaluation, we have decided not to exclude a baseline power. There, the startup costs where either 100 W or 300 W. As we observed for \verb|RoBERTa| in Section~\ref{sec:power_measurements}, the increase in power during startup was minimal. 
 We argue that by using an unrestricted power-per-phase model, different use cases could be explored:
 Including the baseline inside \modelname{} could be used to simulate settings where a machine would otherwise be turned off. 
 Excluding the baseline could be used to simulate scheduling workloads on otherwise idling machines.
-
 
 \section{\programname{}}
 

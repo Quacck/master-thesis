@@ -5,14 +5,24 @@
 \begin{otherlanguage}{english}
 \begin{center}\textsf{\textbf{\abstractname}}\end{center}
 
-\noindent Hallo!
+\noindent
+Due to rising energy demand by datacenters, the need to use energy more carbon-efficiently is pressing. This thesis contributes to the field of carbon-aware scheduling, i.e., executing workloads in datacenters based on the current energy mix.
 
-\todo[inline]{Write Abstract}
-\todo[inline]{Fix Gutachter on titlepage}
+We conduct a structured literature review to find that prior work uses a simple workload model of constant power that neglects overhead associated with resuming workloads.
+Through power measurements of a machine learning program, we find that the workload commonly used to motivate suspend \& resuming scheduling, is more complex.
+We introduce our workload model \modelname{} which incorporates startup and working phases of different power.
+Our testbed \programname{} implements two new scheduling algorithms, for non-suspendible and suspendible workloads, that take account of these differently powered phases and overhead on resumption.
+\programname{} builds upon an existing testbed.  
+We evaluate our new workload model against the old across different workloads and schedulers.
+
+Our findings are preliminary:
+We observe that trends under the simple workload model apply to \modelname{} as well.
+Specifically, longer workloads and longer deadlines, increase the potential for carbon-emission reductions through a suspend \& resume strategy - even when accounting for overhead.
+The effects of power heterogeneity will need more examination in future work.
+For this, we offer \programname{} to the scientific community.
 
 \end{otherlanguage}
 \vfil\null
-
 
 % => Wenn die Arbeit auf Englisch verfasst wurde, verlangt das Studienreferat einen englischen UND deutschen Abstract (der dt. Abstract kann dann ggf. auch ans Ende der Arbeit)
 
@@ -23,19 +33,12 @@
 
 \noindent 
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Aufgrund des steigenden Energiebedarfs von Rechenzentren ist es erforderlich, Energie kohlenstoffeffizienter zu nutzen. Diese Arbeit leistet einen Beitrag zum Thema „Carbon-Aware Scheduling“, d.h. die Ausführung von Software in Rechenzentren basierend auf dem aktuellen Energiemix.
 
-%- temporal shifting
-%- include the costs of pausing a job (saving work and resuming it)
-%- include costs of shutting down or starting additional compute nodes
-%- include frequency scaling 
-%- provide a model for simulating scheduling of jobs, and also model what information need to provide to increase CO2 efficiency. 
+Wir führen eine strukturierte Literaturrecherche durch und stellen fest, dass frühere Arbeiten ein einfaches Arbeitslastmodell mit konstanter Leistung verwenden, das den mit der Wiederaufnahme von Software verbundenen Overhead vernachlässigt.
+Anhand von Leistungsmessungen eines maschinellen Lernprogramms stellen wir fest, dass die komplexer ist. Wir stellen unser Modell \modelname{} vor, das Start- und Arbeitsphasen mit unterschiedlicher Leistung einbezieht. Unser Testbed \programname{} implementiert zwei neue Scheduling-Algorithmen für nicht pausierbare und pausierbare Programme, die diese unterschiedlich leistungsfähigen Phasen und den Overhead. \programname{} baut auf einer bestehenden Testumgebung auf. Wir evaluieren unser neues Workload-Modell im Vergleich zum alten unter verschiedenen Scenarien und Schedulern.
 
-%C The study aims to [state the objectives or goals of the research]. Through [methodology/approach], %data was collected from [source or population]. The findings reveal [main results or discoveries].
-
-%The analysis highlights [key insights or implications], shedding light on [broader significance or relevance]. This research contributes to the understanding of [specific field or subject area], offering [potential applications or recommendations].
-
-%Overall, this thesis provides valuable insights into [topic] and offers avenues for further exploration in [related areas].
+Unsere Ergebnisse sind vorläufig. Wir stellen fest, dass die Trends des einfachen Modells auch für \modelname{} gelten. Vor allem längere Arbeitslasten und längere Fristen erhöhen das Potenzial für eine Verringerung der Kohlenstoffdioxidemissionen durch eine Pausierungs- und Wiederaufnahmestrategie - selbst wenn man den Overhead berücksichtigt. Die Auswirkungen der Leistungsheterogenität weiter untersucht werden. Hierfür bieten wir der wissenschaftlichen Gemeinschaft \programname{} an.
 
 \end{otherlanguage}
 \vfil\null
