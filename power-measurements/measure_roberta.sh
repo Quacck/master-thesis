@@ -9,12 +9,12 @@ MAXFREQ=$(cpupower frequency-info --hwlimits | sed -n '1d;p' | awk '{print $1}')
 if $PINPOINT_PATH -l | grep -q MCP2; then
     echo "MCP is connected"
 else 
-    echo "MCP is not connected, I am giving up. Are you using sudo?"
+    echo "MCP is not connected"
     exit 1
 fi
 
 run_experiment() {
-    sleep 10 # hope this returns environment to average state
+    sleep 10
 
     start=$(date +%s.%N)
     echo $1
