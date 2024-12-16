@@ -9,7 +9,8 @@
     "mypy.runUsingActiveInterpreter": true,
     "mypy.debugLogging": true,
     "python.analysis.extraPaths": [
-        "./GAIA/src"
+        "./GAIA/src",
+        "./carbs/src"
     ],
     "pasteImage.defaultName": "Y-MM-DD-HH-mm-ss",
     "pasteImage.namePrefix": "${currentFileNameWithoutExt}",
